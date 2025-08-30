@@ -1,8 +1,5 @@
 import pygame
 from pygame.locals import *
-import settings
-import image
-from sprite import Sprite
 from alien import Alien
 
 lst = {1: [(100, 100, "big_asteroid", [1, 2]), (200, 100, "small_asteroid", [1, 0])], 2: [

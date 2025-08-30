@@ -1,8 +1,6 @@
 import pygame
 from numpy.linalg import norm
-from math import sin, cos, pi
-import math
-import settings
+from math import sin, cos
 
 
 class Sprite(pygame.sprite.Sprite):

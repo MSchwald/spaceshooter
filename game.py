@@ -1,9 +1,6 @@
 import pygame
 from pygame.locals import *
-import sys
 import settings
-import image
-from sprite import Sprite
 from ship import Ship
 from alien import Alien
 from level import Level, max_level
@@ -199,11 +196,3 @@ class Game:
 
         for alien in self.level.aliens:
             alien.blit(self.screen)
-
-
-if __name__ == '__main__':
-    # Make a game instance, and run the game.
-    game = Game()
-    game.run()
-    print("The game is over, thank you for playing.")
-    sys.exit()

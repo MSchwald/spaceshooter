@@ -1,9 +1,6 @@
 import pygame
 from pygame.locals import *
 import settings
-import image
-from sprite import Sprite
-from bullet import Bullet
 
 
 class Font():

@@ -6,7 +6,7 @@ from random import random
 
 class Sprite(pygame.sprite.Sprite):
     # class for all sprites
-    def __init__(self, image, grid=None, x=0, y=0, v=0, direction=[0, 0], constraints=None, boundary_behaviour="clamp"):
+    def __init__(self, image, grid=None, center=None, x=0, y=0, v=0, direction=[0, 0], constraints=None, boundary_behaviour="clamp"):
         # possible boundary behaviours:
         #   clamp: sprite stops at the boundary (e.g. the ship)
         #   reflect: sprite gets reflected from the boundary
@@ -16,7 +16,11 @@ class Sprite(pygame.sprite.Sprite):
         self.x = x
         self.y = y
         self.set_image(image)
-        if grid:
+        if center:
+            self.rect.center = center
+            self.x = self.rect.x
+            self.y = self.rect.y
+        elif grid:
             self.rect.center = ((grid[0]+1/2)*settings.grid_width,(grid[1]+1/2)*settings.grid_width)
             self.x = self.rect.x
             self.y = self.rect.y

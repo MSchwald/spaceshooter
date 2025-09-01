@@ -147,7 +147,7 @@ class Game:
                 if alien.energy <= 0 or alien.type == "big_asteroid":
                     if alien.type == "big_asteroid":
                         pieces = [
-                            Alien("small_asteroid", x=alien.x+(image.alien["big_asteroid"].w-image.alien["small_asteroid"].w)/2, y=alien.y+(image.alien["big_asteroid"].h-image.alien["small_asteroid"].h)/2, direction=alien.direction) for i in range(4)]
+                            Alien("small_asteroid", center=alien.rect.center, direction=alien.direction) for i in range(4)]
                         for i in range(4):
                             pieces[i].turn_direction((2*i+1)*pi/4)
                             self.level.aliens.add(pieces[i])

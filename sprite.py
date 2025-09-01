@@ -1,6 +1,7 @@
 import pygame
 from numpy.linalg import norm
-from math import sin, cos
+from math import sin, cos, pi
+from random import random
 
 
 class Sprite(pygame.sprite.Sprite):
@@ -15,10 +16,14 @@ class Sprite(pygame.sprite.Sprite):
         self.x = x
         self.y = y
         self.v = v
-        self.direction = direction
+        if direction == "random":
+            angle = 2*pi*random()
+            self.direction = [cos(angle),sin(angle)]
+        else:
+            self.direction = direction
         self.constraints = constraints
         self.boundary_behaviour = boundary_behaviour
-        self._norm = norm(direction)
+        self._norm = norm(self.direction)
         self.set_image(image)
 
     def set_image(self, image):

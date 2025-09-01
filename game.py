@@ -6,6 +6,7 @@ from alien import Alien
 from level import Level, max_level
 from text import Font, Menu
 from math import pi
+import image
 
 
 class Game:
@@ -32,6 +33,8 @@ class Game:
                                       "Level solved. Press RETURN", "to start the next level."], options=["Continue"])
         self.game_won_menu = Menu(self.font, message=[
                                   "Congratulations, you have", "finished all levels!"], options=["Restart", "Exit"])
+        self.game_over_menu = Menu(self.font, message=[
+                                  "Game over!", "you ran out of lives!"], options=["Restart", "Exit"])
 
         # Initializes the Ship
         self.ship = Ship()
@@ -141,10 +144,10 @@ class Game:
         for bullet in collisions.keys():
             for alien in collisions[bullet]:
                 alien.get_damage(bullet.damage)
-                if alien.energy <= 0:
+                if alien.energy <= 0 or alien.type == "big_asteroid":
                     if alien.type == "big_asteroid":
                         pieces = [
-                            Alien(alien.x, alien.y, "small_asteroid", alien.direction) for i in range(4)]
+                            Alien(alien.x+(image.alien["big_asteroid"].w-image.alien["small_asteroid"].w)/2, alien.y+(image.alien["big_asteroid"].h-image.alien["small_asteroid"].h)/2, "small_asteroid", alien.direction) for i in range(4)]
                         for i in range(4):
                             pieces[i].turn_direction((2*i+1)*pi/4)
                             self.level.aliens.add(pieces[i])
@@ -156,6 +159,9 @@ class Game:
             self.ship, self.level.aliens, True)
         for alien in collisions:
             self.ship.get_damage(alien.energy)
+            if self.ship.lives <= 0:
+                self.mode = "menu"
+                self.active_menu = self.game_over_menu
             self.ship.score += alien.points
 
     def check_if_level_solved(self):

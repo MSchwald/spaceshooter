@@ -1,9 +1,11 @@
-import pygame
+import pygame, settings
 from pygame.locals import *
 from alien import Alien
 
-lst = {1: [(100, 100, "big_asteroid", [1, 2]), (200, 100, "small_asteroid", [1, 0])], 2: [
-    (100, 100, 1, [1, 1]), (300, 100, 1, [1, 1]), (500, 100, 1, [1, 1])], 3: [(100, 100, 2, [2, 0])]}
+#placement of enemies in an 16x9-grid
+lst = {1: [(4, 1, "big_asteroid", "random"), (6, 1, "big_asteroid", [0,1]), (9, 1, "big_asteroid", [0,1]), (11, 1, "big_asteroid", "random"), (2, 1, "small_asteroid", "random"), (13, 1, "small_asteroid", "random")],
+2: [(1, 1, "purple", [1, 1]), (3, 1, "purple", [1, 1]), (5, 1, "purple", [1, 1])],
+3: [(1, 1, "ufo", [2, 0])]}
 max_level = max(lst.keys())
 
 
@@ -19,7 +21,7 @@ class Level:
         # Resets the Group of aliens
         self.aliens.empty()
         for (x, y, type, direction) in lst[self.number]:
-            self.aliens.add(Alien(x, y, type, direction=direction))
+            self.aliens.add(Alien(x*settings.grid_width, y*settings.grid_width, type, direction=direction))
 
     def next(self, ship):
         if self.number < max_level:

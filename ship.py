@@ -67,15 +67,13 @@ class Ship(Sprite):
             self.lose_life()
 
     def lose_life(self):
+        self.lives -= 1
         if self.lives > 0:
-            self.lives -= 1
             self.set_level(1)
-        else:
-            print('Game Over!')
 
     def get_damage(self, damage):
-        self.energy -= damage
-        if self.energy <= 0:
+        self.energy = max(0,self.energy-damage)
+        if self.energy == 0:
             self.lose_level()
 
     def shoot_bullets(self):

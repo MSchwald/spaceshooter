@@ -6,7 +6,7 @@ from alien import Alien
 from level import Level, max_level
 from text import Font, Menu
 from math import pi
-import image
+from image import Image
 
 
 class Game:

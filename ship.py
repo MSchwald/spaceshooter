@@ -33,7 +33,7 @@ class Ship(Sprite):
         """Ship starts the game with given stats"""
         self.score = settings.starting_score
         self.set_level(ship_level)
-        self.lives = settings.ship_lives
+        self.lives = ship_lives
 
     def set_level(self, ship_level):
         """Updates the level and dependend private variables"""
@@ -112,6 +112,7 @@ class Ship(Sprite):
                 self.status = "normal"
             else:
                 self.status = "inverse_controlls"
+                self.effect_timer = 1000*settings.controlls_duration
             self.update_image()
         elif type == "life_minus":
             self.lose_life()
@@ -132,12 +133,15 @@ class Ship(Sprite):
         elif type == "size_minus":
             if self.size_factor*settings.item_size_minus>=0.3:
                 self.size_factor *= settings.item_size_minus
-                image = Image.load(f"images/ship/a-{self.level}.png")
                 self.update_image()
+                if self.size_factor != 1:
+                    self.size_change_timer = 1000*settings.size_change_duration
         elif type == "size_plus":
             if self.size_factor*settings.item_size_plus<=1/0.3:
                 self.size_factor *= settings.item_size_plus
                 self.update_image()
+                if self.size_factor != 1:
+                    self.size_change_timer = 1000*settings.size_change_duration
         elif type == "speed_buff":
             self.speed_factor = settings.speed_buff
             self.v *= self.speed_factor
@@ -154,3 +158,16 @@ class Ship(Sprite):
         self.shields = 0
         self.size_factor = 1
         self.status = "normal"
+
+    def update(self, dt):
+        if self.size_factor != 1:
+            self.size_change_timer -= dt
+            if self.size_change_timer <= 0:
+                self.size_factor = 1
+                self.update_image()
+        if self.status == "inverse_controlls":
+            self.controlls_timer -= dt
+            if self.effect_timer <= 0:
+                self.status = "normal"
+                self.update_image()
+        super().update(dt)

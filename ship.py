@@ -96,13 +96,14 @@ class Ship(Sprite):
 
     def update_image(self):
         if self.status == "normal":
-            self.change_image(Image.load(f'images/ship/a-{self.level}.png'))
+            self.change_image(Image.load(f'images/ship/a-{self.level}.png').scale_by(self.size_factor))
         elif self.status == "inverse_controlls":
-            self.change_image(Image.load(f'images/ship/g-{self.level}.png'))
+            self.change_image(Image.load(f'images/ship/g-{self.level}.png').scale_by(self.size_factor))
         elif self.status == "shield":
-            self.change_image(Image.load(f'images/ship/h-{self.level}.png'))
+            self.change_image(Image.load(f'images/ship/h-{self.level}.png').scale_by(self.size_factor))
         elif self.status == "magnetic":
-            self.change_image(Image.load(f'images/ship/e-{self.level}.png'))
+            self.change_image(Image.load(f'images/ship/e-{self.level}.png').scale_by(self.size_factor))
+        self.reset_firepoints()
 
     def collect_item(self, type):
         if type == "bullets_buff":
@@ -135,17 +136,12 @@ class Ship(Sprite):
         elif type == "size_minus":
             if self.size_factor*settings.item_size_minus>=0.3:
                 self.size_factor *= settings.item_size_minus
-                print(self.size_factor)
                 image = Image.load(f"images/ship/a-{self.level}.png")
-                self.change_image(image.scale_by(self.size_factor))
-                self.reset_firepoints()
-                print(self.w)
+                self.update_image()
         elif type == "size_plus":
-            if self.h*settings.item_size_plus<=self.constraints.h and self.w*settings.item_size_plus<=self.constraints.w:
+            if self.size_factor*settings.item_size_plus<=1/0.3:
                 self.size_factor *= settings.item_size_plus
-                image = Image.load(f"images/ship/a-{self.level}.png")
-                self.change_image(image.scale_by(self.size_factor))
-                self.reset_firepoints()
+                self.update_image()
         elif type == "speed_buff":
             self.speed_factor = settings.speed_buff
             self.v *= self.speed_factor

@@ -19,15 +19,17 @@ ship_width = {1:grid_width, 2:grid_width, 3:1.2*grid_width}
 bullet_width = {1:7/100*grid_width, 2:9/100*grid_width, 3:11/100*grid_width}
 
 # Alien settings
-type_speed = {"big_asteroid": 0.5, "small_asteroid": 1, "purple": 0.4, "ufo": 1, 3: 0.6}
-type_energy = {"big_asteroid": 4, "small_asteroid": 1, "purple": 5, "ufo": 20, 3: 5}
+type_speed = {"big_asteroid": 0.5, "small_asteroid": 1, "purple": 0.4, "ufo": 1}
+type_energy = {"big_asteroid": 4, "small_asteroid": 1, "purple": 5, "ufo": 20}
 type_points = {"big_asteroid": 20,
-               "small_asteroid": 10, "purple": 100, "ufo": 500, 3: 100}
+               "small_asteroid": 10, "purple": 100, "ufo": 500}
 type_width = {"big_asteroid": grid_width,
-               "small_asteroid": grid_width/2, "purple": grid_width, "ufo": grid_width, 3: grid_width}
+               "small_asteroid": grid_width/2, "purple": 1.5*grid_width, "ufo": grid_width}
+type_colorkey = {"big_asteroid": (0,0,0),
+               "small_asteroid": (0,0,0), "purple": (254,254,254), "ufo": (0,0,0)}
 
 # Game stats
-game_starting_level = 1
+game_starting_level = 2
 
 # boundaries for the movement of the sprites
 # [left, top, width, height]

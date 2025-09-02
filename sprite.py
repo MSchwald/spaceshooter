@@ -36,12 +36,20 @@ class Sprite(pygame.sprite.Sprite):
         self._norm = norm(self.direction)
         
     def set_image(self, image):
+        # initializes an image preserving (x,y) of the sprite
+        self.image = image
         self.surface = image.surface
-        self.w = image.w
-        self.h = image.h
-        self.rect = pygame.Rect(int(self.x), int(self.y), self.w, self.h)
         self.mask = image.mask
+        self.rect = pygame.Rect(int(self.x), int(self.y), self.w, self.h)
 
+    @property
+    def w(self):
+        return self.image.w
+
+    @property
+    def h(self):
+        return self.image.h
+        
     def change_image(self, image):
         # changes the image preserving the center of the sprite
         center = self.rect.center
@@ -51,9 +59,7 @@ class Sprite(pygame.sprite.Sprite):
 
     def scale_image_by(self, factor):
         # rescales the image preserving the center of the sprite
-        image = Image(self.surface, self.mask)
-        image.scale_by(factor)
-        self.change_image(image)
+        self.change_image(self.image.scale_by(factor))
 
     def change_direction(self, x, y):
         self.direction = (x, y)

@@ -126,10 +126,16 @@ class Ship(Sprite):
             self.update_image()
         elif type == "missile":
             self.missiles += 1
+        elif type == "score_buff":
+            self.score_factor *= settings.item_score_buff
         elif type == "shield":
             self.shields += 1
         elif type == "ship_buff":
             self.gain_level()
+        elif type == "size_minus":
+            self.size_factor *= settings.item_size_minus
+        elif type == "size_plus":
+            self.size_factor *= settings.item_size_plus
         elif type == "speed_buff":
             self.speed_factor = settings.speed_buff
             self.v *= self.speed_factor
@@ -143,5 +149,8 @@ class Ship(Sprite):
         self.speed_factor = 1
         self.magnet = False
         self.missiles = 0
+        self.score_factor = 1
         self.shields = 0
+        self.size_factor = 1
         self.status = "normal"
+        

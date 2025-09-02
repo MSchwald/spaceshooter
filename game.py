@@ -155,7 +155,7 @@ class Game:
                         for i in range(4):
                             pieces[i].turn_direction((2*i+1)*pi/4)
                             self.level.aliens.add(pieces[i])
-                    self.ship.score += alien.points
+                    self.ship.score += self.ship.score_factor*alien.points
                     if random() <= settings.item_probability:
                         self.level.items.add(Item(choice(settings.item_types),center=alien.rect.center))
                     alien.remove(self.level.aliens)
@@ -164,7 +164,7 @@ class Game:
         for alien in self.level.aliens:
             if pygame.sprite.collide_mask(self.ship, alien):
                 self.ship.get_damage(alien.energy)
-                self.ship.score += alien.points
+                self.ship.score += self.ship.score_factor*alien.points
                 alien.kill()
 
         # Check if ship collects an item

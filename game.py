@@ -9,6 +9,7 @@ from math import pi
 from image import Image
 from random import random, choice
 from item import Item
+from sprite import Sprite
 
 
 class Game:
@@ -47,7 +48,8 @@ class Game:
         # Starts a clock to measure ingame time
         self.clock = pygame.time.Clock()
 
-        # self.font = pygame.font.Font(None,50)
+        # Fadenkreuz
+        self.aim = Sprite(Image.load('images/bullet/aim.png', scaling_width = settings.missile_explosion_size))
 
     def run(self):
         """Starts the main loop for the game."""
@@ -147,6 +149,10 @@ class Game:
         for item in self.level.items:
             item.update(dt, self.ship)
 
+        self.aim.rect.center = pygame.mouse.get_pos()
+        self.aim.x = self.aim.rect.x
+        self.aim.y = self.aim.rect.y
+
     def collision_checks(self):
         """Checks for collisions of sprites, inflicts damage, adds points, generate items"""
         # Check if bullets hit aliens
@@ -225,3 +231,5 @@ class Game:
             alien.blit(self.screen)
         for item in self.level.items:
             item.blit(self.screen)
+
+        self.aim.blit(self.screen)

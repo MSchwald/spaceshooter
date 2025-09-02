@@ -6,7 +6,7 @@ from sprite import Sprite
 from image import Image
 
 
-Image.load(f'images/bullet/15.png', scaling_width = settings.missile_explosion_size)
+Image.load('images/bullet/15.png', scaling_width = settings.missile_explosion_size)
 
 class Bullet(Sprite):
     """A class to manage the bullets shot by the ship"""

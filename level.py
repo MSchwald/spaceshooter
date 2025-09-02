@@ -15,6 +15,7 @@ class Level:
     def __init__(self, number):
         self.number = number
         self.aliens = pygame.sprite.Group()
+        self.items = pygame.sprite.Group()
 
     def status(self, ship):
         if ship.lives <= 0:

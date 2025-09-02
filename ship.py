@@ -20,6 +20,7 @@ class Ship(Sprite):
         """Start new game"""
         # Delete all bullets
         self.bullets.empty()
+        self.reset_items()
         self.reset_stats(ship_lives, ship_level)
         self.reset_position()
 
@@ -38,7 +39,7 @@ class Ship(Sprite):
         """Updates the level and dependend private variables"""
         self.level = ship_level
         self.v = settings.level_speed[ship_level]
-        self.change_image(Image.load(f'images/ship/a-{ship_level}.png'))
+        self.update_image()
         self.energy = settings.level_energy[ship_level]
         self.reset_firepoints()
 
@@ -55,6 +56,7 @@ class Ship(Sprite):
             self.fire_points = [(12/133*self.w, 71/178*self.h), (23/133*self.w, 49/178*self.h),
                                 (self.w/2, 0), (109/133*self.w, 49/178*self.h), (120/133*self.w, 71/178*self.h)]
             self.bullet_sizes = [1, 2, 3, 2, 1]
+        self.bullet_sizes = [min(3,n+self.bullets_buff) for n in self.bullet_sizes]
 
     def gain_level(self):
         if self.level < 3:
@@ -62,11 +64,13 @@ class Ship(Sprite):
 
     def lose_level(self):
         if self.level > 1:
+            self.reset_items()
             self.set_level(self.level-1)
         else:
             self.lose_life()
 
     def lose_life(self):
+        self.reset_items()
         self.lives -= 1
         if self.lives > 0:
             self.set_level(1)
@@ -87,4 +91,52 @@ class Ship(Sprite):
                 self.x+self.fire_points[i][0]-settings.bullet_width[self.bullet_sizes[i]]/2, self.y+self.fire_points[i][1], speed, self.bullet_sizes[i]))
 
     def control(self, keys):
-        self.change_direction(keys[K_d]-keys[K_a], keys[K_s]-keys[K_w])
+        self.change_direction(self.controlls_factor*(keys[K_d]-keys[K_a]), self.controlls_factor*(keys[K_s]-keys[K_w]))
+
+    def update_image(self):
+        if self.status == "normal":
+            self.change_image(Image.load(f'images/ship/a-{self.level}.png'))
+        elif self.status == "inverse_controlls":
+            self.change_image(Image.load(f'images/ship/g-{self.level}.png'))
+        elif self.status == "shield":
+            self.change_image(Image.load(f'images/ship/h-{self.level}.png'))
+        elif self.status == "magnetic":
+            self.change_image(Image.load(f'images/ship/e-{self.level}.png'))
+
+    def collect_item(self, type):
+        if type == "bullets_buff":
+            self.bullets_buff += 1
+        elif type == "hp_plus":
+            self.energy += settings.hp_plus
+        elif type == "invert_controlls":
+            self.controlls_factor *= -1
+            if self.status == "inverse_controlls":
+                self.status = "normal"
+            else:
+                self.status = "inverse_controlls"
+            self.update_image()
+        elif type == "magnet":
+            self.magnet = True
+            self.status = "magnetic"
+            self.update_image()
+        elif type == "missile":
+            self.missiles += 1
+        elif type == "shield":
+            self.shields += 1
+        elif type == "ship_buff":
+            self.gain_level()
+        elif type == "speed_buff":
+            self.speed_factor = settings.speed_buff
+            self.v *= self.speed_factor
+        elif type == "speed_nerf":
+            self.speed_factor = settings.speed_nerf
+            self.v *= self.speed_factor
+
+    def reset_items(self):
+        self.bullets_buff = 0
+        self.controlls_factor = 1
+        self.speed_factor = 1
+        self.magnet = False
+        self.missiles = 0
+        self.shields = 0
+        self.status = "normal"

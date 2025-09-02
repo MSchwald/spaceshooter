@@ -30,13 +30,23 @@ type_width = {"big_asteroid": grid_width,
 game_starting_level = 1
 
 # boundaries for the movement of the sprites
-# (left, top, width, height)
+# [left, top, width, height]
 ship_constraints = [0, 5/9*screen_height, screen_width, 4/9*screen_height]
 alien_constraints = [0, 0, screen_width, screen_height]
+item_constraints = [0, 0, screen_width, screen_height]
 
 # Bullet settings
 bullet_speed = 1
 max_bullets = 3
+
+# Item settings
+item_types = ["bullets_buff", "hp_plus", "invert_controlls", "magnet", "missile", "shield", "ship_buff", "speed_buff", "speed_nerf"]
+item_size = 0.5*grid_width
+item_duration = 5
+item_probability = 0.5
+item_speed = 0.3
+hp_plus = 5
+
 
 # Fonts
 stats_font = "fonts/ARCADE_I.ttf"
@@ -45,3 +55,5 @@ text_font = "fonts/ARCADE_R.ttf"
 menu_boundary = 20
 title_menu_distance = 30
 line_distance = 12
+speed_buff = 1.6
+speed_nerf = 1/speed_buff

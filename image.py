@@ -7,9 +7,9 @@ screen = pygame.display.set_mode(
 
 class Image:
     def __init__(self, path, colorkey=(0,0,0), scaling_width=None):
-        raw_image = pygame.image.load(path)#.convert_alpha()
+        raw_image = pygame.image.load(path).convert()
         raw_image.set_colorkey(colorkey)
-        #raw_image.set_alpha(1)
+        raw_image = raw_image.convert_alpha()
         bounding_rect = raw_image.get_bounding_rect(min_alpha=1)
         self.surface = pygame.Surface(bounding_rect.size)
         self.surface.blit(raw_image,(0,0),bounding_rect)

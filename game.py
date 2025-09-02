@@ -7,6 +7,8 @@ from level import Level, max_level
 from text import Font, Menu
 from math import pi
 from image import Image
+from random import random, choice
+from item import Item
 
 
 class Game:
@@ -135,9 +137,11 @@ class Game:
 
         for alien in self.level.aliens:
             alien.update(dt)
+        for item in self.level.items:
+            item.update(dt, self.ship)
 
     def collision_checks(self):
-        """Checks for collisions of sprites, inflicts damage and adds points"""
+        """Checks for collisions of sprites, inflicts damage, adds points, generate items"""
         # Check if bullets hit aliens
         collisions = pygame.sprite.groupcollide(
             self.ship.bullets, self.level.aliens, True, False)
@@ -151,8 +155,10 @@ class Game:
                         for i in range(4):
                             pieces[i].turn_direction((2*i+1)*pi/4)
                             self.level.aliens.add(pieces[i])
-                    alien.remove(self.level.aliens)
                     self.ship.score += alien.points
+                    if random() <= settings.item_probability:
+                        self.level.items.add(Item(choice(settings.item_types),center=alien.rect.center))
+                    alien.remove(self.level.aliens)
 
         # Check if aliens hit the ship
         collisions = pygame.sprite.spritecollide(
@@ -160,6 +166,12 @@ class Game:
         for alien in collisions:
             self.ship.get_damage(alien.energy)
             self.ship.score += alien.points
+
+        # Check if ship collects an item
+        collisions = pygame.sprite.spritecollide(
+            self.ship, self.level.items, True)
+        for item in collisions:
+            self.ship.collect_item(item.type)
 
     def check_level_status(self):
         """Check if the current level is solved or the player is game over"""
@@ -177,7 +189,7 @@ class Game:
         self.screen.fill(settings.bg_color)
         # blit the game stats onto the screen
         game_stats = self.font.stats.render(
-            f"Score: {self.ship.score}, Level: {self.level.number}, Lives: {self.ship.lives}, Energy: {self.ship.energy}", False, (255, 255, 255))
+            f"Score: {self.ship.score}, Level: {self.level.number}, Lives: {self.ship.lives}, Energy: {self.ship.energy}, Shields: {self.ship.shields}, Missiles: {self.ship.missiles}", False, (255, 255, 255))
         self.screen.blit(game_stats, (10, 10))
 
         # blit updated sprites
@@ -198,3 +210,5 @@ class Game:
 
         for alien in self.level.aliens:
             alien.blit(self.screen)
+        for item in self.level.items:
+            item.blit(self.screen)

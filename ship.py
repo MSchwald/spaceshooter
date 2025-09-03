@@ -83,13 +83,15 @@ class Ship(Sprite):
 
     def shoot_bullets(self):
         # Takes Doppler effect into account to calculate the bullets' speed
-        speed = settings.bullet_speed
+        doppler = 0
         if self.direction[1] != 0:
-            speed -= self.v*self.direction[1]/self._norm
+            doppler = self.v*self.direction[1]/self._norm
         # Fires bullets
         for i in range(len(self.fire_points)):
-            self.bullets.add(Bullet(
-                self.x+self.fire_points[i][0]-settings.bullet_width[self.bullet_sizes[i]]/2, self.y+self.fire_points[i][1], speed, self.bullet_sizes[i]))
+            type = self.bullet_sizes[i]
+            self.bullets.add(Bullet(type, v=settings.bullet_speed[type]-doppler,
+                                    center=(self.x+self.fire_points[i][0],self.y+self.fire_points[i][1])))
+            print(self.x+self.fire_points[i][0],self.y+self.fire_points[i][1],"\n")
 
     def control(self, keys):
         if self.status == "shield":
@@ -107,6 +109,7 @@ class Ship(Sprite):
     def collect_item(self, type):
         if type == "bullets_buff":
             self.bullets_buff += 1
+            self.reset_firepoints()
         elif type == "hp_plus":
             self.energy += settings.hp_plus
         elif type == "invert_controlls":
@@ -147,7 +150,7 @@ class Ship(Sprite):
                 if self.size_factor != 1:
                     self.size_change_timer = 1000*settings.size_change_duration
         elif type == "speed_buff":
-            if self.v*settings.speed_buff < settings.bullet_speed:
+            if self.v*settings.speed_buff < settings.bullet_speed[1]:
                 self.speed_factor = settings.speed_buff
                 self.v = self.speed_factor*settings.level_speed[self.level]
                 if self.speed_factor != 1:
@@ -171,7 +174,7 @@ class Ship(Sprite):
     def shoot_missile(self, x, y):
         if self.missiles > 0:
             self.missiles -= 1
-            self.bullets.add(Bullet(x-settings.missile_explosion_size/2, y-settings.missile_explosion_size/2, 0, 15, timer=1000*settings.missile_duration))
+            self.bullets.add(Bullet(15, center=(x,y)))
 
     def reset_items(self):
         self.bullets_buff = 0

@@ -75,16 +75,12 @@ class Statusbar:
 
 
     def blit(self, screen, ship, level_number):
-
-            self.level = self.font.render(f"L0{level_number%100}", False, (255, 255, 255))
-            self.lives = self.font.render(f"0{ship.lives%100}", False, (255, 255, 255))
-            self.missiles = self.font.render(f"0{ship.missiles%100}", False, (255, 255, 255))
+            self.level = self.font.render(f"L{level_number%100:02d}", False, (255, 255, 255))
+            self.lives = self.font.render(f"{ship.lives%100:02d}", False, (255, 255, 255))
+            self.missiles = self.font.render(f"{ship.missiles%100:02d}", False, (255, 255, 255))
             
-            if ship.score_factor > 1:
-                #prints score in green when the score buff item is activated
-                self.score = self.score_font.render(f"Score {int(ship.score)}", False, (100, 255, 100))
-            else:
-                self.score = self.score_font.render(f"Score {int(ship.score)}", False, (255, 255, 255))
+            #prints score in green when the score buff item is activated
+            self.score = self.score_font.render(f"Score {int(ship.score)}", False, {False: (255,255,255), True:(100, 255, 100)}[ship.score_factor > 1])
 
             screen.blit(self.level,(self.x+self.level_x,self.level_y))
             screen.blit(self.lives_icon.surface,(self.x+self.lives_icon_x,self.lives_icon_y))

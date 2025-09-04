@@ -190,7 +190,7 @@ class Game:
                     bullet.reflect()
                     bullet.owner = "player"
                 else:
-                    self.ship.get_damage(bullet.damage)
+                    self.ship.get_damage(bullet.damage, self.level)
                     bullet.kill()
 
         # Check if aliens hit the ship
@@ -199,7 +199,7 @@ class Game:
                 if self.ship.status == "shield":
                     alien.change_direction(-alien.direction[0],-alien.direction[1])
                 else:
-                    self.ship.get_damage(alien.energy)
+                    self.ship.get_damage(alien.energy, self.level)
                     self.ship.score += self.ship.score_factor*alien.points
                     alien.kill()
         

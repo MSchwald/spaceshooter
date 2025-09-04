@@ -59,23 +59,24 @@ class Ship(Sprite):
         if self.level < 3:
             self.set_level(self.level+1)
 
-    def lose_level(self):
+    def lose_level(self, game_level):
         if self.level > 1:
             self.reset_items()
             self.set_level(self.level-1)
         else:
-            self.lose_life()
+            self.lose_life(game_level)
 
-    def lose_life(self):
-        self.reset_items()
+    def lose_life(self, game_level):
         self.lives -= 1
         if self.lives > 0:
             self.set_level(1)
+            self.reset_items()
+            game_level.start(self)
 
-    def get_damage(self, damage):
+    def get_damage(self, damage, game_level):
         self.energy = max(0,self.energy-damage)
         if self.energy == 0:
-            self.lose_level()
+            self.lose_level(game_level)
 
     def shoot_bullets(self, level):
         # if there aren't too many bullets from the ship on the screen yet

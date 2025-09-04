@@ -187,7 +187,7 @@ class Game:
         for bullet in self.level.bullets:
             if bullet.owner == "enemy" and pygame.sprite.collide_mask(self.ship, bullet):
                 if self.ship.status == "shield":
-                    bullet.change_direction(-bullet.direction[0],-bullet.direction[1])
+                    bullet.reflect()
                     bullet.owner = "player"
                 else:
                     self.ship.get_damage(bullet.damage)

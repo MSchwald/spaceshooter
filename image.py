@@ -8,7 +8,7 @@ screen = pygame.display.set_mode(
 class Image:
     '''Class to manage loading images to be used as surfaces for sprites.
     (Inheriting properties from the 'Surface'-class is not be possible in pygame)'''
-    def __init__(self, surface, mask, colorkey = None):
+    def __init__(self, surface, mask, colorkey = None, reflected = False):
         self.surface = surface
         self.mask = mask
         if colorkey:
@@ -84,6 +84,17 @@ class Image:
                 return image
         else:
             return [load(cls, frame_path, colorkey, scaling_width, scaling_height, scaling_factor) for frame_path in path]
+
+    reflected_cache ={}
+    @classmethod
+    def reflect(cls, image):
+        if id(image.surface) in cls.reflected_cache:
+            return cls.reflected_cache[id(image.surface)]
+        else:
+            flipped_surface = pygame.transform.flip(image.surface, flip_x=True, flip_y=True)
+            flipped_image = Image(flipped_surface, pygame.mask.from_surface(flipped_surface))
+            cls.reflected_cache[id(image.surface)] = flipped_image
+            return flipped_image
 
     def blit(self, screen):
         screen.blit(self.surface, self.rect, colorkey=self.surface.get_colorkey())

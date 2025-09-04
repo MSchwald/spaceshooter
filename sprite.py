@@ -176,5 +176,11 @@ class Sprite(pygame.sprite.Sprite):
         self.pause_timer = 0
         self.pause_duration = time
 
+    def reflect(self):
+        self.direction = (-self.direction[0],-self.direction[1])
+        self.image = Image.reflect(self.image)
+        if self.frames:
+            self.frames = [Image.reflect(image) for image in self.frames]            
+
     def blit(self, screen):
         screen.blit(self.surface, self.rect)

@@ -163,24 +163,35 @@ class Game:
         collisions = pygame.sprite.groupcollide(
             self.level.bullets, self.level.aliens, False, False, collided=pygame.sprite.collide_mask)
         for bullet in collisions.keys():
-            for alien in collisions[bullet]:
-                if bullet.type != "missile":
+            if bullet.owner == "player":
+                for alien in collisions[bullet]:
+                    if bullet.type != "missile":
+                        bullet.kill()
+                    if bullet.type != "missile" or alien not in bullet.hit_enemies:
+                        alien.get_damage(bullet.damage)
+                        if bullet.type == "missile":
+                            bullet.hit_enemies.add(alien)
+                        if alien.energy <= 0 or alien.type == "big_asteroid":
+                            if alien.type == "big_asteroid":
+                                pieces = [
+                                    Alien("small_asteroid", center=alien.rect.center, direction=alien.direction) for i in range(4)]
+                                for i in range(4):
+                                    pieces[i].turn_direction((2*i+1)*pi/4)
+                                    self.level.aliens.add(pieces[i])
+                            self.ship.score += self.ship.score_factor*alien.points
+                            if random() <= settings.item_probability:
+                                self.level.items.add(Item(choice(settings.item_types),center=alien.rect.center))
+                            alien.kill()
+
+        # Check if bullets hit the ship
+        for bullet in self.level.bullets:
+            if bullet.owner == "enemy" and pygame.sprite.collide_mask(self.ship, bullet):
+                if self.ship.status == "shield":
+                    bullet.change_direction(-bullet.direction[0],-bullet.direction[1])
+                    bullet.owner = "player"
+                else:
+                    self.ship.get_damage(bullet.damage)
                     bullet.kill()
-                if bullet.type != "missile" or alien not in bullet.hit_enemies:
-                    alien.get_damage(bullet.damage)
-                    if bullet.type == "missile":
-                        bullet.hit_enemies.add(alien)
-                    if alien.energy <= 0 or alien.type == "big_asteroid":
-                        if alien.type == "big_asteroid":
-                            pieces = [
-                                Alien("small_asteroid", center=alien.rect.center, direction=alien.direction) for i in range(4)]
-                            for i in range(4):
-                                pieces[i].turn_direction((2*i+1)*pi/4)
-                                self.level.aliens.add(pieces[i])
-                        self.ship.score += self.ship.score_factor*alien.points
-                        if random() <= settings.item_probability:
-                            self.level.items.add(Item(choice(settings.item_types),center=alien.rect.center))
-                        alien.remove(self.level.aliens)
 
         # Check if aliens hit the ship
         for alien in self.level.aliens:
@@ -191,6 +202,7 @@ class Game:
                     self.ship.get_damage(alien.energy)
                     self.ship.score += self.ship.score_factor*alien.points
                     alien.kill()
+        
 
         # Check if ship collects an item
         for item in self.level.items:

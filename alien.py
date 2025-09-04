@@ -22,7 +22,7 @@ class Alien(Sprite):
     def update(self, dt, level):
         if self.type == "purple":
             #purple aliens do actions every two seconds
-            if self.timer//500 !=(self.timer+dt)//500:
+            if self.timer//1000 !=(self.timer+dt)//1000:
                 level.bullets.add(Bullet("g",center=self.rect.midbottom))
 
         #timer, movement and animation are handles in the Sprite class

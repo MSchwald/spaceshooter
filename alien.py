@@ -2,14 +2,15 @@ import pygame
 from pygame.locals import *
 import settings
 import image
+from image import Image
 from sprite import Sprite
 
 
 class Alien(Sprite):
     """A class to manage the enemies"""
 
-    def __init__(self, x, y, type, direction):
-        super().__init__(image.alien[type], x, y, v=settings.type_speed[type], direction=direction,
+    def __init__(self, type, grid=None, center=None, x=0, y=0, direction=(0,0), scaling_width=settings.grid_width):
+        super().__init__(Image.load(f'images/alien/{str(type)}.png',colorkey=settings.type_colorkey[type], scaling_width=settings.type_width[type]), grid=grid, center=center, x=x, y=y, v=settings.type_speed[type], direction=direction,
                          constraints=pygame.Rect(settings.alien_constraints), boundary_behaviour="reflect")
         self.type = type
         self.energy = settings.type_energy[type]

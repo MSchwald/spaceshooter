@@ -1,7 +1,7 @@
 import pygame
 from pygame.locals import *
 import settings
-import image
+from image import Image
 from sprite import Sprite
 from bullet import Bullet
 
@@ -10,16 +10,13 @@ class Ship(Sprite):
     """A class to manage the ship."""
 
     def __init__(self, x=0, y=0, ship_lives=settings.ship_lives, ship_level=settings.ship_starting_level):
-        super().__init__(image.ship[ship_level], x, y, constraints=pygame.Rect(
+        super().__init__(Image.load(f"images/ship/a-{ship_level}.png", scaling_width=settings.ship_width[ship_level]), x=0, y=0, constraints=pygame.Rect(
             settings.ship_constraints), boundary_behaviour="clamp")
-        # initializes an empty group of sprites for the bullets shot by the ship
-        self.bullets = pygame.sprite.Group()
         self.start_new_game(ship_lives, ship_level)
 
     def start_new_game(self, ship_lives=settings.ship_lives, ship_level=settings.ship_starting_level):
         """Start new game"""
-        # Delete all bullets
-        self.bullets.empty()
+        self.reset_items()
         self.reset_stats(ship_lives, ship_level)
         self.reset_position()
 
@@ -32,14 +29,15 @@ class Ship(Sprite):
         """Ship starts the game with given stats"""
         self.score = settings.starting_score
         self.set_level(ship_level)
-        self.lives = settings.ship_lives
+        self.lives = ship_lives
 
     def set_level(self, ship_level):
         """Updates the level and dependend private variables"""
         self.level = ship_level
-        self.v = settings.level_speed[ship_level]
-        self.change_image(image.ship[ship_level])
-        self.energy = settings.level_energy[ship_level]
+        self.v = self.speed_factor*settings.level_speed[ship_level]
+        self.update_image()
+        self.max_energy = settings.level_energy[ship_level]
+        self.energy = self.max_energy
         self.reset_firepoints()
 
     def reset_firepoints(self):
@@ -55,6 +53,7 @@ class Ship(Sprite):
             self.fire_points = [(12/133*self.w, 71/178*self.h), (23/133*self.w, 49/178*self.h),
                                 (self.w/2, 0), (109/133*self.w, 49/178*self.h), (120/133*self.w, 71/178*self.h)]
             self.bullet_sizes = [1, 2, 3, 2, 1]
+        self.bullet_sizes = [min(3,n+self.bullets_buff) for n in self.bullet_sizes]
 
     def gain_level(self):
         if self.level < 3:
@@ -62,31 +61,152 @@ class Ship(Sprite):
 
     def lose_level(self):
         if self.level > 1:
+            self.reset_items()
             self.set_level(self.level-1)
         else:
             self.lose_life()
 
     def lose_life(self):
+        self.reset_items()
+        self.lives -= 1
         if self.lives > 0:
-            self.lives -= 1
             self.set_level(1)
-        else:
-            print('Game Over!')
 
     def get_damage(self, damage):
-        self.energy -= damage
-        if self.energy <= 0:
+        self.energy = max(0,self.energy-damage)
+        if self.energy == 0:
             self.lose_level()
 
-    def shoot_bullets(self):
-        # Takes Doppler effect into account to calculate the bullets' speed
-        speed = settings.bullet_speed
-        if self.direction[1] != 0:
-            speed -= self.v*self.direction[1]/self._norm
-        # Fires bullets
-        for i in range(len(self.fire_points)):
-            self.bullets.add(Bullet(
-                self.x+self.fire_points[i][0]-image.bullet[self.bullet_sizes[i]].w/2, self.y+self.fire_points[i][1], speed, self.bullet_sizes[i]))
+    def shoot_bullets(self, level):
+        # if there aren't too many bullets on the screen yet
+        if len(level.bullets) < settings.max_bullets*(2*self.level-1):
+            # Takes Doppler effect into account to calculate the bullets' speed
+            doppler = 0
+            if self.direction[1] != 0:
+                doppler = self.v*self.direction[1]/self._norm
+            # Fires bullets
+            for i in range(len(self.fire_points)):
+                type = self.bullet_sizes[i]
+                level.bullets.add(Bullet(type, v=settings.bullet_speed[type]-doppler,
+                                        center=(self.x+self.fire_points[i][0],self.y+self.fire_points[i][1])))
 
     def control(self, keys):
-        self.change_direction(keys[K_d]-keys[K_a], keys[K_s]-keys[K_w])
+        if self.status == "shield":
+            self.change_direction(0,0)
+        elif self.status == "inverse_controlls":
+            self.change_direction(-keys[K_d]+keys[K_a], -keys[K_s]+keys[K_w])
+        else:
+            self.change_direction(keys[K_d]-keys[K_a], keys[K_s]-keys[K_w])
+
+    def update_image(self):
+        letter = {"normal":"a", "inverse_controlls":"g", "shield":"h", "magnetic":"e"}[self.status]
+        self.change_image(Image.load(f'images/ship/{letter}-{self.level}.png').scale_by(self.size_factor))
+        self.reset_firepoints()
+
+    def collect_item(self, type):
+        if type == "bullets_buff":
+            self.bullets_buff += 1
+            self.reset_firepoints()
+        elif type == "hp_plus":
+            self.energy += settings.hp_plus
+        elif type == "invert_controlls":
+            if self.status == "inverse_controlls":
+                self.status = "normal"
+            else:
+                self.status = "inverse_controlls"
+                self.controlls_timer = 1000*settings.invert_controlls_duration
+            self.update_image()
+        elif type == "life_minus":
+            self.lose_life()
+        elif type == "life_plus":
+            self.lives += 1
+        elif type == "magnet":
+            self.magnet = True
+            self.status = "magnetic"
+            self.update_image()
+        elif type == "missile":
+            self.missiles += 1
+        elif type == "score_buff":
+            if self.score_factor == 1:
+                self.score_buff_timer = 1000*settings.score_buff_duration
+            self.score_factor *= settings.item_score_buff
+        elif type == "shield":
+            self.shield_timer = min(1000*settings.max_shield_duration, self.shield_timer+1000*settings.shield_duration)
+        elif type == "ship_buff":
+            self.gain_level()
+        elif type == "size_minus":
+            if self.size_factor*settings.item_size_minus>=0.3:
+                self.size_factor *= settings.item_size_minus
+                self.update_image()
+                if self.size_factor != 1:
+                    self.size_change_timer = 1000*settings.size_change_duration
+        elif type == "size_plus":
+            if self.size_factor*settings.item_size_plus<=1/0.3:
+                self.size_factor *= settings.item_size_plus
+                self.update_image()
+                if self.size_factor != 1:
+                    self.size_change_timer = 1000*settings.size_change_duration
+        elif type == "speed_buff":
+            if self.v*settings.speed_buff < settings.bullet_speed[1]:
+                self.speed_factor = settings.speed_buff
+                self.v = self.speed_factor*settings.level_speed[self.level]
+                if self.speed_factor != 1:
+                    self.speed_change_timer = 1000*settings.speed_change_duration
+        elif type == "speed_nerf":
+            self.speed_factor = settings.speed_nerf
+            self.v = self.speed_factor*settings.level_speed[self.level]
+            if self.speed_factor != 1:
+                self.speed_change_timer = 1000*settings.speed_change_duration
+
+    def activate_shield(self):
+        self.last_status = self.status
+        self.status = "shield"
+        self.update_image()
+
+    def deactivate_shield(self):
+        if self.status == "shield":
+            self.status = self.last_status
+            self.update_image()
+
+    def shoot_missile(self, level, x, y):
+        if self.missiles > 0:
+            self.missiles -= 1
+            level.bullets.add(Bullet("missile", center=(x,y)))
+
+    def reset_items(self):
+        self.bullets_buff = 0
+        self.speed_factor = 1
+        self.magnet = False
+        self.missiles = settings.starting_missiles
+        self.score_factor = 1
+        self.shield_timer = 1000*settings.shield_starting_timer
+        self.size_factor = 1
+        self.status = "normal"
+        self.last_status = "normal"
+
+    def update(self, dt):
+        if self.status == "shield":
+            self.shield_timer = max(self.shield_timer - dt, 0)
+            if self.shield_timer == 0:
+                self.status = self.last_status
+                self.update_image()
+        if self.score_factor != 1:
+            self.score_buff_timer -= dt
+            if self.score_buff_timer <= 0:
+                self.score_factor = 1
+        if self.speed_factor != 1:
+            self.speed_change_timer -= dt
+            if self.speed_change_timer <= 0:
+                self.speed_factor = 1
+                self.v = settings.level_speed[self.level]
+        if self.size_factor != 1:
+            self.size_change_timer -= dt
+            if self.size_change_timer <= 0:
+                self.size_factor = 1
+                self.update_image()
+        if self.status == "inverse_controlls":
+            self.controlls_timer -= dt
+            if self.controlls_timer <= 0:
+                self.status = "normal"
+                self.update_image()
+        super().update(dt)

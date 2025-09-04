@@ -6,6 +6,11 @@ from alien import Alien
 from level import Level, max_level
 from text import Font, Menu
 from math import pi
+from image import Image
+from random import random, choice
+from item import Item
+from sprite import Sprite
+from statusbar import Statusbar
 
 
 class Game:
@@ -32,9 +37,14 @@ class Game:
                                       "Level solved. Press RETURN", "to start the next level."], options=["Continue"])
         self.game_won_menu = Menu(self.font, message=[
                                   "Congratulations, you have", "finished all levels!"], options=["Restart", "Exit"])
+        self.game_over_menu = Menu(self.font, message=[
+                                  "Game over!", "you ran out of lives!"], options=["Restart", "Exit"])
 
         # Initializes the Ship
         self.ship = Ship()
+
+        #Initializes status bar
+        self.statusbar = Statusbar()
 
         # Start the first game level
         self.level = Level(settings.game_starting_level)
@@ -42,7 +52,8 @@ class Game:
         # Starts a clock to measure ingame time
         self.clock = pygame.time.Clock()
 
-        # self.font = pygame.font.Font(None,50)
+        # Fadenkreuz
+        self.aim = Sprite(Image.load('images/bullet/aim.png', scaling_width = settings.missile_explosion_size))
 
     def run(self):
         """Starts the main loop for the game."""
@@ -70,7 +81,7 @@ class Game:
     def update(self, dt):
         self.update_sprites(dt)
         self.collision_checks()
-        self.check_if_level_solved()
+        self.check_level_status()
 
     def render(self):
         self.update_screen()
@@ -96,15 +107,22 @@ class Game:
                         self.active_menu = self.pause_menu
                         break
                     # SPACE shoots bullets
-                    elif event.key == K_SPACE and len(self.ship.bullets) < settings.max_bullets*(2*self.ship.level-1):
-                        self.ship.shoot_bullets()
-                    # Keys to test the different ship-levels
+                    elif event.key == K_SPACE:
+                        self.ship.shoot_bullets(self.level)
+                    # Keys to test the different ship-levels, only for beta-version
                     elif event.key == K_1:
                         self.ship.set_level(1)
                     elif event.key == K_2:
                         self.ship.set_level(2)
                     elif event.key == K_3:
                         self.ship.set_level(3)
+                    elif event.key == K_LSHIFT:
+                        self.ship.activate_shield()
+                if event.type == KEYUP and event.key == K_LSHIFT:
+                    self.ship.deactivate_shield()
+                if event.type == MOUSEBUTTONDOWN and event.button == 1:
+                    x,y = event.pos
+                    self.ship.shoot_missile(self.level,x,y)
             # Navigating the menu
             if self.mode == "menu":
                 if event.type == KEYDOWN:
@@ -125,61 +143,87 @@ class Game:
 
     def update_sprites(self, dt):
         """update position of all sprites according to the passed time"""
-        for bullet in self.ship.bullets:
+        for bullet in self.level.bullets:
             bullet.update(dt)
-            if bullet.rect.bottom <= 0:
-                bullet.remove(self.ship.bullets)
 
         self.ship.update(dt)
 
         for alien in self.level.aliens:
             alien.update(dt)
+        for item in self.level.items:
+            item.update(dt, self.ship)
+
+        self.aim.rect.center = pygame.mouse.get_pos()
+        self.aim.x = self.aim.rect.x
+        self.aim.y = self.aim.rect.y
 
     def collision_checks(self):
-        """Checks for collisions of sprites, inflicts damage and adds points"""
+        """Checks for collisions of sprites, inflicts damage, adds points, generate items"""
         # Check if bullets hit aliens
         collisions = pygame.sprite.groupcollide(
-            self.ship.bullets, self.level.aliens, True, False)
+            self.level.bullets, self.level.aliens, False, False, collided=pygame.sprite.collide_mask)
         for bullet in collisions.keys():
             for alien in collisions[bullet]:
-                alien.get_damage(bullet.damage)
-                if alien.energy <= 0:
-                    if alien.type == "big_asteroid":
-                        pieces = [
-                            Alien(alien.x, alien.y, "small_asteroid", alien.direction) for i in range(4)]
-                        for i in range(4):
-                            pieces[i].turn_direction((2*i+1)*pi/4)
-                            self.level.aliens.add(pieces[i])
-                    alien.remove(self.level.aliens)
-                    self.ship.score += alien.points
+                if bullet.type != "missile":
+                    bullet.kill()
+                if bullet.type != "missile" or alien not in bullet.hit_enemies:
+                    alien.get_damage(bullet.damage)
+                    if bullet.type == "missile":
+                        bullet.hit_enemies.add(alien)
+                    if alien.energy <= 0 or alien.type == "big_asteroid":
+                        if alien.type == "big_asteroid":
+                            pieces = [
+                                Alien("small_asteroid", center=alien.rect.center, direction=alien.direction) for i in range(4)]
+                            for i in range(4):
+                                pieces[i].turn_direction((2*i+1)*pi/4)
+                                self.level.aliens.add(pieces[i])
+                        self.ship.score += self.ship.score_factor*alien.points
+                        if random() <= settings.item_probability:
+                            self.level.items.add(Item(choice(settings.item_types),center=alien.rect.center))
+                        alien.remove(self.level.aliens)
 
         # Check if aliens hit the ship
-        collisions = pygame.sprite.spritecollide(
-            self.ship, self.level.aliens, True)
-        for alien in collisions:
-            self.ship.get_damage(alien.energy)
-            self.ship.score += alien.points
+        for alien in self.level.aliens:
+            if pygame.sprite.collide_mask(self.ship, alien):
+                if self.ship.status == "shield":
+                    alien.change_direction(-alien.direction[0],-alien.direction[1])
+                else:
+                    self.ship.get_damage(alien.energy)
+                    self.ship.score += self.ship.score_factor*alien.points
+                    alien.kill()
 
-    def check_if_level_solved(self):
-        """Check if the current level is solved"""
-        if not self.level.aliens:
-            if self.level.number < max_level:
-                self.mode = "menu"
+        # Check if ship collects an item
+        for item in self.level.items:
+            if pygame.sprite.collide_mask(self.ship, item):
+                if self.ship.status == "shield":
+                    item.change_direction(-item.direction[0],-item.direction[1])
+                else:
+                    self.ship.collect_item(item.type)
+                    item.kill()
+
+    def check_level_status(self):
+        """Check if the current level is solved or the player is game over"""
+        if not self.level.status(self.ship) == "running":
+            self.mode = "menu"
+            if self.level.status(self.ship) == "solved":
                 self.active_menu = self.level_solved_menu
-            else:
-                self.mode = "menu"
+            elif self.level.status(self.ship) == "game won":
                 self.active_menu = self.game_won_menu
+            elif self.level.status(self.ship) == "game over":
+                self.active_menu = self.game_over_menu
 
     def update_screen(self):
         """Updates screen with all sprites and stats"""
         self.screen.fill(settings.bg_color)
-        # blit the game stats onto the screen
-        game_stats = self.font.stats.render(
-            f"Score: {self.ship.score}, Level: {self.level.number}, Lives: {self.ship.lives}, Energy: {self.ship.energy}", False, (255, 255, 255))
-        self.screen.blit(game_stats, (10, 10))
 
-        # blit updated sprites
+        # first blit the status bar onto the screen
+        self.statusbar.blit(self.screen, self.ship, self.level.number)
+
+        # then blit the updated sprites (ship, enemies, items, bullets)
         self.blit_sprites()
+
+        # blit the aim for the missiles on top
+        self.aim.blit(self.screen)
 
         # pause menu
         if self.mode == "menu":
@@ -189,10 +233,14 @@ class Game:
         pygame.display.flip()
 
     def blit_sprites(self):
-        """blit updated sprites onto the background"""
-        for bullet in self.ship.bullets:
+        """blit the updated sprites"""
+        for bullet in self.level.bullets:
             bullet.blit(self.screen)
         self.ship.blit(self.screen)
 
         for alien in self.level.aliens:
             alien.blit(self.screen)
+        for item in self.level.items:
+            item.blit(self.screen)
+
+        

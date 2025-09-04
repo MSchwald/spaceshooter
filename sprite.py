@@ -1,32 +1,81 @@
-import pygame
+import pygame, settings
+from math import sin, cos, pi
+from random import random
+from image import Image
 from numpy.linalg import norm
-from math import sin, cos
+#from math import hypot
+from random import choice
 
 
 class Sprite(pygame.sprite.Sprite):
     # class for all sprites
-    def __init__(self, image, x=0, y=0, v=0, direction=[0, 0], constraints=None, boundary_behaviour="clamp"):
+    def __init__(self, image=None, grid=None, center=None, x=0, y=0, v=0, direction=(0, 0), constraints=None, boundary_behaviour="clamp", animation_type=None, frames=None, fps=None, animation_time=None):
+        #Non-animated sprites should have an Image-object as 'image',
+        #   animated sprites only need a list 'frames' of Image-objects and start on frame 0
         # possible boundary behaviours:
         #   clamp: sprite stops at the boundary (e.g. the ship)
         #   reflect: sprite gets reflected from the boundary
         #   vanish: sprite gets deleted when leaving the boundary (e.g. bullets)
         #   wrap: sprite reappears on the other side when leaving the boundary
+        #possible animation types:
+        #   None: non-animated Sprite
+        #   loop: frames change periodically
+        #   once: Sprite stays on the last frame after the animation
+        #   vanish: Sprite gets removed after the animation
+        #   pingpong: Sprite animated periodically back and forth
+        #   random: frames get chosen randomly
+        #frames expects a list of Image-objects, the speed of the animation can
+        #   either be specified via fps or animation_time (in seconds)
         super().__init__()
         self.x = x
         self.y = y
+        self.animation_type = animation_type
+        if animation_type is None:
+            self.set_image(image)
+        else:
+            self.frames = frames
+            self.set_image(frames[0])
+            self.frame_number = 0
+            self.frame_index = 0
+            if fps:
+                self.frame_duration_ms = int(1/fps*1000)
+            elif animation_time:
+                self.frame_duration_ms = int(animation_time*1000/len(frames))
+        self.timer = 0
+        self.timer_on_hold = False
+        if center:
+            self.rect.center = center
+            self.x = self.rect.x
+            self.y = self.rect.y
+        elif grid:
+            self.rect.center = ((grid[0]+1/2)*settings.grid_width,(grid[1]+1/2)*settings.grid_width)
+            self.x = self.rect.x
+            self.y = self.rect.y
         self.v = v
-        self.direction = direction
+        if direction == "random":
+            angle = 2*pi*random()
+            self.direction = (cos(angle),sin(angle))
+        else:
+            self.direction = direction
         self.constraints = constraints
         self.boundary_behaviour = boundary_behaviour
-        self._norm = norm(direction)
-        self.set_image(image)
-
+        self._norm = norm(self.direction)
+        
     def set_image(self, image):
+        # initializes an image preserving (x,y) of the sprite
+        self.image = image
         self.surface = image.surface
-        self.w = image.w
-        self.h = image.h
+        self.mask = image.mask
         self.rect = pygame.Rect(int(self.x), int(self.y), self.w, self.h)
 
+    @property
+    def w(self):
+        return self.image.w
+
+    @property
+    def h(self):
+        return self.image.h
+        
     def change_image(self, image):
         # changes the image preserving the center of the sprite
         center = self.rect.center
@@ -34,8 +83,12 @@ class Sprite(pygame.sprite.Sprite):
         self.rect.center = center
         self.change_position(self.rect.x, self.rect.y)
 
+    def scale_image_by(self, factor):
+        # rescales the image preserving the center of the sprite
+        self.change_image(self.image.scale_by(factor))
+
     def change_direction(self, x, y):
-        self.direction = [x, y]
+        self.direction = (x, y)
         self._norm = norm(self.direction)
 
     def turn_direction(self, phi):
@@ -54,12 +107,12 @@ class Sprite(pygame.sprite.Sprite):
             if self.boundary_behaviour == "reflect":
                 if x != x_clamp:
                     self.x = 2*x_clamp-x
-                    self.direction[0] *= -1
+                    self.direction = (-self.direction[0],self.direction[1])
                 else:
                     self.x = x_clamp
                 if y != y_clamp:
                     self.y = 2*y_clamp-y
-                    self.direction[1] *= -1
+                    self.direction = (self.direction[0],-self.direction[1])
                 else:
                     self.y = y_clamp
             else:
@@ -86,6 +139,42 @@ class Sprite(pygame.sprite.Sprite):
             newx = self.x+dt*self.v*self.direction[0]/self._norm
             newy = self.y+dt*self.v*self.direction[1]/self._norm
             self.change_position(newx, newy)
+        if self.timer_on_hold == True:
+            if self.pause_duration:
+                self.pause_timer += dt
+                if self.pause_timer > self.pause_duration:
+                    self.timer_on_hold == False
+        if self.timer_on_hold == False:
+            self.timer += dt
+            if self.animation_type:
+                self.update_frame_index()
+                self.change_image(self.frames[self.frame_index])
+
+    def update_frame_index(self):
+        frame_number = self.timer//self.frame_duration_ms 
+        if self.animation_type == "random":
+            if frame_number > self.frame_number:
+                self.frame_index = choice(range(len(self.frames)))
+                self.frame_number = frame_number
+        else:
+            self.frame_number = frame_number
+            if self.animation_type == "vanish":
+                if frame_number >= len(self.frames):
+                    self.kill()
+                else:
+                    self.frame_index = frame_number
+            elif self.animation_type == "pingpong":
+                self.frame_index = frame_number % (2*len(self.frames)-2)
+                if self.frame_index >= len(self.frames):
+                    self.frame_index = 2*(len(self.frames)-1) - self.frame_index
+            else:
+                self.frame_index = {"loop": frame_number%len(self.frames),
+                                    "once": min(frame_number, len(self.frames)-1)}[self.animation_type]
+
+    def pause_for_ms(self, time=None):
+        self.timer_on_hold = True
+        self.pause_timer = 0
+        self.pause_duration = time
 
     def blit(self, screen):
         screen.blit(self.surface, self.rect)

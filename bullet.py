@@ -27,7 +27,7 @@ class Bullet(Sprite):
             if image is None:
                 image = Image.load(f'images/bullet/{type}.png', scaling_width = settings.bullet_width[type])
         else:
-            frames = [Image.load(f"images/bullet/explosion{n}.png", scaling_width=settings.missile_explosion_size) for n in range(6)]
+            frames = [Image.load(f"images/bullet/explosion{n}.png", scaling_factor=settings.missile_explosion_size/810) for n in range(6)]
             animation_type = "vanish"
             animation_time = settings.missile_duration
         if v is None:

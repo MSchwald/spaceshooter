@@ -42,14 +42,16 @@ item_constraints = [0, 0, screen_width, screen_height]
 
 # Bullet settings
 max_bullets = 3
-starting_missiles = 1
+starting_missiles = 10
 missile_explosion_size = 1.5*grid_width
 missile_duration = 0.5
-bullet_width = {1:7/100*grid_width, 2:9/100*grid_width, 3:11/100*grid_width, 15:missile_explosion_size}
-bullet_damage = {1:1,2:2,3:3,15:15}
-bullet_owner = {1:"player",2:"player",3:"player",15:"player"}
-bullet_speed = {1:1,2:1,3:1,15:0}
-bullet_timer = {1:None,2:None,3:None,15:1000*missile_duration}
+missile_damage = 15
+#7,9,11
+bullet_width = {1:2*7*grid_width/100, 2:2*9*grid_width/100, 3:2*11*grid_width/100, 4:2*13*grid_width/100, "missile":missile_explosion_size}
+bullet_damage = {1:1,2:2,3:3,4:4,"missile":missile_damage}
+bullet_owner = {1:"player",2:"player",3:"player",4:"player","missile":"player"}
+bullet_speed = {1:1,2:1,3:1,4:1,"missile":0}
+bullet_effect_time = {1:None,2:None,3:None,4:None,"missile":1000*missile_duration}
 
 # Item settings
 item_types = ["size_plus","size_minus", "score_buff", "bullets_buff", "hp_plus", "invert_controlls", "life_plus","life_minus", "magnet", "missile", "shield", "ship_buff", "speed_buff", "speed_nerf"]

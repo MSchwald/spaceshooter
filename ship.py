@@ -171,7 +171,7 @@ class Ship(Sprite):
     def shoot_missile(self, level, x, y):
         if self.missiles > 0:
             self.missiles -= 1
-            level.bullets.add(Bullet(15, center=(x,y)))
+            level.bullets.add(Bullet("missile", center=(x,y)))
 
     def reset_items(self):
         self.bullets_buff = 0

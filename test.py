@@ -1,22 +1,23 @@
 import pygame, sys
 from image import Image
+from sprite import Sprite
 
 pygame.init()
 
 screen = pygame.display.set_mode((1600,900))
 
+frames = [Image.load(f"images/bullet/explosion{n}.png") for n in range(6)]
 
-w,h = health.w,health.h
-n=0
-
+explosion = Sprite(frames=frames, animation_type="pingpong", fps=3)
+clock = pygame.time.Clock()
+t=0
 while True:
     screen.fill((0,0,0))
+    dt = clock.tick(10)
+    explosion.update(dt)
+    #print(explosion.timer)
+    explosion.blit(screen)
 
-    
-    screen.blit(empty_bar.surface,(0,0))
-    screen.blit(health.surface,(19,18), area=(0,0,n/45*w,h))
-
-    #screen.blit(image.scale_by(2).surface,(0,0))
     pygame.display.flip()
 
 

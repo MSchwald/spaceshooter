@@ -28,7 +28,7 @@ type_colorkey = {"big_asteroid": (0,0,0),
                "small_asteroid": (0,0,0), "purple": (254,254,254), "ufo": (0,0,0)}
 
 # Game stats
-game_starting_level = 3
+game_starting_level = 2
 
 # boundaries for the movement of the sprites
 # [left, top, width, height]

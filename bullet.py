@@ -49,7 +49,9 @@ class Bullet(Sprite):
             animation_type=animation_type, frames=frames, animation_time=animation_time)
 
     def update(self, dt):
+        #timer, movement and animation get handled in the Sprite class
         super().update(dt)
+        # explosions by missiles need to get deleted manually after their duration
         if self.effect_time and self.timer > self.effect_time:
                 self.kill()
 

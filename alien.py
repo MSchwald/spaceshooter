@@ -17,8 +17,10 @@ class Alien(Sprite):
                 grid=None, center=None, x=0, y=0, direction=(0,0),
                 scaling_width=settings.grid_width):
         #level: needs access to the level object from the game file
-        #cycle_time: Alien macht periodische Aktionen (in ms)
-        #random_cycle_time ein Tupel von Zahlen: Alien macht zufällige im vorgegebenen Zeitintervall Aktionen (in ms)
+        #cycle_time: Alien periodically does actions after given time (in ms)
+        #random_cycle_time is a tuple of floats: cycle times vary randomly between given lower and upper bound (in ms)
+        
+        #Load frames and images
         if type in ["big_asteroid", "small_asteroid"]:
             super().__init__(frames = [Image.load(f"images/{type}/{str(n+1)}.png", scaling_width=settings.alien_width[type]) for n in range(14)], animation_type="loop", fps=10, grid=grid, center=center, x=x, y=y, v=settings.alien_speed[type], direction=direction,
                          constraints=pygame.Rect(settings.alien_constraints), boundary_behaviour="reflect")
@@ -27,6 +29,7 @@ class Alien(Sprite):
                              constraints=pygame.Rect(settings.alien_constraints), boundary_behaviour="reflect")
         if type == "purple":
             sound.alien_spawn.play()
+        
         self.type = type
         self.level = level
         self.energy = settings.alien_energy[type]
@@ -39,6 +42,7 @@ class Alien(Sprite):
             self.action_timer = 0
 
     def update(self, dt, level):
+        # checks if it is time for the alien to do an action
         if self.cycle_time and not self.timer_on_hold:
             self.action_timer += dt
             if self.action_timer >= self.cycle_time:
@@ -58,6 +62,8 @@ class Alien(Sprite):
         elif self.type == "ufo":
             #ufo aliens throw purple aliens
             choice([lambda: self.shoot("g"), lambda: self.throw_alien("purple")])()
+
+    # types of alien actions
 
     def shoot(self, bullet_type):
         self.level.bullets.add(Bullet(bullet_type,center=self.rect.midbottom))

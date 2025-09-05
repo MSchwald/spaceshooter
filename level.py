@@ -16,7 +16,7 @@ class Level:
 
     def __init__(self, number):
         # Initializes the Ship
-        self.ship = Ship()
+        self.ship = Ship(self)
         # Initializes level number and empty sprite groups
         self.number = number
         self.ship_bullets = pygame.sprite.Group()

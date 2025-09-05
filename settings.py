@@ -8,9 +8,9 @@ grid_width = screen_width/16
 bg_color = (0, 0, 0)
 
 # Ship settings
-ship_starting_level = 1
-level_speed = {1: 0.5, 2: 0.6, 3: 0.7}
-level_energy = {1: 15, 2: 30, 3: 45}
+ship_starting_rank = 1
+rank_speed = {1: 0.5, 2: 0.6, 3: 0.7}
+rank_energy = {1: 15, 2: 30, 3: 45}
 ship_lives = 3
 ship_width = {1:grid_width, 2:grid_width, 3:1.2*grid_width}
 shield_starting_timer = 3

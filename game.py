@@ -104,14 +104,14 @@ class Game:
                         break
                     # SPACE shoots bullets
                     elif event.key == K_SPACE:
-                        self.level.ship.shoot_bullets(self.level)
+                        self.level.ship.shoot_bullets()
                     # Keys to test the different ship-levels, only for beta-version
                     elif event.key == K_1:
-                        self.level.ship.set_level(1)
+                        self.level.ship.set_rank(1)
                     elif event.key == K_2:
-                        self.level.ship.set_level(2)
+                        self.level.ship.set_rank(2)
                     elif event.key == K_3:
-                        self.level.ship.set_level(3)
+                        self.level.ship.set_rank(3)
                     elif event.key == K_LSHIFT:
                         self.level.ship.activate_shield()
                 if event.type == KEYUP and event.key == K_LSHIFT:
@@ -176,7 +176,7 @@ class Game:
                     bullet.reflect()
                     bullet.owner = "player"
                 else:
-                    self.level.ship.get_damage(bullet.damage, self.level)
+                    self.level.ship.get_damage(bullet.damage)
                     bullet.kill()
                     sound.player_hit.play()
 
@@ -186,7 +186,7 @@ class Game:
                 if self.level.ship.status == "shield":
                     alien.reflect()
                 else:
-                    self.level.ship.get_damage(alien.energy, self.level)
+                    self.level.ship.get_damage(alien.energy)
                     alien.kill()
         
 

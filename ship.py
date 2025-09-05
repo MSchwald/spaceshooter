@@ -72,7 +72,7 @@ class Ship(Sprite):
         if self.lives > 0:
             self.set_level(1)
             self.reset_items()
-            game_level.start(self, game_level)
+            game_level.start(self)
             sound.lose_life.play()
 
     def get_damage(self, damage, game_level):
@@ -181,11 +181,12 @@ class Ship(Sprite):
             if self.speed_factor != 1:
                 self.speed_change_timer = 1000*settings.speed_change_duration
 
-
     def activate_shield(self):
-        self.last_status = self.status
-        self.status = "shield"
-        self.update_image()
+        if self.shield_timer > 0:
+            sound.shield.play()
+            self.last_status = self.status
+            self.status = "shield"
+            self.update_image()
 
     def deactivate_shield(self):
         if self.status == "shield":

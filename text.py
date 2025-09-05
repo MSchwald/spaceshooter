@@ -1,6 +1,7 @@
 import pygame
 from pygame.locals import *
 import settings
+import sound
 
 
 class Font():
@@ -60,6 +61,7 @@ class Menu():
 
     def move_selection(self, event_key):
         """Navigate through the menu"""
+        sound.menu_move.play()
         if event_key == K_w:
             self.current_selection = (
                 self.current_selection - 1) % len(self.options)
@@ -68,6 +70,7 @@ class Menu():
                 self.current_selection + 1) % len(self.options)
 
     def select(self):
+        sound.menu_select.play()
         return self.options[self.current_selection]
 
     def blit(self, screen):

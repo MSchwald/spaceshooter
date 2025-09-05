@@ -7,6 +7,8 @@ from sprite import Sprite
 from bullet import Bullet
 from random import random,choice,randint
 import sound
+from math import pi
+from item import Item
 
 class Alien(Sprite):
     """A class to manage the enemies"""
@@ -31,9 +33,6 @@ class Alien(Sprite):
             self.cycle_time = randint(random_cycle_time[0],random_cycle_time[1])
         if self.cycle_time:
             self.action_timer = 0
-
-    def get_damage(self, damage):
-        self.energy -= damage
 
     def update(self, dt, level):
         if self.cycle_time and not self.timer_on_hold:
@@ -62,6 +61,21 @@ class Alien(Sprite):
     def throw_alien(self, alien_type):
         self.level.aliens.add(Alien("purple",self.level,center=self.rect.midbottom, direction=(2*random()-1,1)))
 
+    def get_damage(self, damage):
+        self.energy -= damage
+        if self.energy > 0 and self.type not in ["big_asteroid", "small_asteroid"]:
+            {"purple": sound.enemy_hit,"ufo": sound.metal_hit}[self.type].play()
+        else:
+            self.kill()
+
     def kill(self):
         {"big_asteroid": sound.asteroid, "small_asteroid": sound.small_asteroid, "purple": sound.alienblob, "ufo":sound.alienblob}[self.type].play()
+        if self.type == "big_asteroid":
+            pieces = [Alien("small_asteroid", self.level, center=self.rect.center, direction=self.direction) for i in range(4)]
+            for i in range(4):
+                pieces[i].turn_direction((2*i+1)*pi/4)
+                self.level.aliens.add(pieces[i])
+        #self.ship.score += self.ship.score_factor*alien.points
+        if random() <= settings.item_probability:
+            self.level.items.add(Item(choice(settings.item_types),center=self.rect.center))
         super().kill()

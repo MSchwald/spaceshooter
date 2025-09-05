@@ -50,6 +50,7 @@ class Level:
             self.start(ship)
 
     def restart(self, ship):
+        sound.start.play()
         self.number = settings.game_starting_level
         self.items.empty()
         ship.start_new_game()

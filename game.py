@@ -5,7 +5,7 @@ from ship import Ship
 from alien import Alien
 from level import Level, max_level
 from text import Font, Menu
-from math import pi
+#from math import pi
 from image import Image
 from random import random, choice
 from item import Item
@@ -119,7 +119,6 @@ class Game:
                         self.ship.set_level(3)
                     elif event.key == K_LSHIFT:
                         self.ship.activate_shield()
-                        sound.shield.play()
                 if event.type == KEYUP and event.key == K_LSHIFT:
                     self.ship.deactivate_shield()
                 if event.type == MOUSEBUTTONDOWN and event.button == 1:
@@ -130,14 +129,11 @@ class Game:
                 if event.type == KEYDOWN:
                     if event.key in [K_w, K_s]:
                         self.active_menu.move_selection(event.key)
-                        sound.menu_move.play()
                     if event.key == K_RETURN:
                         selection = self.active_menu.select()
-                        sound.menu_select.play()
                         if selection == "Restart":
                             self.mode = "game"
                             self.level.restart(self.ship)
-                            sound.start.play()
                         elif selection == "Exit":
                             self.running = False
                             break
@@ -171,27 +167,11 @@ class Game:
             if bullet.owner == "player":
                 for alien in collisions[bullet]:
                     if bullet.type != "missile":
-                        bullet.kill()
-                    if bullet.type != "missile" or alien not in bullet.hit_enemies:
                         alien.get_damage(bullet.damage)
-                        if alien.energy > 0:
-                            if alien.type == "purple":
-                                sound.enemy_hit.play()
-                            if alien.type == "ufo":
-                                sound.metal_hit.play()
-                        if bullet.type == "missile":
-                            bullet.hit_enemies.add(alien)
-                        if alien.energy <= 0 or alien.type == "big_asteroid":
-                            if alien.type == "big_asteroid":
-                                pieces = [
-                                    Alien("small_asteroid", self.level, center=alien.rect.center, direction=alien.direction) for i in range(4)]
-                                for i in range(4):
-                                    pieces[i].turn_direction((2*i+1)*pi/4)
-                                    self.level.aliens.add(pieces[i])
-                            self.ship.score += self.ship.score_factor*alien.points
-                            if random() <= settings.item_probability:
-                                self.level.items.add(Item(choice(settings.item_types),center=alien.rect.center))
-                            alien.kill()
+                        bullet.kill()
+                    if bullet.type == "missile" and alien not in bullet.hit_enemies:
+                        alien.get_damage(bullet.damage)
+                        bullet.hit_enemies.add(alien)
 
         # Check if bullets hit the ship
         for bullet in self.level.bullets:

@@ -202,6 +202,7 @@ class Game:
                 if self.ship.status == "shield":
                     bullet.reflect()
                     bullet.owner = "player"
+                    sound.shield.stop()
                     sound.shield_reflect.play()
                 else:
                     self.ship.get_damage(bullet.damage, self.level)
@@ -213,6 +214,7 @@ class Game:
             if pygame.sprite.collide_mask(self.ship, alien):
                 if self.ship.status == "shield":
                     alien.change_direction(-alien.direction[0],-alien.direction[1])
+                    sound.shield.stop()
                     sound.shield_reflect.play()
                 else:
                     self.ship.get_damage(alien.energy, self.level)

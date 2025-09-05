@@ -60,7 +60,7 @@ class Game:
         """Starts the main loop for the game."""
         self.running = True  # checks if the game gets shut down
         self.mode = "game"  # possible modes: "game", "menu"
-        self.level.start(self.ship)
+        self.level.start(self.ship, self.level)
         sound.start.play()
         while self.running:
             self.handle_events()
@@ -137,7 +137,7 @@ class Game:
                         sound.menu_select.play()
                         if selection == "Restart":
                             self.mode = "game"
-                            self.level.restart(self.ship)
+                            self.level.restart(self.ship, self.level)
                             sound.start.play()
                         elif selection == "Exit":
                             self.running = False

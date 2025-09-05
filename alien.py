@@ -11,14 +11,16 @@ import sound
 class Alien(Sprite):
     """A class to manage the enemies"""
 
-    def __init__(self, type, cycle_time=None, random_cycle_time=(1000,2000),
+    def __init__(self, type, level, cycle_time=None, random_cycle_time=(1000,2000),
                 grid=None, center=None, x=0, y=0, direction=(0,0),
                 scaling_width=settings.grid_width):
+        #level: needs access to the level object from the game file
         #cycle_time: Alien macht periodische Aktionen (in ms)
         #random_cycle_time ein Tupel von Zahlen: Alien macht zufällige im vorgegebenen Zeitintervall Aktionen (in ms)
         super().__init__(Image.load(f'images/alien/{str(type)}.png',colorkey=settings.type_colorkey[type], scaling_width=settings.type_width[type]), grid=grid, center=center, x=x, y=y, v=settings.type_speed[type], direction=direction,
                          constraints=pygame.Rect(settings.alien_constraints), boundary_behaviour="reflect")
         self.type = type
+        self.level = level
         self.energy = settings.type_energy[type]
         self.points = settings.type_points[type]
         self.cycle_time = cycle_time
@@ -38,15 +40,24 @@ class Alien(Sprite):
                 self.action_timer -= self.cycle_time
                 if self.random_cycle_time:
                     self.cycle_time = randint(self.random_cycle_time[0],self.random_cycle_time[1])
-                if self.type == "purple":
-                    #purple aliens shoot bullets
-                    sound.alienshoot1.play()
-                    level.bullets.add(Bullet("g",center=self.rect.midbottom))
-
-                elif self.type == "ufo":
-                    #ufo aliens throw purple aliens
-                    sound.alien_spawn.play()
-                    level.aliens.add(Alien("purple",center=self.rect.midbottom, direction=(2*random()-1,1)))
+                self.do_action()
 
         #timer, movement and animation get handled in the Sprite class
         super().update(dt)
+
+    def do_action(self):
+        if self.type == "purple":
+            #purple aliens shoot green bullets
+            self.shoot("g")
+
+        elif self.type == "ufo":
+            #ufo aliens throw purple aliens
+            choice([lambda: self.shoot("g"), lambda: self.throw_alien("purple")])()
+
+    def shoot(self, bullet_type):
+        sound.alienshoot1.play()
+        self.level.bullets.add(Bullet(bullet_type,center=self.rect.midbottom))
+
+    def throw_alien(self, alien_type):
+        sound.alien_spawn.play()
+        self.level.aliens.add(Alien("purple",self.level,center=self.rect.midbottom, direction=(2*random()-1,1)))

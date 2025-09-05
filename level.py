@@ -1,5 +1,6 @@
 import pygame, settings
 from pygame.locals import *
+from ship import Ship
 from alien import Alien
 import sound
 
@@ -14,14 +15,18 @@ class Level:
     """A class to manage the game levels"""
 
     def __init__(self, number):
+        # Initializes the Ship
+        self.ship = Ship()
+        # Initializes level number and empty sprite groups
         self.number = number
         self.ship_bullets = pygame.sprite.Group()
         self.bullets = pygame.sprite.Group()
         self.aliens = pygame.sprite.Group()
         self.items = pygame.sprite.Group()
 
-    def status(self, ship):
-        if ship.lives <= 0:
+
+    def status(self):
+        if self.ship.lives <= 0:
             sound.game_over.play()
             return "game over"
         elif not self.aliens:
@@ -35,8 +40,8 @@ class Level:
         else:
             return "running"
 
-    def start(self, ship):
-        ship.reset_position()
+    def start(self):
+        self.ship.reset_position()
         # Resets the Groups of bullets and aliens
         self.ship_bullets.empty()
         self.bullets.empty()
@@ -44,14 +49,16 @@ class Level:
         for (x, y, type, direction) in lst[self.number]:
             self.aliens.add(Alien(type=type, level=self, grid=(x,y), direction=direction))
 
-    def next(self, ship):
+    def next(self):
         if self.number < max_level:
             self.number += 1
-            self.start(ship)
+            self.start()
 
-    def restart(self, ship):
+    def restart(self):
         sound.start.play()
         self.number = settings.game_starting_level
         self.items.empty()
-        ship.start_new_game()
-        self.start(ship)
+        self.ship.start_new_game()
+        self.start()
+
+    

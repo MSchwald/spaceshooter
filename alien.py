@@ -76,7 +76,7 @@ class Alien(Sprite):
             for i in range(4):
                 pieces[i].turn_direction((2*i+1)*pi/4)
                 self.level.aliens.add(pieces[i])
-        #self.ship.score += self.ship.score_factor*alien.points
+        self.level.ship.get_points(self.points)
         if random() <= settings.item_probability:
             self.level.items.add(Item(choice(settings.item_types),center=self.rect.center))
         super().kill()

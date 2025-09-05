@@ -5,23 +5,21 @@ from sprite import Sprite
 
 pygame.init()
 
-sound = pygame.mixer.Sound("sounds/blob.wav")
-
-sound.play()
 
 screen = pygame.display.set_mode((1600,900))
+#1: bilder 1-14
+#2: bilder3-16
+frames = [Image.load(f"astroid_2/00{str(100+n+1)[1:]}.png") for n in range(3,17)]
 
-frames = [Image.load(f"images/bullet/explosion{n}.png") for n in range(6)]
-
-explosion = Sprite(frames=frames, animation_type="pingpong", fps=3)
+asteroid = Sprite(frames=frames, animation_type="loop", fps=5)
 clock = pygame.time.Clock()
 t=0
 while True:
     screen.fill((0,0,0))
     dt = clock.tick(10)
-    explosion.update(dt)
+    asteroid.update(dt)
     #print(explosion.timer)
-    explosion.blit(screen)
+    asteroid.blit(screen)
 
     pygame.display.flip()
 

@@ -19,8 +19,12 @@ class Alien(Sprite):
         #level: needs access to the level object from the game file
         #cycle_time: Alien macht periodische Aktionen (in ms)
         #random_cycle_time ein Tupel von Zahlen: Alien macht zufällige im vorgegebenen Zeitintervall Aktionen (in ms)
-        super().__init__(Image.load(f'images/alien/{str(type)}.png',colorkey=settings.alien_colorkey[type], scaling_width=settings.alien_width[type]), grid=grid, center=center, x=x, y=y, v=settings.alien_speed[type], direction=direction,
+        if type in ["big_asteroid", "small_asteroid"]:
+            super().__init__(frames = [Image.load(f"images/{type}/{str(n+1)}.png", scaling_width=settings.alien_width[type]) for n in range(14)], animation_type="loop", fps=10, grid=grid, center=center, x=x, y=y, v=settings.alien_speed[type], direction=direction,
                          constraints=pygame.Rect(settings.alien_constraints), boundary_behaviour="reflect")
+        else:
+            super().__init__(Image.load(f'images/alien/{str(type)}.png',colorkey=settings.alien_colorkey[type], scaling_width=settings.alien_width[type]), grid=grid, center=center, x=x, y=y, v=settings.alien_speed[type], direction=direction,
+                             constraints=pygame.Rect(settings.alien_constraints), boundary_behaviour="reflect")
         if type == "purple":
             sound.alien_spawn.play()
         self.type = type

@@ -2,14 +2,14 @@ from pygame.locals import *
 # Overall game settings
 
 # Screen settings
-screen_width = 500
+screen_width = 1600
 screen_height = 9/16*screen_width
 grid_width = screen_width/16
 bg_color = (0, 0, 0)
 
 # Ship settings
 ship_starting_rank = 1
-rank_speed = {1: 0.5, 2: 0.6, 3: 0.7}
+rank_speed = {1: 0.5*grid_width/100, 2: 0.6*grid_width/100, 3: 0.7*grid_width/100}
 rank_energy = {1: 15, 2: 30, 3: 45}
 ship_lives = 3
 ship_width = {1:grid_width, 2:grid_width, 3:1.2*grid_width}
@@ -17,7 +17,7 @@ shield_starting_timer = 3
 max_shield_duration = 15
 
 # Alien settings
-alien_speed = {"big_asteroid": 0.5, "small_asteroid": 1, "purple": 0.4, "ufo": 1}
+alien_speed = {"big_asteroid": 0.5*grid_width/100, "small_asteroid": 1*grid_width/100, "purple": 0.4*grid_width/100, "ufo": 1*grid_width/100}
 alien_energy = {"big_asteroid": 4, "small_asteroid": 1, "purple": 15, "ufo": 30}
 alien_points = {"big_asteroid": 20,
                "small_asteroid": 10, "purple": 100, "ufo": 500}
@@ -42,10 +42,10 @@ starting_missiles = 10
 missile_explosion_size = 1.5*grid_width
 missile_duration = 0.5
 missile_damage = 15
-bullet_width = {1:2*7*grid_width/100, 2:2*9*grid_width/100, 3:2*11*grid_width/100, 4:2*13*grid_width/100, "missile":missile_explosion_size, "g":7/100*grid_width}
+bullet_width = {1:2*7*grid_width/100, 2:2*9*grid_width/100, 3:2*11*grid_width/100, 4:2*13*grid_width/100, "missile":missile_explosion_size, "g":20/100*grid_width}
 bullet_damage = {1:1,2:2,3:3,4:4,"missile":missile_damage, "g":3}
 bullet_owner = {1:"player",2:"player",3:"player",4:"player","missile":"player", "g":"enemy"}
-bullet_speed = {1:1,2:1,3:1,4:1,"missile":0, "g":0.2}
+bullet_speed = {1:1*grid_width/100,2:1*grid_width/100,3:1*grid_width/100,4:1*grid_width/100,"missile":0, "g":0.2*grid_width/100}
 bullet_effect_time = {1:None,2:None,3:None,4:None,"missile":1000*missile_duration, "g":None}
 
 # Item settings
@@ -57,7 +57,7 @@ speed_change_duration = 5
 score_buff_duration = 10
 shield_duration = 3
 item_probability = 0.3
-item_speed = 0.3
+item_speed = 0.3*grid_width/100
 hp_plus = 5
 speed_buff = 1.8
 speed_nerf = 1/speed_buff

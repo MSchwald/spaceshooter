@@ -34,7 +34,7 @@ class Bullet(Sprite):
             self.hit_enemies = pygame.sprite.Group()
         elif type == "g":
             sound.alienshoot1.play()
-            frames = [Image.load(f"images/bullet/g{n}.png", scaling_factor=2) for n in range(4)]
+            frames = [Image.load(f"images/bullet/g{n}.png", scaling_width = settings.bullet_width[type]) for n in range(4)]
             animation_type = "once"
             animation_time = 0.5
         if v is None:

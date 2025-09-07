@@ -106,7 +106,7 @@ class Ship(Sprite):
 
     def update_image(self):
         letter = {"normal":"a", "inverse_controlls":"g", "shield":"h", "magnetic":"e"}[self.status]
-        self.change_image(Image.load(f'images/ship/{letter}-{self.rank}.png').scale_by(self.size_factor))
+        self.change_image(Image.load(f'images/ship/{letter}-{self.rank}.png', scaling_width=settings.ship_width[self.rank]).scale_by(self.size_factor))
         self.reset_firepoints()
 
     def collect_item(self, type):

@@ -2,7 +2,7 @@ from pygame.locals import *
 # Overall game settings
 
 # Screen settings
-screen_width = 1600
+screen_width = 500
 screen_height = 9/16*screen_width
 grid_width = screen_width/16
 bg_color = (0, 0, 0)

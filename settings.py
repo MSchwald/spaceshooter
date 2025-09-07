@@ -2,9 +2,9 @@ from pygame.locals import *
 # Overall game settings
 
 # Screen settings
-screen_width = 1600
+screen_width = 1600 #default: 1600
 screen_height = 9/16*screen_width
-grid_width = screen_width/16
+grid_width = screen_width/16 #default:100
 bg_color = (0, 0, 0)
 
 # Ship settings
@@ -12,7 +12,7 @@ ship_starting_rank = 1
 rank_speed = {1: 0.5, 2: 0.6, 3: 0.7}
 rank_energy = {1: 15, 2: 30, 3: 45}
 ship_lives = 3
-ship_width = {1:grid_width, 2:grid_width, 3:1.2*grid_width}
+ship_width = {1:100, 2:100, 3:120}
 shield_starting_timer = 3
 max_shield_duration = 15
 
@@ -21,8 +21,8 @@ alien_speed = {"big_asteroid": 0.5, "small_asteroid": 1, "purple": 0.4, "ufo": 1
 alien_energy = {"big_asteroid": 4, "small_asteroid": 1, "purple": 15, "ufo": 30}
 alien_points = {"big_asteroid": 20,
                "small_asteroid": 10, "purple": 100, "ufo": 500}
-alien_width = {"big_asteroid": grid_width,
-               "small_asteroid": grid_width/2, "purple": 1.5*grid_width, "ufo": grid_width}
+alien_width = {"big_asteroid": 100,
+               "small_asteroid": 50, "purple": 150, "ufo": 100}
 alien_colorkey = {"big_asteroid": (0,0,0),
                "small_asteroid": (0,0,0), "purple": (254,254,254), "ufo": (0,0,0)}
 
@@ -39,10 +39,10 @@ item_constraints = [0, 0, screen_width, screen_height]
 # Bullet settings
 max_bullets = 3
 starting_missiles = 10
-missile_explosion_size = 1.5*grid_width
+missile_explosion_size = 150
 missile_duration = 0.5
 missile_damage = 15
-bullet_width = {1:2*7*grid_width/100, 2:2*9*grid_width/100, 3:2*11*grid_width/100, 4:2*13*grid_width/100, "missile":missile_explosion_size, "g":20/100*grid_width}
+bullet_width = {1:14, 2:18, 3:22, 4:26, "missile":missile_explosion_size, "g":26}
 bullet_damage = {1:1,2:2,3:3,4:4,"missile":missile_damage, "g":3}
 bullet_owner = {1:"player",2:"player",3:"player",4:"player","missile":"player", "g":"enemy"}
 bullet_speed = {1:1,2:1,3:1,4:1,"missile":0, "g":0.2}
@@ -50,7 +50,7 @@ bullet_effect_time = {1:None,2:None,3:None,4:None,"missile":1000*missile_duratio
 
 # Item settings
 item_types = ["size_plus","size_minus", "score_buff", "bullets_buff", "hp_plus", "invert_controlls", "life_plus","life_minus", "magnet", "missile", "shield", "ship_buff", "speed_buff", "speed_nerf"]
-item_size = 0.5*grid_width
+item_size = 50
 invert_controlls_duration = 5
 size_change_duration = 10
 speed_change_duration = 5
@@ -64,9 +64,6 @@ speed_nerf = 1/speed_buff
 item_score_buff = 1.5
 item_size_plus = 1.5
 item_size_minus = 1/item_size_plus
-
-# Display settings
-healthbar_width =2*grid_width
 
 # Fonts, formatting should scales with screen width
 stats_font = "fonts/ARCADE_I.ttf"

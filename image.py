@@ -67,16 +67,19 @@ class Image:
                     surface.blit(raw_image,(0,0),bounding_rect)
                     surface.set_colorkey((0,0,0))
                 if scaling_width:
-                    factor = scaling_width / bounding_rect.w
+                    factor = scaling_width*settings.grid_width/100 / bounding_rect.w
                     surface = pygame.transform.scale(
                                 surface, (factor*bounding_rect.w, factor*bounding_rect.h))
                 elif scaling_height:
-                    factor = scaling_height / bounding_rect.h
+                    factor = scaling_height*settings.grid_width/100 / bounding_rect.h
                     surface = pygame.transform.scale(
                                 surface, (factor*bounding_rect.w, factor*bounding_rect.h))
-                elif scaling_factor:
-                    surface = pygame.transform.scale(
-                                surface, (scaling_factor*bounding_rect.w, scaling_factor*bounding_rect.h))
+                else:
+                    if not scaling_factor:
+                        scaling_factor = settings.grid_width/100
+                    if scaling_factor != 1:
+                        surface = pygame.transform.scale(
+                            surface, (scaling_factor*settings.grid_width/100*bounding_rect.w, scaling_factor*settings.grid_width/100*bounding_rect.h))
 
 
                 mask = pygame.mask.from_surface(surface)

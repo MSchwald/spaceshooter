@@ -27,11 +27,11 @@ class Statusbar:
     def load_images(self):
             self.empty_bar = Image.load("images/statusbar/empty_bar.png")
             self.health_bar = Image.load("images/statusbar/health_bar.png")
-            self.lives_icon = Image.load("images/statusbar/lives_icon.png", scaling_height = self.empty_bar.h)
-            self.energy_icon = Image.load("images/statusbar/energy_icon.png", scaling_height = self.empty_bar.h)
-            self.shield_icon = Image.load("images/statusbar/shield_icon.png", scaling_height = self.empty_bar.h)
+            self.lives_icon = Image.load("images/statusbar/lives_icon.png", scaling_height = self.empty_bar.h*100/settings.grid_width)
+            self.energy_icon = Image.load("images/statusbar/energy_icon.png", scaling_height = self.empty_bar.h*100/settings.grid_width)
+            self.shield_icon = Image.load("images/statusbar/shield_icon.png", scaling_height = self.empty_bar.h*100/settings.grid_width)
             self.shield_bar = Image.load("images/statusbar/shield_bar.png")
-            self.missiles_icon = Image.load("images/statusbar/missiles_icon.png", scaling_height = self.empty_bar.h)
+            self.missiles_icon = Image.load("images/statusbar/missiles_icon.png", scaling_height = self.empty_bar.h*100/settings.grid_width)
 
     def position_stats(self, factor = 1):        
             #the sizes of the images determine the sizes of the fonts and all icons
@@ -52,15 +52,15 @@ class Statusbar:
             self.energy_icon_y = self.y
             self.bar_x = self.energy_icon_x+self.energy_icon.w
             self.bar_y = self.y
-            self.health_x = self.bar_x + 19*factor
-            self.health_y = self.bar_y + 18*factor
+            self.health_x = self.bar_x + 19*self.h/72
+            self.health_y = self.bar_y + 18*self.h/72
             
             self.shield_icon_x = self.bar_x+self.empty_bar.w+1/8*self.h
             self.shield_icon_y = self.y
             self.shield_bar_x = self.shield_icon_x+self.shield_icon.w
             self.shield_bar_y = self.y
-            self.shield_timer_x = self.shield_bar_x + 19*factor
-            self.shield_timer_y = self.shield_bar_y + 18*factor
+            self.shield_timer_x = self.shield_bar_x + 19*self.h/72
+            self.shield_timer_y = self.shield_bar_y + 18*self.h/72
 
             self.missiles_icon_x = self.shield_bar_x+self.empty_bar.w+1/8*self.h
             self.missiles_icon_y = self.y

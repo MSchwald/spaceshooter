@@ -151,7 +151,8 @@ class Sprite(pygame.sprite.Sprite):
             self.kill()
 
     def update(self, dt):
-        self.change_position(self.x+dt*self.vx, self.y+dt*self.vy)
+        # speed of sprites gets automatically rescaled by the grid_width
+        self.change_position(self.x+dt*self.vx*settings.grid_width/100, self.y+dt*self.vy*settings.grid_width/100)
         if self.timer_on_hold == True:
             if self.pause_duration:
                 self.pause_timer += dt

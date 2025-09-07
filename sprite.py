@@ -2,8 +2,8 @@ import pygame, settings
 from math import sin, cos, pi
 from random import random
 from image import Image
-from numpy.linalg import norm
-#from math import hypot
+#from numpy.linalg import norm
+from math import hypot as norm
 from random import choice
 
 
@@ -59,7 +59,6 @@ class Sprite(pygame.sprite.Sprite):
             self.direction = direction
         self.constraints = constraints
         self.boundary_behaviour = boundary_behaviour
-        self._norm = norm(self.direction)
         
     def set_image(self, image):
         # initializes an image preserving (x,y) of the sprite
@@ -75,7 +74,25 @@ class Sprite(pygame.sprite.Sprite):
     @property
     def h(self):
         return self.image.h
-        
+
+    @property
+    def norm(self):
+        return norm(self.direction[0],self.direction[1])
+
+    @property
+    def vx(self):
+        if self.norm == 0:
+            return 0
+        else:
+            return self.v*self.direction[0]/self.norm
+
+    @property
+    def vy(self):
+        if self.norm == 0:
+            return 0
+        else:
+            return self.v*self.direction[1]/self.norm
+  
     def change_image(self, image):
         # changes the image preserving the center of the sprite
         center = self.rect.center
@@ -89,7 +106,6 @@ class Sprite(pygame.sprite.Sprite):
 
     def change_direction(self, x, y):
         self.direction = (x, y)
-        self._norm = norm(self.direction)
 
     def turn_direction(self, phi):
         """turns the direction of the sprite counter-clockwise, angle measured in radians"""
@@ -135,10 +151,7 @@ class Sprite(pygame.sprite.Sprite):
             self.kill()
 
     def update(self, dt):
-        if self._norm != 0 and self.v != 0:
-            newx = self.x+dt*self.v*self.direction[0]/self._norm
-            newy = self.y+dt*self.v*self.direction[1]/self._norm
-            self.change_position(newx, newy)
+        self.change_position(self.x+dt*self.vx, self.y+dt*self.vy)
         if self.timer_on_hold == True:
             if self.pause_duration:
                 self.pause_timer += dt

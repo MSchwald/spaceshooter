@@ -54,6 +54,19 @@ class Level:
         self.timer = 0
         #if self.number == 4:
 
+    def update(self, dt):
+        self.timer += dt
+        self.message = {1: "Kill all aliens!", 2: "Kill all aliens!", 3: "Kill all aliens!", 4: f"Survive for a minute! {int(60-self.timer/1000)}"}[self.number]
+        # update all bullets, the ship and aliens
+        for bullet in self.bullets:
+            bullet.update(dt)
+        self.ship.update(dt)
+        for alien in self.aliens:
+            alien.update(dt)
+        for item in self.items:
+            item.update(dt)
+
+
     def next(self):
         if self.number < max_level:
             self.number += 1
@@ -74,6 +87,5 @@ class Level:
             alien.change_position(random()*(constraints.w-alien.w)+constraints.x, constraints.y-alien.h)
             alien.change_direction(random()*(constraints.w-alien.w)+constraints.x-alien.x, constraints.bottom-alien.rect.bottom)
             self.aliens.add(alien)
-            print(alien.constraints, alien.v, alien.x, alien.y, alien.rect, alien.direction)
 
 

@@ -1,5 +1,6 @@
 import pygame
 import settings
+#import pickle
 
 screen = pygame.display.set_mode(
             (settings.screen_width, settings.screen_height))

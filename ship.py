@@ -87,9 +87,7 @@ class Ship(Sprite):
         if len(self.level.ship_bullets) < settings.max_bullets*(2*self.rank-1):
             sound.bullet.play()
             # Takes Doppler effect into account to calculate the bullets' speed
-            doppler = 0
-            if self.direction[1] != 0:
-                doppler = self.v*self.direction[1]/self._norm
+            doppler = self.vy
             # Fires bullets
             for i in range(len(self.fire_points)):
                 type = self.bullet_sizes[i]

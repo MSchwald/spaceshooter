@@ -13,7 +13,7 @@ from item import Item
 class Alien(Sprite):
     """A class to manage the enemies"""
 
-    def __init__(self, type, level, cycle_time=None, random_cycle_time=(100,200),
+    def __init__(self, type, level, cycle_time=None, random_cycle_time=(500,1000),
                 grid=None, center=None, x=0, y=0, v=None, direction=(0,0), constraints=pygame.Rect(settings.alien_constraints), boundary_behaviour="reflect",
                 scaling_width=settings.grid_width):
         #level: needs access to the level object from the game file
@@ -41,7 +41,7 @@ class Alien(Sprite):
         if self.cycle_time:
             self.action_timer = 0
 
-    def update(self, dt, level):
+    def update(self, dt):
         # checks if it is time for the alien to do an action
         if self.cycle_time and not self.timer_on_hold:
             self.action_timer += dt
@@ -57,8 +57,8 @@ class Alien(Sprite):
     def do_action(self):
         if self.type == "purple":
             #purple aliens shoot green bullets
-            #self.shoot("g")
-            self.level.alien_random_entrance("big_asteroid")
+            self.shoot("g")
+            #self.level.alien_random_entrance("big_asteroid")
 
         elif self.type == "ufo":
             #ufo aliens throw purple aliens
@@ -92,7 +92,7 @@ class Alien(Sprite):
                     self.level.aliens.add(pieces[i])
             self.level.ship.get_points(self.points)
             if random() <= settings.item_probability:
-                self.level.items.add(Item(choice(settings.item_types),center=self.rect.center))
+                self.level.items.add(Item(choice(settings.item_types), self.level, center=self.rect.center))
         super().kill()
 
     def reflect(self):

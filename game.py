@@ -39,11 +39,12 @@ class Game:
         self.game_over_menu = Menu(self.font, message=[
                                   "Game over!", "you ran out of lives!"], options=["Restart", "Exit"])
 
-        #Initializes status bar
-        self.statusbar = Statusbar()
 
         # Start the first game level
         self.level = Level(settings.game_starting_level)
+
+        #Initializes status bar
+        self.statusbar = Statusbar(self.level)
 
         # Starts a clock to measure ingame time
         self.clock = pygame.time.Clock()
@@ -139,15 +140,7 @@ class Game:
 
     def update_sprites(self, dt):
         """update position of all sprites according to the passed time"""
-        for bullet in self.level.bullets:
-            bullet.update(dt)
-
-        self.level.ship.update(dt)
-
-        for alien in self.level.aliens:
-            alien.update(dt, self.level)
-        for item in self.level.items:
-            item.update(dt, self.level.ship)
+        self.level.update(dt)
 
         self.aim.rect.center = pygame.mouse.get_pos()
         self.aim.x = self.aim.rect.x
@@ -216,7 +209,7 @@ class Game:
         self.screen.fill(settings.bg_color)
 
         # first blit the status bar onto the screen
-        self.statusbar.blit(self.screen, self.level.ship, self.level.number)
+        self.statusbar.blit(self.screen)
 
         # then blit the updated sprites (ship, enemies, items, bullets)
         self.blit_sprites()

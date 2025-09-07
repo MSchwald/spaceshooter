@@ -18,7 +18,7 @@ max_shield_duration = 15
 
 # Alien settings
 alien_speed = {"big_asteroid": 0.5, "small_asteroid": 1, "purple": 0.4, "ufo": 1}
-alien_energy = {"big_asteroid": 4, "small_asteroid": 1, "purple": 2000, "ufo": 30}
+alien_energy = {"big_asteroid": 4, "small_asteroid": 1, "purple": 15, "ufo": 30}
 alien_points = {"big_asteroid": 20,
                "small_asteroid": 10, "purple": 100, "ufo": 500}
 alien_width = {"big_asteroid": grid_width,
@@ -27,7 +27,7 @@ alien_colorkey = {"big_asteroid": (0,0,0),
                "small_asteroid": (0,0,0), "purple": (254,254,254), "ufo": (0,0,0)}
 
 # Game stats
-game_starting_level = 4
+game_starting_level = 1
 starting_score = 0
 
 # boundaries for the movement of the sprites

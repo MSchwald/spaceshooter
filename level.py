@@ -56,7 +56,8 @@ class Level:
 
     def update(self, dt):
         self.timer += dt
-        self.message = {1: "Kill all aliens!", 2: "Kill all aliens!", 3: "Kill all aliens!", 4: f"Survive for a minute! {int(60-self.timer/1000)}"}[self.number]
+        self.goal = {1: "Destroy all asteroids!", 2: "Defeat all aliens!", 3: "Defeat the ufo!", 4: "Survive for a minute!"}[self.number]
+        self.progress = {1: f"{len(self.aliens)} left", 2: f"{len(self.aliens)} left", 3: f"health", 4: "Timer: {int(60-self.timer/1000)}!"}[self.number]
         # update all bullets, the ship and aliens
         for bullet in self.bullets:
             bullet.update(dt)

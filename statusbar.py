@@ -74,18 +74,11 @@ class Statusbar:
             self.score_font = pygame.font.Font(settings.stats_font, self.score_font_size)
             self.score_y = self.y + 33/32*self.h
 
-
-
     def blit(self, screen):
+            #blits first line
             self.level_number = self.font.render(f"L{self.level.number%100:02d}", False, (255, 255, 255))
             self.lives = self.font.render(f"{self.level.ship.lives%100:02d}", False, (255, 255, 255))
             self.missiles = self.font.render(f"{self.level.ship.missiles%100:02d}", False, (255, 255, 255))
-            
-            #prints score in green when the score buff item is activated
-            self.score = self.score_font.render(f"Score {int(self.level.ship.score)}", False, {False: (255,255,255), True:(100, 255, 100)}[self.level.ship.score_factor > 1])
-
-            self.message = self.score_font.render(self.level.message, False, (255, 255, 255))
-
             screen.blit(self.level_number,(self.x+self.level_number_x,self.level_number_y))
             screen.blit(self.lives_icon.surface,(self.x+self.lives_icon_x,self.lives_icon_y))
             screen.blit(self.lives_icon.surface,(self.x+self.lives_icon_x,self.lives_icon_y))
@@ -98,6 +91,14 @@ class Statusbar:
             screen.blit(self.shield_bar.surface,(self.x+self.shield_timer_x,self.shield_timer_y), area=(0,0,self.level.ship.shield_timer/(1000*settings.max_shield_duration)*self.shield_bar.w,self.shield_bar.h))
             screen.blit(self.missiles_icon.surface,(self.x+self.missiles_icon_x,self.missiles_icon_y))
             screen.blit(self.missiles,(self.x+self.missiles_x,self.missiles_y))
+            
+            #blits second line, prints the score in green when the score buff item is activated
             #screen.blit(self.score,((settings.screen_width-self.score.get_width())/2,self.score_y))
+            self.score = self.score_font.render(f"Score {int(self.level.ship.score)}", False, {False: (255,255,255), True:(100, 255, 100)}[self.level.ship.score_factor > 1])
+            self.goal = self.score_font.render(self.level.goal, False, (255, 255, 255))
+            self.progress = self.score_font.render(self.level.progress, False, (255, 255, 255))
+            self.goal_x = max(self.score.get_width(),(settings.screen_width-self.goal.get_width())/2)
+            self.progress_x = max(self.goal_x+self.goal.get_width(), settings.screen_width-self.progress.get_width())
             screen.blit(self.score,(0,self.score_y))
-            screen.blit(self.message,(max(self.score.get_width(),(settings.screen_width-self.message.get_width())/2),self.score_y))
+            screen.blit(self.goal,(self.goal_x,self.score_y))
+            screen.blit(self.progress,(self.progress_x,self.score_y))

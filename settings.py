@@ -2,13 +2,13 @@ from pygame.locals import *
 # Overall game settings
 
 # Screen settings
-screen_width = 1600 #default: 1600
+screen_width = 800 #default: 1600
 screen_height = int(9/16*screen_width)
 grid_width = int(screen_width/16) #default: 100
 bg_color = (0, 0, 0)
 
 # Game settings
-game_starting_level = 4
+game_starting_level = 1
 starting_score = 0
 
 # Ship settings
@@ -49,14 +49,14 @@ bullet_speed = {1:1,2:1,3:1,4:1,"missile":0, "g":0.2}
 bullet_effect_time = {1:None,2:None,3:None,4:None,"missile":1000*missile_duration, "g":None}
 
 # Item settings
-item_types = ["size_plus","size_minus", "score_buff", "bullets_buff", "hp_plus", "invert_controlls", "life_plus","life_minus", "magnet", "missile", "shield", "ship_buff", "speed_buff", "speed_nerf"]
+item_types = ["magnet"]#["size_plus","size_minus", "score_buff", "bullets_buff", "hp_plus", "invert_controlls", "life_plus","life_minus", "magnet", "missile", "shield", "ship_buff", "speed_buff", "speed_nerf"]
 item_size = 50
 invert_controlls_duration = 5
 size_change_duration = 10
 speed_change_duration = 5
 score_buff_duration = 10
 shield_duration = 3
-item_probability = 0.3
+item_probability = 1#0.3
 item_speed = 0.3
 hp_plus = 5
 speed_buff = 1.8

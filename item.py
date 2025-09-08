@@ -2,6 +2,7 @@ import pygame, settings
 import settings
 from image import Image
 from sprite import Sprite
+from math import hypot as norm
 
 
 class Item(Sprite):
@@ -17,5 +18,10 @@ class Item(Sprite):
 
     def update(self, dt):
         if self.level.ship.magnet:
-            self.direction = (4*(self.level.ship.rect.center[0]-self.rect.center[0])/settings.screen_width,self.direction[1])
+            temp = [self.level.ship.rect.center[i]-self.rect.center[i] for i in [0,1]]
+            norm_temp = norm(temp[0],temp[1])
+            if norm_temp!=0:
+                temp = [settings.item_speed*temp[i]/norm_temp/30 for i in [0,1]]
+            self.change_direction(self.vx+temp[0],self.vy)
+            self.v = norm(self.direction[0],self.direction[1])
         super().update(dt)

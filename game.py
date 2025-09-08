@@ -166,6 +166,8 @@ class Game:
                                 self.level.next()
                         elif selection == "Check high scores":
                             if len(self.highscores) < settings.max_number_of_highscores or self.level.ship.score > self.highscores[-1][1]:
+                                pygame.mixer.stop()
+                                sound.new_highscore.play()
                                 self.highscore_place = [i for i in range(len(self.highscores)) if self.highscores[i][1]<self.level.ship.score][0]
                                 self.highscores.append(["", self.level.ship.score])
                                 self.highscores = sorted(self.highscores, key=lambda x: x[1], reverse=True)[:settings.max_number_of_highscores]

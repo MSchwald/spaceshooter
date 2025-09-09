@@ -114,11 +114,13 @@ class Image:
     def reflect(cls, image, flip_x, flip_y):
         if id(image.surface) in cls.reflected_cache:
             return cls.reflected_cache[id(image.surface)]
+            print("cache loaded")
         else:
             flipped_surface = pygame.transform.flip(image.surface, flip_x=flip_x, flip_y=flip_y)
             flipped_image = Image(flipped_surface, pygame.mask.from_surface(flipped_surface))
             cls.reflected_cache[id(image.surface)] = flipped_image
             return flipped_image
+            print("image reflected")
 
     def blit(self, screen):
         screen.blit(self.surface, self.rect, colorkey=self.surface.get_colorkey())

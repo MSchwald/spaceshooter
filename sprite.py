@@ -203,7 +203,8 @@ class Sprite(pygame.sprite.Sprite):
         self.direction = (-self.direction[0],-self.direction[1])
         self.image = Image.reflect(self.image, flip_x, flip_y)
         if self.frames:
-            self.frames = [Image.reflect(image, flip_x, flip_y) for image in self.frames]            
+            self.frames = [Image.reflect(image, flip_x, flip_y) for image in self.frames]
+            self.change_image(self.frames[self.frame_index])  
 
     def blit(self, screen):
         screen.blit(self.surface, self.rect)

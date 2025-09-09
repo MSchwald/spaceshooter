@@ -215,7 +215,7 @@ class Game:
                             # missiles hit each enemy at most once during their explosion time
                             alien.get_damage(bullet.damage)
                             bullet.hit_enemies.add(alien)
-            elif pygame.sprite.collide_mask(bullet, self.level.ship):
+            elif bullet.owner == "enemy" and pygame.sprite.collide_mask(bullet, self.level.ship):
                 if self.level.ship.status == "shield":
                     bullet.reflect()
                     bullet.owner = "player"

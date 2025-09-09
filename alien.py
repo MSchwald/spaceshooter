@@ -8,7 +8,7 @@ from bullet import Bullet
 from random import random,choice,randint
 import sound
 from item import Item
-from math import pi, sqrt
+from math import pi, sqrt, sin, cos
 from math import hypot
 
 
@@ -26,7 +26,7 @@ class Alien(Sprite):
     """A class to manage the enemies"""
 
     def __init__(self, type, level, cycle_time=None, random_cycle_time=(500,1000),
-                grid=None, center=None, x=0, y=0, v=None, direction=(0,0), constraints=pygame.Rect(settings.alien_constraints), boundary_behaviour="reflect",
+                grid=None, center=None, x=0, y=0, v=None, direction=None, constraints=pygame.Rect(settings.alien_constraints), boundary_behaviour="reflect",
                 scaling_width=settings.grid_width):
         #level: needs access to the level object from the game file
         #cycle_time: Alien periodically does actions after given time (in ms)
@@ -64,8 +64,8 @@ class Alien(Sprite):
                 dv = (self.vx-ast.vx,self.vy-ast.vy)
                 d2 =(self.w+ast.w)**2/4
                 n2dv = norm2(dv)
-                if n2dv>1e-8 and n2dp < d2:
-                    dpdv = dp[0]*dv[0]+dp[1]*dv[1]
+                dpdv = dp[0]*dv[0]+dp[1]*dv[1]
+                if n2dv>1e-8 and n2dp < d2 and dpdv < 0:
                     t = (-dpdv-sqrt(dpdv**2-n2dv*(n2dp-d2)))/n2dv
                     super().update_position(t)
                     Sprite.update_position(ast,t)
@@ -126,16 +126,20 @@ class Alien(Sprite):
     def kill(self):
         if self.energy <= 0:
             {"big_asteroid": sound.asteroid, "small_asteroid": sound.small_asteroid, "purple": sound.alienblob, "ufo":sound.alienblob}[self.type].play()
-            if self.type == "big_asteroid":
-                # big asteroids split into n smaller asteroids when hit (default: n=4)
-                n=4
-                pieces = [Alien("small_asteroid", self.level, center=self.rect.center, direction=self.direction, constraints=self.constraints, boundary_behaviour=self.boundary_behaviour) for i in range(4)]
-                for i in range(n):
-                    pieces[i].turn_direction((2*i+1)*pi/n)
-                    self.level.asteroids.add(pieces[i])
             self.level.ship.get_points(self.points)
             if random() <= settings.item_probability:
                 self.level.items.add(Item(choice(settings.item_types), self.level, center=self.rect.center))
+        if self.type == "big_asteroid":
+                # big asteroids split into smaller asteroids when hit
+                if self.direction==(0,0):
+                    phi = random()
+                    w=(cos(2*pi*phi),sin(2*pi*phi))
+                else:
+                    w=(self.direction[0]/self.norm,self.direction[1]/self.norm)
+                for i in range(settings.asteroid_pieces):
+                    phi=(2*i+1)*pi/settings.asteroid_pieces
+                    new_dir = (self.vx+settings.alien_speed["small_asteroid"]*(w[0]*cos(phi)-w[1]*sin(phi)), self.vy+settings.alien_speed["small_asteroid"]*(w[0]*sin(phi)+w[1]*cos(phi)))
+                    self.level.asteroids.add(Alien("small_asteroid", self.level, direction=new_dir, v=norm(new_dir), center=self.rect.center, constraints=self.constraints, boundary_behaviour=self.boundary_behaviour))
         super().kill()
 
     def reflect(self):

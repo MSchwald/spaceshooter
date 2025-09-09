@@ -5,7 +5,7 @@ from image import Image
 #from numpy.linalg import norm
 from math import hypot as norm
 from random import choice
-
+from math import sqrt
 
 class Sprite(pygame.sprite.Sprite):
     # class for all sprites
@@ -65,7 +65,7 @@ class Sprite(pygame.sprite.Sprite):
         self.image = image
         self.surface = image.surface
         self.mask = image.mask
-        self.rect = pygame.Rect(int(self.x), int(self.y), self.w, self.h)
+        self.rect = pygame.Rect(int(self.x), int(self.y), image.w, image.h)
 
     @property
     def w(self):
@@ -106,11 +106,6 @@ class Sprite(pygame.sprite.Sprite):
 
     def change_direction(self, x, y):
         self.direction = (x, y)
-
-    def turn_direction(self, phi):
-        """turns the direction of the sprite counter-clockwise, angle measured in radians"""
-        self.change_direction(self.direction[0]*cos(phi)+self.direction[1]*sin(
-            phi), -self.direction[0]*sin(phi)+self.direction[1]*cos(phi))
 
     def change_position(self, x, y):
         if self.constraints is None or self.boundary_behaviour == "vanish":
@@ -170,28 +165,33 @@ class Sprite(pygame.sprite.Sprite):
     
     def update_frame(self, dt):
         if self.timer_on_hold == False and self.animation_type:
-                self.update_frame_index()
-                self.change_image(self.frames[self.frame_index])
+                new_index = self.new_frame_index()
+                if new_index != self.frame_index:
+                    self.frame_index = new_index
+                    self.change_image(self.frames[self.frame_index])
 
-    def update_frame_index(self):
+    def new_frame_index(self):
         frame_number = self.timer//self.frame_duration_ms 
         if self.animation_type == "random":
             if frame_number > self.frame_number:
-                self.frame_index = choice(range(len(self.frames)))
                 self.frame_number = frame_number
+                return choice(range(len(self.frames)))
+            else:
+                return self.frame_index
         else:
             self.frame_number = frame_number
             if self.animation_type == "vanish":
                 if frame_number >= len(self.frames):
                     self.kill()
                 else:
-                    self.frame_index = frame_number
+                    return frame_number
             elif self.animation_type == "pingpong":
-                self.frame_index = frame_number % (2*len(self.frames)-2)
-                if self.frame_index >= len(self.frames):
-                    self.frame_index = 2*(len(self.frames)-1) - self.frame_index
+                new_index = frame_number % (2*len(self.frames)-2)
+                if new_index >= len(self.frames):
+                    new_index = 2*(len(self.frames)-1) - new_index
+                return new_index
             else:
-                self.frame_index = {"loop": frame_number%len(self.frames),
+                return {"loop": frame_number%len(self.frames),
                                     "once": min(frame_number, len(self.frames)-1)}[self.animation_type]
 
     def pause_for_ms(self, time=None):

@@ -6,7 +6,7 @@ import sound
 from random import random
 
 #placement of enemies in an 16x9-grid
-lst = {1: [(4, 1, "big_asteroid", "random"), (6, 1, "big_asteroid", (0,1)), (9, 1, "big_asteroid", (0,1)), (11, 1, "big_asteroid", "random"), (2, 1, "small_asteroid", "random"), (13, 1, "small_asteroid", "random")],
+lst = {1: [(4, 1, "purple", "random"), (6, 1, "big_asteroid", (0,1)), (9, 1, "big_asteroid", (0,1)), (11, 1, "big_asteroid", "random"), (2, 1, "small_asteroid", "random"), (13, 1, "small_asteroid", "random")],
 2: [(1, 1, "purple", (1, 1)), (3, 1, "purple", (1, 1)), (5, 1, "purple", (1, 1))],
 3: [(1, 1, "ufo", (2, 0))],
 4: [(1, 1, "purple", (1, 0))]
@@ -24,44 +24,55 @@ class Level:
         self.number = number
         self.ship_bullets = pygame.sprite.Group()
         self.bullets = pygame.sprite.Group()
-        self.aliens = pygame.sprite.Group()
         self.items = pygame.sprite.Group()
+        self.asteroids = pygame.sprite.Group()
+        self.aliens = pygame.sprite.Group()
+        
 
 
     def status(self):
         if self.ship.lives <= 0:
             sound.game_over.play()
             return "game over"
-        elif not self.aliens:
-            if self.number < max_level:
+        else:
+            if self.number == 1 and not self.asteroids:
                 sound.start.play()
                 return "solved"
-            else:
+            elif self.number in [2,3] and not self.aliens:
+                sound.start.play()
+                return "solved"
+            elif self.number == 4 and self.timer > 60000:
                 pygame.mixer.stop()
                 sound.game_won.play()
                 return "game won"
-        else:
-            return "running"
+            else:
+                return "running"
 
     def start(self):
         self.ship.reset_position()
         # Resets the Groups of bullets and aliens
         self.ship_bullets.empty()
         self.bullets.empty()
+        self.asteroids.empty()
         self.aliens.empty()
         for (x, y, type, direction) in lst[self.number]:
-            self.aliens.add(Alien(type=type, level=self, grid=(x,y), direction=direction))
+            if type in ["big_asteroid","small_asteroid"]:
+                self.asteroids.add(Alien(type=type, level=self, grid=(x,y), direction=direction))
+            else:
+                self.aliens.add(Alien(type=type, level=self, grid=(x,y), direction=direction))
         self.timer = 0
         #if self.number == 4:
 
     def update(self, dt):
         self.timer += dt
         self.goal = {1: "Destroy all asteroids!", 2: "Defeat all aliens!", 3: "Defeat the ufo!", 4: "Survive for a minute!"}[self.number]
-        self.progress = {1: f"{len(self.aliens)} left", 2: f"{len(self.aliens)} left", 3: f"health", 4: f"Timer: {int(60-self.timer/1000)}"}[self.number]
+        self.progress = {1: f"{len(self.asteroids)} left", 2: f"{len(self.aliens)} left", 3: f"health", 4: f"Timer: {int(60-self.timer/1000)}"}[self.number]
         # update all bullets, the ship and aliens
         for bullet in self.bullets:
             bullet.update(dt)
         self.ship.update(dt)
+        for asteroid in self.asteroids:
+            asteroid.update(dt)
         for alien in self.aliens:
             alien.update(dt)
         for item in self.items:
@@ -87,6 +98,9 @@ class Level:
             alien.constraints = pygame.Rect(constraints.x, constraints.y-alien.h, constraints.w, alien.h+constraints.h)
             alien.change_position(random()*(constraints.w-alien.w)+constraints.x, constraints.y-alien.h)
             alien.change_direction(random()*(constraints.w-alien.w)+constraints.x-alien.x, constraints.bottom-alien.rect.bottom)
-            self.aliens.add(alien)
+            if type in ["big_asteroid","small_asteroid"]:
+                self.asteroids.add(alien)
+            else:
+                self.aliens.add(alien)
 
 

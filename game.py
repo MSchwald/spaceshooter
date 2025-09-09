@@ -171,7 +171,6 @@ class Game:
                                 self.highscore_place = [i for i in range(len(self.highscores)) if self.highscores[i][1]<self.level.ship.score][0]
                                 self.highscores.append(["", self.level.ship.score])
                                 self.highscores = sorted(self.highscores, key=lambda x: x[1], reverse=True)[:settings.max_number_of_highscores]
-                                print(self.highscores)
                                 self.mode = "enter name"
                             else:
                                 self.active_menu = Menu(message=["No new high score!", "Your score was too low,", "maybe next time!", ""]+[str(score[0]) + " " + str(score[1]) for score in self.highscores], options=["OK"])
@@ -186,25 +185,36 @@ class Game:
         self.aim.x = self.aim.rect.x
         self.aim.y = self.aim.rect.y
 
+
+
     def collision_checks(self):
         """Checks for collisions of sprites, inflicts damage, adds points, generate items"""
-        # Check if bullets hit aliens
+        # Check if bullets hit asteroids
         collisions = pygame.sprite.groupcollide(
-            self.level.bullets, self.level.aliens, False, False, collided=pygame.sprite.collide_mask)
+            self.level.bullets, self.level.asteroids, False, False, collided=pygame.sprite.collide_mask)
         for bullet in collisions.keys():
-            if bullet.owner == "player":
-                for alien in collisions[bullet]:
-                    if bullet.type != "missile":
-                        alien.get_damage(bullet.damage)
-                        bullet.kill()
-                    if bullet.type == "missile" and alien not in bullet.hit_enemies:
-                        # missiles hit each enemy at most once during their explosion time
-                        alien.get_damage(bullet.damage)
-                        bullet.hit_enemies.add(alien)
+            for asteroid in collisions[bullet]:
+                if bullet.type != "missile":
+                    asteroid.get_damage(bullet.damage)
+                    bullet.kill()
+                if bullet.type == "missile" and asteroid not in bullet.hit_enemies:
+                    # missiles hit each enemy at most once during their explosion time
+                    asteroid.get_damage(bullet.damage)
+                    bullet.hit_enemies.add(asteroid)
 
-        # Check if bullets hit the ship
+        #Check if bullets hit aliens or the ship
         for bullet in self.level.bullets:
-            if bullet.owner == "enemy" and pygame.sprite.collide_mask(self.level.ship, bullet):
+            if bullet.owner == "player":
+                for alien in self.level.aliens:
+                    if pygame.sprite.collide_mask(bullet, alien):
+                        if bullet.type != "missile":
+                            alien.get_damage(bullet.damage)
+                            bullet.kill()
+                        if bullet.type == "missile" and alien not in bullet.hit_enemies:
+                            # missiles hit each enemy at most once during their explosion time
+                            alien.get_damage(bullet.damage)
+                            bullet.hit_enemies.add(alien)
+            elif pygame.sprite.collide_mask(bullet, self.level.ship):
                 if self.level.ship.status == "shield":
                     bullet.reflect()
                     bullet.owner = "player"
@@ -212,8 +222,17 @@ class Game:
                     self.level.ship.get_damage(bullet.damage)
                     bullet.kill()
                     sound.player_hit.play()
+            
 
-        # Check if aliens hit the ship
+        # Check if enemies hit the ship
+        for asteroid in self.level.asteroids:
+            if pygame.sprite.collide_mask(self.level.ship, asteroid):
+                if self.level.ship.status == "shield":
+                    asteroid.reflect()
+                else:
+                    self.level.ship.get_damage(asteroid.energy)
+                    asteroid.energy = 0
+                    asteroid.kill()
         for alien in self.level.aliens:
             if pygame.sprite.collide_mask(self.level.ship, alien):
                 if self.level.ship.status == "shield":
@@ -232,6 +251,7 @@ class Game:
                 else:
                     self.level.ship.collect_item(item.type)
                     item.kill()
+
 
     def check_level_status(self):
         """Check if the current level is solved or the player is game over"""
@@ -270,6 +290,8 @@ class Game:
             bullet.blit(self.screen)
         self.level.ship.blit(self.screen)
 
+        for asteroid in self.level.asteroids:
+            asteroid.blit(self.screen)
         for alien in self.level.aliens:
             alien.blit(self.screen)
         for item in self.level.items:

@@ -152,15 +152,24 @@ class Sprite(pygame.sprite.Sprite):
 
     def update(self, dt):
         # speed of sprites gets automatically rescaled by the grid_width
+        self.update_position(dt)
+        self.update_timer(dt)
+        self.update_frame(dt)
+
+    def update_position(self, dt):
         self.change_position(self.x+dt*self.vx*settings.grid_width/100, self.y+dt*self.vy*settings.grid_width/100)
+        
+    def update_timer(self, dt):
         if self.timer_on_hold == True:
             if self.pause_duration:
                 self.pause_timer += dt
                 if self.pause_timer > self.pause_duration:
-                    self.timer_on_hold == False
-        if self.timer_on_hold == False:
+                    self.timer_on_hold = False
+        else:
             self.timer += dt
-            if self.animation_type:
+    
+    def update_frame(self, dt):
+        if self.timer_on_hold == False and self.animation_type:
                 self.update_frame_index()
                 self.change_image(self.frames[self.frame_index])
 

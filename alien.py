@@ -7,8 +7,20 @@ from sprite import Sprite
 from bullet import Bullet
 from random import random,choice,randint
 import sound
-from math import pi
 from item import Item
+from math import pi, sqrt
+from math import hypot
+
+
+def norm(v):
+    return hypot(v[0],v[1])
+def norm2(v):
+    return v[0]*v[0]+v[1]*v[1]
+def normalize(v):
+    norm_v = norm(v)
+    if norm_v == 0:
+        return (0,0)
+    return (v[0]/norm_v,v[1]/norm_v)
 
 class Alien(Sprite):
     """A class to manage the enemies"""
@@ -24,6 +36,8 @@ class Alien(Sprite):
         if type in ["big_asteroid", "small_asteroid"]:
             super().__init__(frames = [Image.load(f"images/{type}/{str(n+1)}.png", scaling_width=settings.alien_width[type]) for n in range(14)], animation_type="loop", fps=10, grid=grid, center=center, x=x, y=y, v=settings.alien_speed[type], direction=direction,
                          constraints=constraints, boundary_behaviour=boundary_behaviour)
+            #mass is so far only relevant for collisions between the asteroids
+            self.m = (self.w/settings.grid_width)**2
         else:
             super().__init__(Image.load(f'images/alien/{str(type)}.png',colorkey=settings.alien_colorkey[type], scaling_width=settings.alien_width[type]), grid=grid, center=center, x=x, y=y, v=settings.alien_speed[type], direction=direction,
                              constraints=constraints, boundary_behaviour=boundary_behaviour)
@@ -42,17 +56,46 @@ class Alien(Sprite):
             self.action_timer = 0
 
     def update(self, dt):
-        # checks if it is time for the alien to do an action
-        if self.cycle_time and not self.timer_on_hold:
-            self.action_timer += dt
-            if self.action_timer >= self.cycle_time:
-                self.action_timer -= self.cycle_time
-                if self.random_cycle_time:
-                    self.cycle_time = randint(self.random_cycle_time[0],self.random_cycle_time[1])
-                self.do_action()
+        #asteroids can collide (elastic collision of balls)
+        if self.type in ["big_asteroid","small_asteroid"]:
+            for ast in self.level.asteroids:
+                dp = (self.x-ast.x,self.y-ast.y)
+                n2dp = norm2(dp)
+                dv = (self.vx-ast.vx,self.vy-ast.vy)
+                d2 =(self.w+ast.w)**2/4
+                n2dv = norm2(dv)
+                if n2dv>1e-8 and n2dp < d2:
+                    
+                    dpdv = dp[0]*dv[0]+dp[1]*dv[1]
+                    t = (-dpdv-sqrt(dpdv**2-n2dv*(n2dp-d2)))/n2dv
+                    super().update_position(t)
+                    Sprite.update_position(ast,t)
+                    n = normalize((self.x-ast.x,self.y-ast.y))
+                    dv = (self.vx-ast.vx,self.vy-ast.vy)
+                    dvn = dv[0]*n[0]+dv[1]*n[1]
+                    f = 2/(self.m+ast.m)*dvn
+                    f1 = -ast.m*f
+                    f2 = self.m*f
+                    self.direction = (self.vx+f1*n[0],self.vy+f1*n[1])
+                    ast.direction = (ast.vx+f2*n[0],ast.vy+f2*n[1])
+                    self.v = norm(self.direction)
+                    ast.v = norm(ast.direction)
+                    super().update_position(-t)
+                    Sprite.update_position(ast,-t)
+            super().update(dt)
 
-        #timer, movement and animation get handled in the Sprite class
-        super().update(dt)
+        # aliens move without collisions
+        else:
+            #checks if it is time for the alien to do an action
+            if self.cycle_time and not self.timer_on_hold:
+                self.action_timer += dt
+                if self.action_timer >= self.cycle_time:
+                    self.action_timer -= self.cycle_time
+                    if self.random_cycle_time:
+                        self.cycle_time = randint(self.random_cycle_time[0],self.random_cycle_time[1])
+                    self.do_action()
+            #timer, movement and animation get handled in the Sprite class
+            super().update(dt)
 
     def do_action(self):
         if self.type == "purple":

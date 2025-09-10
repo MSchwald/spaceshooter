@@ -5,6 +5,7 @@ from alien import Alien
 import sound
 from random import random
 from math import hypot
+from event import Event
 
 #placement of enemies in an 16x9-grid
 lst = {1: [(4, 1, "big_asteroid", (1,0)), (6, 1, "big_asteroid", (0,1)), (9, 5, "big_asteroid", (0,1)), (11, 1, "big_asteroid", "random"), (2, 1, "big_asteroid", (1,0)), (13, 1, "big_asteroid", (1,0))],
@@ -23,6 +24,7 @@ class Level:
         self.ship = Ship(self)
         # Initializes level number and empty sprite groups
         self.number = number
+        self.events = []
         self.ship_bullets = pygame.sprite.Group()
         self.bullets = pygame.sprite.Group()
         self.items = pygame.sprite.Group()
@@ -57,6 +59,7 @@ class Level:
     def start(self):
         self.ship.reset_position()
         # Resets the Groups of bullets and enemies
+        self.events=[]
         self.ship_bullets.empty()
         self.bullets.empty()
         self.asteroids.empty()
@@ -70,10 +73,15 @@ class Level:
                     if type == "blob": #blobs are also aliens
                         self.blobs.add(alien)
                     self.aliens.add(alien)
-
+        if self.number == 2:
+            self.events.append(Event("asteroid_hail", self, random_cycle_time=(800,1200)))
+        elif self.number == 3:
+            self.events.append(Event("asteroid_hail", self, random_cycle_time=(800,1000)))
+        elif self.number == 4:
+            self.events.append(Event("asteroid_hail", self, random_cycle_time=(1000,1500)))
 
         self.timer = 0
-        #if self.number == 4:
+
 
     def update(self, dt):
         self.timer += dt
@@ -89,6 +97,8 @@ class Level:
             alien.update(dt)
         for item in self.items:
             item.update(dt)
+        for event in self.events:
+            event.update(dt)
 
         #collisions of blobs, they merge when not too big
         merge_occured = False
@@ -152,7 +162,13 @@ class Level:
                 self.asteroids.add(alien)
             elif type == "blob":
                 sound.blob_spawns.play()
+                self.blobs.add(alien)
+                self.aliens.add(alien)
             else:
                 self.aliens.add(alien)
 
+    def start_asteroid_hail(self, cycle_time=None, random_cycle_time=(1000,2000),
+                v=settings.alien_speed["big_asteroid"], constraints=pygame.Rect([0, 0, settings.screen_width, settings.screen_height]), boundary_behaviour="vanish"):
+        self.events.add(Alien("asteroid_hail",self,cycle_time=cycle_time, random_cycle_time=random_cycle_time,
+                v=v, constraints=constraints, boundary_behaviour=boundary_behaviour))
 

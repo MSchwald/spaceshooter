@@ -198,10 +198,11 @@ class Game:
                 if bullet.type != "missile":
                     asteroid.get_damage(bullet.damage)
                     bullet.kill()
+                    asteroid.kill()
                 if bullet.type == "missile" and asteroid not in bullet.hit_enemies:
                     # missiles hit each enemy at most once during their explosion time
                     asteroid.get_damage(bullet.damage)
-                    bullet.hit_enemies.add(asteroid)
+                    asteroid.kill()
 
         #Check if bullets hit aliens or the ship
         for bullet in self.level.bullets:

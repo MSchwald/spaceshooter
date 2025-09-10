@@ -135,6 +135,7 @@ class Alien(Sprite):
         if self.type == "blob":
             #purple aliens shoot green bullets
             self.shoot("blubber",size=self.energy)
+
     # types of alien actions
 
     def shoot(self, bullet_type, size=None):

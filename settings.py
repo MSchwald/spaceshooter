@@ -22,7 +22,7 @@ max_shield_duration = 15
 
 # Alien settings
 asteroid_pieces = 4
-alien_speed = {"big_asteroid": 0.3, "small_asteroid": 0.6, "purple": 0.4, "ufo": 1, "blob": 0.3}
+alien_speed = {"big_asteroid": 0.3, "small_asteroid": 0.6, "purple": 0.4, "ufo": 1, "blob": 0.5}
 alien_energy = {"big_asteroid": 4, "small_asteroid": 1, "purple": 15, "ufo": 30, "blob": 32}
 alien_points = {"big_asteroid": 20,"small_asteroid": 10,
                 "purple": 100, "ufo": 500, "blob": 100}

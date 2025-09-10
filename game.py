@@ -1,7 +1,7 @@
 import pygame
 from pygame.locals import *
 import settings
-from alien import Alien
+from alien import Alien,blob_images
 from level import Level, max_level
 from text import Menu
 from image import Image
@@ -213,7 +213,14 @@ class Game:
                             bullet.kill()
                         if bullet.type == "missile" and alien not in bullet.hit_enemies:
                             # missiles hit each enemy at most once during their explosion time
-                            alien.get_damage(bullet.damage)
+                            if alien.type == "blob":
+                                if alien.energy == 1:
+                                    alien.kill()
+                                else:
+                                    alien.energy = alien.energy//2
+                                    alien.change_image(blob_images[alien.energy-1])
+                            else:
+                                alien.get_damage(bullet.damage)
                             bullet.hit_enemies.add(alien)
             elif bullet.owner == "enemy" and pygame.sprite.collide_mask(bullet, self.level.ship):
                 if self.level.ship.status == "shield":

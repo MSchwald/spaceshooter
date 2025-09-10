@@ -53,6 +53,9 @@ class Alien(Sprite):
                          constraints=constraints, boundary_behaviour="reflect")
             #mass of blobs is proportional to their energy points
             self.m = energy
+            #blobs gravitate towards the place they got split the last time
+            self.parent_center = None
+            self.a = None
 
         else:
             super().__init__(Image.load(f'images/alien/{str(type)}.png',colorkey=settings.alien_colorkey[type], scaling_width=settings.alien_width[type]), grid=grid, center=center, x=x, y=y, v=v, direction=direction,
@@ -70,7 +73,7 @@ class Alien(Sprite):
         if self.cycle_time:
             self.action_timer = 0
         self.energy = energy
-
+        
     def update(self, dt):
         #asteroids can collide (elastic collision of balls)
         if self.type in ["big_asteroid","small_asteroid"]:
@@ -109,7 +112,14 @@ class Alien(Sprite):
                     if self.random_cycle_time:
                         self.cycle_time = randint(self.random_cycle_time[0],self.random_cycle_time[1])
                     self.do_action()
-
+            #blobs gravitate towards their parent center
+            if self.type == "blob" and self.parent_center:
+                x1,y1 = self.rect.center
+                x2,y2 = self.parent_center
+                n = normalize((x2-x1,y2-y1))
+                vr = self.vx*n[0]+self.vy*n[1]
+                ar = -0.2/32*(vr-self.u)*abs(vr+self.u)
+                self.a = (ar*n[0],ar*n[1])
             #timer, movement and animation get handled in the Sprite class
             super().update(dt)
 
@@ -173,12 +183,18 @@ class Alien(Sprite):
                 m2 = self.m-m1
                 phi=pi/2 #(2*i+1)*pi/2
                 new_dir = (self.vx+settings.alien_speed["blob"]*m1**(-1/2)*(w[0]*cos(phi)-w[1]*sin(phi)), self.vy+settings.alien_speed["blob"]*m1**(-1/2)*(w[0]*sin(phi)+w[1]*cos(phi)))
-                alien_1 = Alien("blob", self.level, energy=m1, direction=new_dir, v=norm(new_dir), center=self.rect.center, constraints=self.constraints, boundary_behaviour=self.boundary_behaviour)
+                u = norm(new_dir)
+                alien_1 = Alien("blob", self.level, energy=m1, direction=new_dir, v=u, center=self.rect.center, constraints=self.constraints, boundary_behaviour=self.boundary_behaviour)
+                alien_1.u = u
                 phi=3*pi/2
                 new_dir = (self.vx+settings.alien_speed["blob"]*m2**(-1/2)*(w[0]*cos(phi)-w[1]*sin(phi)), self.vy+settings.alien_speed["blob"]*m2**(-1/2)*(w[0]*sin(phi)+w[1]*cos(phi)))
-                alien_2 = Alien("blob", self.level, energy=m2,direction=new_dir, v=norm(new_dir), center=self.rect.center, constraints=self.constraints, boundary_behaviour=self.boundary_behaviour)
+                u = norm(new_dir)
+                alien_2 = Alien("blob", self.level, energy=m2,direction=new_dir, v=u, center=self.rect.center, constraints=self.constraints, boundary_behaviour=self.boundary_behaviour)
+                alien_2.u = u
                 self.level.aliens.add(alien_1,alien_2)
                 self.level.blobs.add(alien_1,alien_2)
+                alien_1.parent_center = self.rect.center
+                alien_2.parent_center = self.rect.center
             elif self.energy == 1:
                 sound.alienblob.play()
                 self.level.ship.get_points(self.points)

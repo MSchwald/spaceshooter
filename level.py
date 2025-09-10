@@ -31,7 +31,6 @@ class Level:
         self.blobs = pygame.sprite.Group()
         
 
-
     def status(self):
         if self.ship.lives <= 0:
             sound.game_over.play()
@@ -66,7 +65,7 @@ class Level:
                 if type in ["big_asteroid","small_asteroid"]:
                     self.asteroids.add(Alien(type=type, level=self, grid=(x,y), direction=direction))
                 else:
-                    alien = Alien(type=type, level=self, v=0, grid=(x,y), direction=direction)
+                    alien = Alien(type=type, level=self, grid=(x,y), direction=direction)
                     if type == "blob": #blobs are also aliens
                         self.blobs.add(alien)
                     self.aliens.add(alien)
@@ -91,32 +90,29 @@ class Level:
             item.update(dt)
 
         #collisions of blobs, they merge when not too big
-        collisions = pygame.sprite.groupcollide(
-            self.blobs, self.blobs, False, False, collided=pygame.sprite.collide_mask)
         merge_occured = False
-        for blob1 in collisions.keys():
+        for blob1 in self.blobs:
                 if merge_occured:
                     break
-                for blob2 in collisions[blob1][:]:
-                    if blob2 is blob1 or blob1.energy+blob2.energy > settings.alien_energy["blob"]:
-                        collisions[blob1].remove(blob2)
-                    else:
+                for blob2 in self.blobs:
+                    if(
+                        blob2 is not blob1
+                        and blob1.energy+blob2.energy <= settings.alien_energy["blob"]
+                        and pygame.sprite.collide_mask(blob1,blob2)
+                    ):
                         x1,y1 = blob1.rect.center
                         x2,y2 = blob2.rect.center
                         vx1, vy1 = blob1.vx, blob1.vy
                         vx2, vy2 = blob2.vx, blob2.vy
                         dpdv = (x1-x2)*(vx1-vx2)+(y1-y2)*(vy1-vy2)
-                        if dpdv >= 0:
-                            collisions[blob1].remove(blob2)
-                        else:
-                            merge_occured = True
-                            print("merge!",blob1.energy,blob2.energy )             
+                        if dpdv < 0:
+                            merge_occured = True            
                             m1,m2 = blob1.m,blob2.m
-                            # center of gravity
+                            # blobs merge at their center of gravity
                             new_x = (m1 * x1 + m2 * x2) / (m1 + m2)
                             new_y = (m1 * y1 + m2 * y2) / (m1 + m2)
                             new_center = (new_x, new_y)
-                            # Conservation of momentum
+                            # Conservation of momentum (inelastic collision)
                             vx_new = (m1 * vx1 + m2 * vx2) / (m1 + m2)
                             vy_new = (m1 * vy1 + m2 * vy2) / (m1 + m2)
                             new_v = hypot(vx_new, vy_new)
@@ -127,11 +123,8 @@ class Level:
                             merged_blob = Alien("blob",self,energy=blob1.energy+blob2.energy,center=new_center,direction=new_dir,v=new_v)
                             self.aliens.add(merged_blob)
                             self.blobs.add(merged_blob)
-                            #print(self.energy,blob.energy,merged_blob.energy, len(self.level.blobs))
                             blob1.hard_kill()
                             blob2.hard_kill()
-
-                            print([blob.energy for blob in self.blobs])
                             break
 
         

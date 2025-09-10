@@ -9,7 +9,7 @@ from math import sqrt
 
 class Sprite(pygame.sprite.Sprite):
     # class for all sprites
-    def __init__(self, image=None, grid=None, center=None, x=0, y=0, v=0, direction=(0, 0), constraints=None, boundary_behaviour="clamp", animation_type=None, frames=None, fps=None, animation_time=None, starting_frame=0):
+    def __init__(self, image=None, grid=None, center=None, x=0, y=0, v=0, a=None, direction=(0, 0), constraints=None, boundary_behaviour="clamp", animation_type=None, frames=None, fps=None, animation_time=None, starting_frame=0):
         #Non-animated sprites should have an Image-object as 'image',
         #   animated sprites only need a list 'frames' of Image-objects and start on frame 0
         # possible boundary behaviours:
@@ -53,6 +53,7 @@ class Sprite(pygame.sprite.Sprite):
             self.x = self.rect.x
             self.y = self.rect.y
         self.v = v
+        self.a = a
         if direction == "random":
             angle = 2*pi*random()
             self.direction = (cos(angle),sin(angle))
@@ -149,12 +150,18 @@ class Sprite(pygame.sprite.Sprite):
     def update(self, dt):
         # speed of sprites gets automatically rescaled by the grid_width
         self.update_position(dt)
+        if self.a:
+            self.update_velocity(dt)
         self.update_timer(dt)
         self.update_frame(dt)
 
     def update_position(self, dt):
         self.change_position(self.x+dt*self.vx*settings.grid_width/100, self.y+dt*self.vy*settings.grid_width/100)
-        
+    
+    def update_velocity(self, dt):
+        self.direction = (self.vx+self.a[0]*dt,self.vy+self.a[1]*dt)
+        self.v = norm(self.direction[0],self.direction[1])
+
     def update_timer(self, dt):
         if self.timer_on_hold == True:
             if self.pause_duration:
@@ -184,6 +191,7 @@ class Sprite(pygame.sprite.Sprite):
             if self.animation_type == "vanish":
                 if frame_number >= len(self.frames):
                     self.kill()
+                    return self.frame_index
                 else:
                     return frame_number
             elif self.animation_type == "pingpong":

@@ -24,13 +24,13 @@ class Game:
         pygame.init()
 
         # Fixes screen as a pygame surface on which we can blit sprites
-        self.screen = pygame.display.set_mode(
-            (settings.screen_width, settings.screen_height), pygame.FULLSCREEN)
+        self.screen = pygame.display.set_mode((settings.screen_width, settings.screen_height), pygame.FULLSCREEN)
+
 
         # Initialize menus
         self.active_menu = None
         self.main_menu = Menu(message=["Space invaders"], options=[
-                               "Start game", "Highscores", "Buy Premium", "Exit"])
+                               "Start game", "Highscores", "Buy Premium", "Credits", "Exit"])
         self.pause_menu = Menu(message=["PAUSE"], options=[
                                "Continue", "Restart", "Exit"])
         self.level_solved_menu = Menu(message=[
@@ -174,6 +174,8 @@ class Game:
                             self.active_menu = self.main_menu
                         elif selection == "Buy Premium":
                             self.active_menu = Menu(message=["Haha", "Did you believe there", "is a premium version?"], options=["Go back"])
+                        elif selection == "Credits":
+                            self.active_menu = Menu(message=["Credits", "Programmed with pygame", "Sprites and sound effects from", "pixabay.com, craftpix.net,", "opengameart.net and Google Gemini"], options=["Go back"])
                         elif selection == "Check high scores":
                             if len(self.highscores) < settings.max_number_of_highscores or self.level.ship.score > self.highscores[-1][1]:
                                 pygame.mixer.stop()

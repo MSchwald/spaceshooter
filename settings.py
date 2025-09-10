@@ -1,10 +1,13 @@
+import pygame
 from pygame.locals import *
 # Overall game settings
 
-# Screen settings
-screen_width = 1920 #default: 1600
-screen_height = int(9/16*screen_width)
-grid_width = int(screen_width/16) #default: 100
+pygame.init()
+
+# Screen settings, default: 1920x1080, 16:9 ration
+info = pygame.display.Info()
+screen_width, screen_height = info.current_w, info.current_h
+grid_width = int(screen_width/16) #default: 120
 bg_color = (0, 0, 0)
 
 # Game settings

@@ -9,7 +9,7 @@ from math import sqrt
 
 class Sprite(pygame.sprite.Sprite):
     # class for all sprites
-    def __init__(self, image=None, grid=None, center=None, x=0, y=0, v=0, direction=(0, 0), constraints=None, boundary_behaviour="clamp", animation_type=None, frames=None, fps=None, animation_time=None):
+    def __init__(self, image=None, grid=None, center=None, x=0, y=0, v=0, direction=(0, 0), constraints=None, boundary_behaviour="clamp", animation_type=None, frames=None, fps=None, animation_time=None, starting_frame=0):
         #Non-animated sprites should have an Image-object as 'image',
         #   animated sprites only need a list 'frames' of Image-objects and start on frame 0
         # possible boundary behaviours:
@@ -34,13 +34,14 @@ class Sprite(pygame.sprite.Sprite):
         if animation_type is None:
             self.set_image(image)
         else:
-            self.set_image(frames[0])
+            self.set_image(frames[starting_frame])
             self.frame_number = 0
-            self.frame_index = 0
-            if fps:
-                self.frame_duration_ms = int(1/fps*1000)
-            elif animation_time:
-                self.frame_duration_ms = int(animation_time*1000/len(frames))
+            self.frame_index = starting_frame
+            if animation_type != "manual":
+                if fps:
+                    self.frame_duration_ms = int(1/fps*1000)
+                elif animation_time:
+                    self.frame_duration_ms = int(animation_time*1000/len(frames))
         self.timer = 0
         self.timer_on_hold = False
         if center:
@@ -164,7 +165,7 @@ class Sprite(pygame.sprite.Sprite):
             self.timer += dt
     
     def update_frame(self, dt):
-        if self.timer_on_hold == False and self.animation_type:
+        if self.timer_on_hold == False and self.animation_type and self.animation_type != "manual" :
                 new_index = self.new_frame_index()
                 if new_index != self.frame_index:
                     self.frame_index = new_index

@@ -8,7 +8,7 @@ grid_width = int(screen_width/16) #default: 100
 bg_color = (0, 0, 0)
 
 # Game settings
-game_starting_level = 2
+game_starting_level = 4
 starting_score = 0
 
 # Ship settings
@@ -22,15 +22,15 @@ max_shield_duration = 15
 
 # Alien settings
 asteroid_pieces = 4
-alien_speed = {"big_asteroid": 0.3, "small_asteroid": 0.6, "purple": 0.4, "ufo": 1}
-alien_energy = {"big_asteroid": 4, "small_asteroid": 1, "purple": 15, "ufo": 30}
-alien_points = {"big_asteroid": 20,
-               "small_asteroid": 10, "purple": 100, "ufo": 500}
-alien_width = {"big_asteroid": 100,
-               "small_asteroid": None, "purple": 150, "ufo": 100}
+alien_speed = {"big_asteroid": 0.3, "small_asteroid": 0.6, "purple": 0.4, "ufo": 1, "blob": 0.3}
+alien_energy = {"big_asteroid": 4, "small_asteroid": 1, "purple": 15, "ufo": 30, "blob": 32}
+alien_points = {"big_asteroid": 20,"small_asteroid": 10,
+                "purple": 100, "ufo": 500, "blob": 100}
+alien_width = {"big_asteroid": 100, "small_asteroid": None,
+                "purple": 150, "ufo": 100, "blob": 300}
 alien_width["small_asteroid"]=alien_width["big_asteroid"]*asteroid_pieces**(-1/3)
-alien_colorkey = {"big_asteroid": (0,0,0),
-               "small_asteroid": (0,0,0), "purple": (254,254,254), "ufo": (0,0,0)}
+alien_colorkey = {"big_asteroid": (0,0,0), "small_asteroid": (0,0,0),
+                "purple": (254,254,254), "ufo": (0,0,0), "blob": (0,0,0)}
 
 # boundaries for the movement of the sprites
 # [left, top, width, height]

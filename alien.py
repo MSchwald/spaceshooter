@@ -130,15 +130,13 @@ class Alien(Sprite):
 
         elif self.type == "ufo":
             #ufo aliens throw purple aliens
-            #choice([lambda: self.shoot("g"), lambda: self.throw_alien("purple")])()
             self.throw_alien("purple")
 
         if self.type == "blob":
-            #purple aliens shoot green bullets
+            #blobs shoot bubbles
             self.shoot("blubber",size=self.energy)
 
     # types of alien actions
-
     def shoot(self, bullet_type, size=None):
         self.level.bullets.add(Bullet(bullet_type,size=size,center=self.rect.midbottom))
 

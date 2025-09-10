@@ -8,7 +8,7 @@ grid_width = int(screen_width/16) #default: 100
 bg_color = (0, 0, 0)
 
 # Game settings
-game_starting_level = 4
+game_starting_level = 5
 starting_score = 0
 
 # Ship settings

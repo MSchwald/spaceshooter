@@ -97,7 +97,8 @@ class Level:
                 self.aliens.add(blob)
             case 5:
                 self.goal = "Survive for a minute!"
-                self.events.append(Event("asteroid_hail", self, random_cycle_time=(800,1000)))            
+                self.events.append(Event("asteroid_hail", self, random_cycle_time=(500,800)))
+                self.events.append(Event("alien_attack",self,random_cycle_time=(1000,1500)))        
         self.timer = 0
 
 

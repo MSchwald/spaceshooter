@@ -25,3 +25,7 @@ class Event:
     def do_action(self):
         if self.type == "asteroid_hail":
             self.level.alien_random_entrance("big_asteroid")
+        if self.type == "alien_attack":
+            pass
+            #choice([lambda: self.level.alien_random_entrance("purple"),
+            #lambda: self.throw_alien("purple")])()

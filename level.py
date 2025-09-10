@@ -44,9 +44,10 @@ class Level:
                 return "solved"
             elif self.number == 4 and not self.blobs:
                 pygame.mixer.stop()
-                sound.start.play()
-                return "solved"
+                sound.game_won.play()
+                return "game won"
             elif self.number == 5 and self.timer > 60000:
+                #not implemented yet
                 pygame.mixer.stop()
                 sound.game_won.play()
                 return "game won"

@@ -31,7 +31,7 @@ blob_images = [small_blob_image.scale_by((N/n)**(-1/3)) for n in range(1,N//8)]+
 class Alien(Sprite):
     """A class to manage the enemies"""
 
-    def __init__(self, type, level, cycle_time=None, random_cycle_time=(500,1000),
+    def __init__(self, type, level, cycle_time=None, random_cycle_time=(800,1500),
                 grid=None, center=None, x=0, y=0, v=None, direction=None, constraints=pygame.Rect(settings.alien_constraints), boundary_behaviour="reflect",
                 scaling_width=settings.grid_width, starting_frame=0, energy=None):
         #level: needs access to the level object from the game file
@@ -73,7 +73,7 @@ class Alien(Sprite):
         if self.cycle_time:
             self.action_timer = 0
         self.energy = energy
-        
+
     def update(self, dt):
         #asteroids can collide (elastic collision of balls)
         if self.type in ["big_asteroid","small_asteroid"]:
@@ -133,10 +133,13 @@ class Alien(Sprite):
             #ufo aliens throw purple aliens
             choice([lambda: self.shoot("g"), lambda: self.throw_alien("purple")])()
 
+        if self.type == "blob":
+            #purple aliens shoot green bullets
+            self.shoot("blubber",size=self.energy)
     # types of alien actions
 
-    def shoot(self, bullet_type):
-        self.level.bullets.add(Bullet(bullet_type,center=self.rect.midbottom))
+    def shoot(self, bullet_type, size=None):
+        self.level.bullets.add(Bullet(bullet_type,size=size,center=self.rect.midbottom))
 
     def throw_alien(self, alien_type):
         self.level.aliens.add(Alien("purple",self.level,center=self.rect.midbottom, direction=(2*random()-1,1)))

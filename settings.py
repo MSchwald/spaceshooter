@@ -44,11 +44,11 @@ starting_missiles = 10
 missile_explosion_size = 150
 missile_duration = 0.5
 missile_damage = 15
-bullet_width = {1:14, 2:18, 3:22, 4:26, "missile":missile_explosion_size, "g":26}
-bullet_damage = {1:1,2:2,3:3,4:4,"missile":missile_damage, "g":3}
-bullet_owner = {1:"player",2:"player",3:"player",4:"player","missile":"player", "g":"enemy"}
-bullet_speed = {1:1,2:1,3:1,4:1,"missile":0, "g":0.2}
-bullet_effect_time = {1:None,2:None,3:None,4:None,"missile":1000*missile_duration, "g":None}
+bullet_width = {1:14, 2:18, 3:22, 4:26, "missile":missile_explosion_size, "g":26, "blubber": 150}
+bullet_damage = {1:1,2:2,3:3,4:4,"missile":missile_damage, "g":3, "blubber":16}
+bullet_owner = {1:"player",2:"player",3:"player",4:"player","missile":"player", "g":"enemy", "blubber": "enemy"}
+bullet_speed = {1:1,2:1,3:1,4:1,"missile":0, "g":0.2, "blubber":0.4}
+bullet_effect_time = {1:None,2:None,3:None,4:None,"missile":1000*missile_duration, "g":None, "blubber":None}
 
 # Item settings
 item_types = ["magnet"]#["size_plus","size_minus", "score_buff", "bullets_buff", "hp_plus", "invert_controlls", "life_plus","life_minus", "magnet", "missile", "shield", "ship_buff", "speed_buff", "speed_nerf"]

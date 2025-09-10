@@ -6,10 +6,14 @@ from sprite import Sprite
 from image import Image
 import sound
 
+w,N=settings.bullet_width["blubber"],settings.alien_energy["blob"]
+blubber_image = Image.load(f'images/bullet/blubber.png', scaling_width = w)
+blubber_images = [blubber_image.scale_by((N/n)**(-1/3)) for n in range(1,N+1)]
+
 class Bullet(Sprite):
     """A class to manage the bullets shot by the player or enemies"""
 
-    def __init__(self, type, owner=None, damage=None, effect_time = None, image=None,
+    def __init__(self, type, size=None, owner=None, damage=None, effect_time = None, image=None,
             v=None, grid=None, center=None, x=0, y=0, direction=None,
             constraints=pygame.Rect(0, 0, settings.screen_width, settings.screen_height),
             boundary_behaviour="vanish",
@@ -27,6 +31,11 @@ class Bullet(Sprite):
         if type in [1,2,3]:
             if image is None:
                 image = Image.load(f'images/bullet/{type}.png', scaling_width = settings.bullet_width[type])
+        elif type == "blubber":
+            if size is None:
+                size = settings.alien_energy["blob"]
+            image = blubber_images[size-1]
+            damage = size*settings.bullet_damage[type]//settings.alien_energy["blob"]
         elif type == "missile":
             frames = [Image.load(f"images/bullet/explosion{n}.png", scaling_factor=settings.missile_explosion_size/810) for n in range(6)]
             animation_type = "vanish"

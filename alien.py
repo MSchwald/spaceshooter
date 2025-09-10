@@ -130,7 +130,8 @@ class Alien(Sprite):
 
         elif self.type == "ufo":
             #ufo aliens throw purple aliens
-            choice([lambda: self.shoot("g"), lambda: self.throw_alien("purple")])()
+            #choice([lambda: self.shoot("g"), lambda: self.throw_alien("purple")])()
+            self.throw_alien("purple")
 
         if self.type == "blob":
             #purple aliens shoot green bullets
@@ -150,7 +151,7 @@ class Alien(Sprite):
         elif self.type == "blob":
             self.kill()
         else:
-            self.energy -= damage
+            self.energy = max(self.energy-damage,0)
             if self.energy > 0 and self.type not in ["big_asteroid", "small_asteroid"]:
                 {"purple": sound.enemy_hit,"ufo": sound.metal_hit}[self.type].play()
             else:

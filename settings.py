@@ -17,15 +17,15 @@ rank_speed = {1: 0.5, 2: 0.6, 3: 0.7}
 rank_energy = {1: 15, 2: 30, 3: 45}
 ship_lives = 3
 ship_width = {1:100, 2:100, 3:120}
-shield_starting_timer = 15
+shield_starting_timer = 3
 max_shield_duration = 15
 
 # Alien settings
 asteroid_pieces = 4
 alien_speed = {"big_asteroid": 0.3, "small_asteroid": 0.6, "purple": 0.4, "ufo": 1, "blob": 0.5}
-alien_energy = {"big_asteroid": 4, "small_asteroid": 1, "purple": 15, "ufo": 30, "blob": 32}
+alien_energy = {"big_asteroid": 4, "small_asteroid": 1, "purple": 10, "ufo": 20, "blob": 32}
 alien_points = {"big_asteroid": 20,"small_asteroid": 10,
-                "purple": 100, "ufo": 500, "blob": 100}
+                "purple": 100, "ufo": 500, "blob": 30}
 alien_width = {"big_asteroid": 100, "small_asteroid": None,
                 "purple": 150, "ufo": 100, "blob": 300}
 alien_width["small_asteroid"]=alien_width["big_asteroid"]*asteroid_pieces**(-1/3)
@@ -40,7 +40,7 @@ item_constraints = [0, 0, screen_width, screen_height]
 
 # Bullet settings
 max_bullets = 3
-starting_missiles = 10
+starting_missiles = 1
 missile_explosion_size = 150
 missile_duration = 0.5
 missile_damage = 15
@@ -51,14 +51,14 @@ bullet_speed = {1:1,2:1,3:1,4:1,"missile":0, "g":0.2, "blubber":0.4}
 bullet_effect_time = {1:None,2:None,3:None,4:None,"missile":1000*missile_duration, "g":None, "blubber":None}
 
 # Item settings
-item_types = ["magnet"]#["size_plus","size_minus", "score_buff", "bullets_buff", "hp_plus", "invert_controlls", "life_plus","life_minus", "magnet", "missile", "shield", "ship_buff", "speed_buff", "speed_nerf"]
+item_types = ["size_plus","size_minus", "score_buff", "bullets_buff", "hp_plus", "invert_controlls", "life_plus","life_minus", "magnet", "missile", "shield", "ship_buff", "speed_buff", "speed_nerf"]
 item_size = 50
 invert_controlls_duration = 5
 size_change_duration = 10
 speed_change_duration = 5
 score_buff_duration = 10
 shield_duration = 3
-item_probability = 1#0.3
+item_probability = 0.3
 item_speed = 0.3
 hp_plus = 5
 speed_buff = 1.8

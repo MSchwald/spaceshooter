@@ -10,10 +10,6 @@ from random import randint
 from sprite import Sprite
 from image import Image
 
-#placement of enemies in an 16x9-grid
-max_level = 5
-
-
 class Level:
     """A class to manage the game levels"""
 
@@ -22,6 +18,7 @@ class Level:
         self.ship = Ship(self)
         # Initializes level number and empty sprite groups
         self.number = number
+        self.max_level = 5
         self.events = []
         self.ship_bullets = pygame.sprite.Group()
         self.bullets = pygame.sprite.Group()
@@ -30,39 +27,6 @@ class Level:
         self.aliens = pygame.sprite.Group()
         self.blobs = pygame.sprite.Group()
         self.crosshairs = Sprite(Image.load('images/bullet/aim.png', scaling_width = settings.missile_explosion_size))
-
-    def status(self):
-        if self.ship.lives <= 0:
-            pygame.mixer.stop()
-            sound.game_over.play()
-            return "game over"
-        match self.number:
-            case 1:
-                if not self.asteroids:
-                    pygame.mixer.stop()
-                    sound.start.play()
-                    return "solved"
-            case 2:
-                if not self.aliens:
-                    pygame.mixer.stop()
-                    sound.start.play()
-                    return "solved"
-            case 3:
-                if self.ufo.energy == 0:
-                    pygame.mixer.stop()
-                    sound.start.play()
-                    return "solved"
-            case 4:
-                if not self.blobs:
-                    pygame.mixer.stop()
-                    sound.start.play()
-                    return "solved"
-            case 5:
-                if self.timer > 60000:
-                    pygame.mixer.stop()
-                    sound.game_won.play()
-                    return "game won"
-        return "running"
 
     def start(self):
         self.ship.reset_position()
@@ -73,6 +37,30 @@ class Level:
         self.asteroids.empty()
         self.aliens.empty()
         self.blobs.empty()
+        self.update_level_goal()
+        self.timer = 0
+
+    def next(self):
+        if self.number < self.max_level:
+            self.number += 1
+            self.start()
+
+    def restart(self):
+        sound.level_solved.play()
+        self.number = settings.game_starting_level
+        self.items.empty()
+        self.ship.start_new_game()
+        self.start()
+
+    def update(self, dt):
+        self.timer += dt
+        self.update_sprites(dt)
+        for event in self.events:
+            event.update(dt)
+        self.update_level_progress()
+
+    def update_level_goal(self):
+        """each level has a different goal"""
         match self.number:
             case 0:
                 self.goal = "Welcome!"
@@ -105,12 +93,8 @@ class Level:
                 self.goal = "Survive for a minute!"
                 self.events.append(Event("asteroid_hail", self, random_cycle_time=(500,800)))
                 self.events.append(Event("alien_attack",self,random_cycle_time=(1000,1500)))        
-        self.timer = 0
 
-
-    def update(self, dt):
-
-        self.timer += dt
+    def update_level_progress(self):
         match self.number:
             case 1:                
                 self.progress = f"{len(self.asteroids)} left"
@@ -122,8 +106,48 @@ class Level:
                 self.progress = f"Blob energy: {sum([blob.energy for blob in self.blobs])}"
             case 5:
                 self.progress = f"Timer: {int(60-self.timer/1000)}"
-        
-        # update the status of all level objects, the crosshairs and level events
+
+    def goal_fulfilled(self):
+        match self.number:
+            case 1:
+                if not self.asteroids:
+                    return True
+            case 2:
+                if not self.aliens:
+                    return True
+            case 3:
+                if self.ufo.energy == 0:
+                    return True
+            case 4:
+                if not self.blobs:
+                    return True
+            case 5:
+                if self.timer > 60000:
+                    return True
+        return False
+
+    def status(self):
+        if self.ship.lives <= 0:         
+            return "game_over"
+        if self.goal_fulfilled():
+            if self.number < self.max_level:
+                return "level_solved"
+            return "game_won"
+        return "running"
+
+    def play_status_sound(self):
+        pygame.mixer.stop()
+        match self.status():
+            case "game_over":
+                sound.game_over.play()
+            case "level_solved":
+                sound.level_solved.play()
+            case "game_won":
+                sound.game_won.play()
+
+
+    def update_sprites(self, dt):
+        """update the status of all level objects, the crosshairs"""
         for bullet in self.bullets:
             bullet.update(dt)
         self.ship.update(dt)
@@ -136,10 +160,91 @@ class Level:
         self.crosshairs.rect.center = pygame.mouse.get_pos()
         self.crosshairs.x = self.crosshairs.rect.x
         self.crosshairs.y = self.crosshairs.rect.y
-        for event in self.events:
-            event.update(dt)
+        self.collision_checks()
 
-        #collisions of blobs, they merge when not too big
+    def collision_checks(self):
+        """Checks for collisions of sprites, inflicts damage, adds points, generates items"""
+        self.bullets_hit()
+        self.enemies_hit_ship()
+        self.ship_collects_item()
+        self.blobs_collide()
+
+    def bullets_hit(self):
+        """Check if bullets hit enemies or the ship"""
+        # bullets hitting asteroids
+        collisions = pygame.sprite.groupcollide(
+            self.bullets, self.asteroids, False, False, collided=pygame.sprite.collide_mask)
+        for bullet in collisions.keys():
+            for asteroid in collisions[bullet]:
+                if bullet.type != "missile":
+                    asteroid.get_damage(bullet.damage)
+                    bullet.kill()
+                    asteroid.kill()
+                if bullet.type == "missile" and asteroid not in bullet.hit_enemies:
+                    # missiles hit each enemy at most once during their explosion time
+                    asteroid.get_damage(bullet.damage)
+                    asteroid.kill()
+
+        # bullets hitting aliens or the ship
+        for bullet in self.bullets:
+            if bullet.owner == "player":
+                for alien in self.aliens:
+                    if pygame.sprite.collide_mask(bullet, alien):
+                        if bullet.type != "missile":
+                            alien.get_damage(bullet.damage)
+                            bullet.kill()
+                        if bullet.type == "missile" and alien not in bullet.hit_enemies:
+                            # missiles hit each enemy at most once during their explosion time
+                            if alien.type == "blob":
+                                if alien.energy == 1:
+                                    alien.kill()
+                                else:
+                                    sound.slime_hit.play()
+                                    alien.energy = alien.energy//2
+                                    alien.change_image(blob_images[alien.energy-1])
+                            else:
+                                alien.get_damage(bullet.damage)
+                            bullet.hit_enemies.add(alien)
+            elif bullet.owner == "enemy" and pygame.sprite.collide_mask(bullet, self.ship):
+                if self.ship.status == "shield":
+                    bullet.reflect()
+                    bullet.owner = "player"
+                else:
+                    self.ship.get_damage(bullet.damage)
+                    bullet.kill()
+                    sound.player_hit.play()
+            
+    def enemies_hit_ship(self):
+        """Check if enemies hit the ship"""
+        for asteroid in self.asteroids:
+            if pygame.sprite.collide_mask(self.ship, asteroid):
+                if self.ship.status == "shield":
+                    asteroid.reflect()
+                else:
+                    self.ship.get_damage(asteroid.energy)
+                    asteroid.energy = 0
+                    asteroid.kill()
+        for alien in self.aliens:
+            if pygame.sprite.collide_mask(self.ship, alien):
+                if self.ship.status == "shield":
+                    alien.reflect()
+                else:
+                    self.ship.get_damage(alien.energy)
+                    alien.energy = 0
+                    alien.kill()
+        
+    def ship_collects_item(self):
+        """Check if ship collects an item"""
+        for item in self.items:
+            if pygame.sprite.collide_mask(self.ship, item):
+                if self.ship.status == "shield":
+                    item.change_direction(-item.direction[0],-item.direction[1])
+                else:
+                    self.ship.collect_item(item.type)
+                    item.kill()
+
+    def blobs_collide(self):
+        """merge colliding blobs if not too big"""
         merge_occured = False
         for blob1 in self.blobs:
                 if merge_occured:
@@ -177,18 +282,6 @@ class Level:
                             blob2.hard_kill()
                             sound.blob_merge.play()
                             break
-
-    def next(self):
-        if self.number < max_level:
-            self.number += 1
-            self.start()
-
-    def restart(self):
-        sound.start.play()
-        self.number = settings.game_starting_level
-        self.items.empty()
-        self.ship.start_new_game()
-        self.start()
 
     def alien_random_entrance(self, type, amount=1, energy=None, v=None, constraints = pygame.Rect(0, 0, settings.screen_width, settings.screen_height), boundary_behaviour = "vanish"):
             if v is None or v == 0:

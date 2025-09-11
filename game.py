@@ -2,7 +2,7 @@ import pygame
 from pygame.locals import *
 import settings
 from alien import Alien,blob_images
-from level import Level, max_level
+from level import Level
 from text import *
 from image import Image
 from random import random, choice
@@ -46,34 +46,24 @@ class Game:
         self.mode = "menu"  # possible modes: "game", "menu", "enter name" (for highscores)
         self.active_menu = main_menu
         self.level.start()
+
+        #main loop of the game
         while self.running:
+            # 1) handle keyboard and mouse input
             self.handle_events()
 
             # measures passed time and limits the frame rate to 60fps
             dt = self.clock.tick(60)
+            
+            # 2) run the game for dt milliseconds (pauses if in menu mode)
             if self.mode == "game":
+                self.level.update(dt) # update all ingame objects according to the passed time
 
-                self.update(dt)
-
-            self.render()
+            # 3) show the new frame of the game on the screen 
+            self.update_screen()
         pygame.quit()
 
     def handle_events(self):
-        self.handle_event_queue()
-        # set the direction of the ship according to keyboard input
-        keys = pygame.key.get_pressed()
-        self.level.ship.control(keys)
-
-    def update(self, dt):
-        self.check_level_status()
-        self.update_sprites(dt)
-        self.collision_checks()
-        
-
-    def render(self):
-        self.update_screen()
-
-    def handle_event_queue(self):
         """handle the event queue"""
         for event in pygame.event.get():
 
@@ -162,96 +152,20 @@ class Game:
                                 self.active_menu = Menu(message=["No new high score!", "Your score was too low,", "maybe next time!", ""]+[str(score[0]) + " " + str(score[1]) for score in self.highscores], options=["OK"])
                         else:
                             self.active_menu = highscores_checked
-                
-    def update_sprites(self, dt):
-        """update position of all sprites according to the passed time"""
-        self.level.update(dt)
 
-    def collision_checks(self):
-        """Checks for collisions of sprites, inflicts damage, adds points, generate items"""
-        # Check if bullets hit asteroids
-        collisions = pygame.sprite.groupcollide(
-            self.level.bullets, self.level.asteroids, False, False, collided=pygame.sprite.collide_mask)
-        for bullet in collisions.keys():
-            for asteroid in collisions[bullet]:
-                if bullet.type != "missile":
-                    asteroid.get_damage(bullet.damage)
-                    bullet.kill()
-                    asteroid.kill()
-                if bullet.type == "missile" and asteroid not in bullet.hit_enemies:
-                    # missiles hit each enemy at most once during their explosion time
-                    asteroid.get_damage(bullet.damage)
-                    asteroid.kill()
+    # set the direction of the ship according to keyboard input
+        keys = pygame.key.get_pressed()
+        self.level.ship.control(keys)   
 
-        #Check if bullets hit aliens or the ship
-        for bullet in self.level.bullets:
-            if bullet.owner == "player":
-                for alien in self.level.aliens:
-                    if pygame.sprite.collide_mask(bullet, alien):
-                        if bullet.type != "missile":
-                            alien.get_damage(bullet.damage)
-                            bullet.kill()
-                        if bullet.type == "missile" and alien not in bullet.hit_enemies:
-                            # missiles hit each enemy at most once during their explosion time
-                            if alien.type == "blob":
-                                if alien.energy == 1:
-                                    alien.kill()
-                                else:
-                                    sound.slime_hit.play()
-                                    alien.energy = alien.energy//2
-                                    alien.change_image(blob_images[alien.energy-1])
-                            else:
-                                alien.get_damage(bullet.damage)
-                            bullet.hit_enemies.add(alien)
-            elif bullet.owner == "enemy" and pygame.sprite.collide_mask(bullet, self.level.ship):
-                if self.level.ship.status == "shield":
-                    bullet.reflect()
-                    bullet.owner = "player"
-                else:
-                    self.level.ship.get_damage(bullet.damage)
-                    bullet.kill()
-                    sound.player_hit.play()
-            
-
-        # Check if enemies hit the ship
-        for asteroid in self.level.asteroids:
-            if pygame.sprite.collide_mask(self.level.ship, asteroid):
-                if self.level.ship.status == "shield":
-                    asteroid.reflect()
-                else:
-                    self.level.ship.get_damage(asteroid.energy)
-                    asteroid.energy = 0
-                    asteroid.kill()
-        for alien in self.level.aliens:
-            if pygame.sprite.collide_mask(self.level.ship, alien):
-                if self.level.ship.status == "shield":
-                    alien.reflect()
-                else:
-                    self.level.ship.get_damage(alien.energy)
-                    alien.energy = 0
-                    alien.kill()
-        
-
-        # Check if ship collects an item
-        for item in self.level.items:
-            if pygame.sprite.collide_mask(self.level.ship, item):
-                if self.level.ship.status == "shield":
-                    item.change_direction(-item.direction[0],-item.direction[1])
-                else:
-                    self.level.ship.collect_item(item.type)
-                    item.kill()
-
-
-    def check_level_status(self):
+    def update_menu_status(self):
         """Check if the current level is solved or the player is game over"""
-        if not self.level.status() == "running":
+        if self.mode == "game" and self.level.status() != "running":
+            self.level.play_status_sound()
             self.mode = "menu"
-            if self.level.status() == "solved":
-                self.active_menu = level_solved_menu
-            elif self.level.status() == "game won":
-                self.active_menu = game_won_menu
-            elif self.level.status() == "game over":
-                self.active_menu = game_over_menu
+            self.active_menu ={"level_solved": level_solved_menu,
+                                "game_won":game_won_menu,
+                                "game_over":game_over_menu}[self.level.status()]
+
 
     def update_screen(self):
         """Updates screen with all sprites and stats"""
@@ -263,6 +177,7 @@ class Game:
 
         self.level.crosshairs.blit(self.screen)
 
+        self.update_menu_status() # open a menu if necessary
         if self.mode == "menu" or self.mode == "enter name":
             self.active_menu.blit(self.screen)
 

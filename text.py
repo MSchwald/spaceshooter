@@ -80,3 +80,20 @@ class Menu():
         """blits the menu with the current selection highlighted"""
         screen.blit(self.surface_highlighted[self.current_selection], ((
             screen.get_width()-self.w)/2, (screen.get_height()-self.h)/2))
+
+main_menu = Menu(message=["Space invaders"],
+                options=["Start game", "Highscores", "Buy Premium", "Credits", "Exit"])
+pause_menu = Menu(message=["PAUSE"],
+                options=["Continue", "Restart", "Exit"])
+level_solved_menu = Menu(message=["Level solved!", "Press RETURN to", "start the next level."],
+                options=["Continue"])
+game_won_menu = Menu(message=["Congratulations!", "You have finished", "all available levels!"],
+                options=["Check high scores","Restart", "Exit"])
+game_over_menu = Menu(message=["Game over!", "You ran out of lives!"],
+                options=["Check high scores","Restart", "Exit"])
+highscores_checked = Menu(message=["Play again?"], options=["Restart", "Exit"])
+premium_menu = Menu(message=["Haha", "Did you believe there", "is a premium version?"],
+                options=["Go back"])
+credits_menu = Menu(message=["Credits", "Programmed with pygame", "Sprites and sound effects from",
+                "pixabay.com, craftpix.net,", "opengameart.net and Google Gemini"],
+                options=["Go back"])

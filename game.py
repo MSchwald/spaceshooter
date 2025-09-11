@@ -3,7 +3,7 @@ from pygame.locals import *
 import settings
 from alien import Alien,blob_images
 from level import Level, max_level
-from text import Menu
+from text import *
 from image import Image
 from random import random, choice
 from item import Item
@@ -27,23 +27,7 @@ class Game:
         self.display = pygame.display.set_mode(display_size, pygame.FULLSCREEN)
         self.screen = screen #The game's surface
 
-        # Initialize menus
-        self.active_menu = None
-        self.main_menu = Menu(message=["Space invaders"], options=[
-                               "Start game", "Highscores", "Buy Premium", "Credits", "Exit"])
-        self.pause_menu = Menu(message=["PAUSE"], options=[
-                               "Continue", "Restart", "Exit"])
-        self.level_solved_menu = Menu(message=[
-                                      "Level solved!", "Press RETURN to", "start the next level."], options=["Continue"])
-        self.game_won_menu = Menu(message=[
-                                  "Congratulations!", "You have finished", "all available levels!"], options=["Check high scores","Restart", "Exit"])
-        self.game_over_menu = Menu(message=[
-                                  "Game over!", "You ran out of lives!"], options=["Check high scores","Restart", "Exit"])
-        self.highscores_checked = Menu(message=[
-                                  "Play again?"], options=["Restart", "Exit"])
-
-
-        # Load high scores
+        # Load high scores or use the default ones from the settings
         try:
             with open("highscores.json", "r", encoding="utf-8") as f:
                 self.highscores = json.load(f)
@@ -52,23 +36,16 @@ class Game:
                 self.highscores = sorted(settings.default_highscores, key=lambda x: x[1], reverse=True)[:settings.max_number_of_highscores]
         self.allowed_chars = string.ascii_letters + string.digits #allowed characters in the table
 
-        # Start the first game level
         self.level = Level(0)
-
-        #Initializes status bar
         self.statusbar = Statusbar(self.level)
-
-        # Starts a clock to measure ingame time
         self.clock = pygame.time.Clock()
-
-        # Fadenkreuz
         self.aim = Sprite(Image.load('images/bullet/aim.png', scaling_width = settings.missile_explosion_size))
 
     def run(self):
         """Starts the main loop for the game."""
         self.running = True  # checks if the game gets shut down
-        self.mode = "menu"  # possible modes: "game", "menu"
-        self.active_menu = self.main_menu
+        self.mode = "menu"  # possible modes: "game", "menu", "enter name" (for highscores)
+        self.active_menu = main_menu
         self.level.start()
         while self.running:
             self.handle_events()
@@ -115,7 +92,7 @@ class Game:
                     # RETURN pauses the game and opens the main menu
                     if event.key == K_RETURN:
                         self.mode = "menu"
-                        self.active_menu = self.pause_menu
+                        self.active_menu = pause_menu
                         break
                     # SPACE shoots bullets
                     elif event.key == K_SPACE:
@@ -141,15 +118,13 @@ class Game:
                 if event.type == KEYDOWN:
                     if event.key == K_BACKSPACE:
                         self.highscores[self.highscore_place][0] = self.highscores[self.highscore_place][0][:-1]
-                        #self.active_menu = Menu(message=["Congratulations!", "You achieved a new high score.", "Please enter your name and press RETURN."], options=[f"Name: {self.player_name}"])
                     if event.key == K_RETURN:
                         with open("highscores.json", "w", encoding="utf-8") as f:
                             json.dump(self.highscores,f)
-                        self.active_menu = self.highscores_checked
+                        self.active_menu = highscores_checked
                         self.mode = "menu"
                     elif event.unicode in self.allowed_chars and len(self.highscores[self.highscore_place][0])<10:
                         self.highscores[self.highscore_place][0] += event.unicode
-                        #self.active_menu = Menu(message=["Congratulations!", "You achieved a new high score.", "Please enter your name and press RETURN."], options=[f"Name: {self.player_name}"])
             
             # Navigating the menu
             if self.mode == "menu":
@@ -166,16 +141,16 @@ class Game:
                             break
                         elif selection == "Continue":
                             self.mode = "game"
-                            if self.active_menu == self.level_solved_menu:
+                            if self.active_menu == level_solved_menu:
                                 self.level.next()
                         elif selection == "Highscores":
                             self.active_menu = Menu(message=["Highscores", "Do you think you can beat them?", ""]+[str(score[0]) + " " + str(score[1]) for score in self.highscores], options=["Go back"])
                         elif selection == "Go back":
-                            self.active_menu = self.main_menu
+                            self.active_menu = main_menu
                         elif selection == "Buy Premium":
-                            self.active_menu = Menu(message=["Haha", "Did you believe there", "is a premium version?"], options=["Go back"])
+                            self.active_menu = premium_menu
                         elif selection == "Credits":
-                            self.active_menu = Menu(message=["Credits", "Programmed with pygame", "Sprites and sound effects from", "pixabay.com, craftpix.net,", "opengameart.net and Google Gemini"], options=["Go back"])
+                            self.active_menu = credits_menu
                         elif selection == "Check high scores":
                             if len(self.highscores) < settings.max_number_of_highscores or self.level.ship.score > self.highscores[-1][1]:
                                 pygame.mixer.stop()
@@ -187,7 +162,7 @@ class Game:
                             else:
                                 self.active_menu = Menu(message=["No new high score!", "Your score was too low,", "maybe next time!", ""]+[str(score[0]) + " " + str(score[1]) for score in self.highscores], options=["OK"])
                         else:
-                            self.active_menu = self.highscores_checked
+                            self.active_menu = highscores_checked
                 
     def update_sprites(self, dt):
         """update position of all sprites according to the passed time"""
@@ -279,11 +254,11 @@ class Game:
         if not self.level.status() == "running":
             self.mode = "menu"
             if self.level.status() == "solved":
-                self.active_menu = self.level_solved_menu
+                self.active_menu = level_solved_menu
             elif self.level.status() == "game won":
-                self.active_menu = self.game_won_menu
+                self.active_menu = game_won_menu
             elif self.level.status() == "game over":
-                self.active_menu = self.game_over_menu
+                self.active_menu = game_over_menu
 
     def update_screen(self):
         """Updates screen with all sprites and stats"""

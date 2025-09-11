@@ -39,7 +39,7 @@ class Game:
         self.level = Level(0)
         self.statusbar = Statusbar(self.level)
         self.clock = pygame.time.Clock()
-        self.aim = Sprite(Image.load('images/bullet/aim.png', scaling_width = settings.missile_explosion_size))
+        self.crosshairs = Sprite(Image.load('images/bullet/aim.png', scaling_width = settings.missile_explosion_size))
 
     def run(self):
         """Starts the main loop for the game."""
@@ -168,9 +168,9 @@ class Game:
         """update position of all sprites according to the passed time"""
         self.level.update(dt)
 
-        self.aim.rect.center = pygame.mouse.get_pos()
-        self.aim.x = self.aim.rect.x
-        self.aim.y = self.aim.rect.y
+        self.crosshairs.rect.center = pygame.mouse.get_pos()
+        self.crosshairs.x = self.crosshairs.rect.x
+        self.crosshairs.y = self.crosshairs.rect.y
 
 
 
@@ -267,7 +267,7 @@ class Game:
 
         self.statusbar.blit(self.screen)
         self.blit_sprites() #ship, enemies, items, bullets
-        self.aim.blit(self.screen)
+        self.crosshairs.blit(self.screen)
 
         # pause menu
         if self.mode == "menu" or self.mode == "enter name":

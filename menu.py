@@ -141,7 +141,7 @@ class Menu():
 
     @classmethod
     def make_main_menu(cls, game):
-        match game.player_name, game.level.status():
+        match game.player_name, game.level.status:
             case _, "running":
                 m,o = ["Pause"],["Continue", "Restart"]
             case "", "game_won":
@@ -154,7 +154,7 @@ class Menu():
                 m = ["Game over!", f"{game.player_name}, do you want to play again?"]
                 o = ["New game"]
             case "", "start":
-                m,o=["Space invaders"],["Start game"]
+                m,o=["Space invaders","Please press RETURN"],["Start game"]
             case _, "start":
                 m,o=[f"Welcome back, {game.player_name}!"],["Start game"]
         options = o + ["How to play","Highscores", "Buy Premium", "Credits", "Exit"]
@@ -167,8 +167,6 @@ class Menu():
         return menu
 
 # Menus in the game
-level_solved_menu = Menu(message=["Level solved!", "Press RETURN to", "start the next level."],
-                options=["Next level"])
 game_over_menu = Menu(message=["Game over!","You ran out of lives!"],
                 options=["Check high scores"])
 game_won_menu = Menu(message=["Congratulations!", "You have finished", "all available levels!"],
@@ -178,7 +176,7 @@ premium_menu = Menu(message=["Haha", "Did you believe there", "is a premium vers
 credits_menu = Menu(message=["Credits", "Programmed with pygame", "Sprites and sound effects from",
                 "pixabay.com, craftpix.net,", "opengameart.net and Google Gemini", "", "And thank you for beta testing!"],
                 options=["Go back"])
-controll_menu = Menu(message=["Controlls", "W,A,S,D: controll the ship", "SPACE: shoot bullets", "LEFT SHIFT: activate shield", "Left click: drop missile"],
+controll_menu = Menu(message=["Controlls", "W,A,S,D: controll the ship", "  and navigate the menu", "SPACE: shoot bullets", "LEFT SHIFT: activate shield", "Left click: drop missile", "Escape: end the game"],
                 options=["Item list","Go back"])
 items_menu1 = Menu(message=["Item list", "  upgrades your bullets", "  upgrades your ship", f"  gives back {settings.hp_plus} energy", f"  inverts controlls for {settings.invert_controlls_duration}s", "  attracts items to you", f"  score multiplier {settings.item_score_buff} for {settings.score_buff_duration}s"],
                 options=["More items", "Back to controlls","Back to menu"])
@@ -199,5 +197,3 @@ x,y = items_menu2.line_position[4]
 items_menu2.surface.blit(images[6].surface,(x+h,y))
 x,y = items_menu2.line_position[6]
 items_menu2.surface.blit(images[7].surface,(x+h,y))
-
-

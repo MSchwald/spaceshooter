@@ -50,7 +50,7 @@ class Alien(Sprite):
         elif type == "blob":
             super().__init__(image=blob_images[energy-1],
                 grid=grid, center=center, x=x, y=y, v=v, direction=direction,
-                         constraints=constraints, boundary_behaviour="reflect")
+                         constraints=constraints, boundary_behaviour=boundary_behaviour)
             #mass of blobs is proportional to their energy points
             self.m = energy
             #blobs gravitate towards the place they got split the last time
@@ -60,7 +60,7 @@ class Alien(Sprite):
         else:
             super().__init__(Image.load(f'images/alien/{str(type)}.png',colorkey=settings.alien_colorkey[type], scaling_width=settings.alien_width[type]), grid=grid, center=center, x=x, y=y, v=v, direction=direction,
                              constraints=constraints, boundary_behaviour=boundary_behaviour)
-        if type == "purple":
+        if type == "purple" and level.status != "start":
             sound.alien_spawn.play()
         self.type = type
         self.level = level
@@ -104,7 +104,7 @@ class Alien(Sprite):
         # aliens move without collisions
         else:
             #checks if it is time for the alien to do an action
-            if self.cycle_time and not self.timer_on_hold:
+            if self.cycle_time and not self.timer_on_hold and self.level.status != "start":
                 self.action_timer += dt
                 if self.action_timer >= self.cycle_time:
                     self.action_timer -= self.cycle_time
@@ -210,6 +210,7 @@ class Alien(Sprite):
         super(Alien, self).kill()
 
     def reflect(self):
-        sound.shield.stop()
-        sound.shield_reflect.play()
+        if self.level.status != "start":
+            sound.shield.stop()
+            sound.shield_reflect.play()
         super().reflect(flip_x=False, flip_y=False)

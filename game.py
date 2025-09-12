@@ -50,7 +50,7 @@ class Game:
             dt = self.clock.tick(60)
             
             # 2) run the game for dt milliseconds (pauses if in menu mode)
-            if self.mode == "game":
+            if self.mode == "game" or self.level.status == "start":
                 self.level.update(dt) # update all ingame objects according to the passed time
                 self.update_menu_status() # open a menu if necessary
 
@@ -114,17 +114,22 @@ class Game:
                         Menu.choose_current_selection(self)
 
     # set the direction of the ship according to keyboard input
-        keys = pygame.key.get_pressed()
-        self.level.ship.control(keys)   
+        if self.level.status != "start":
+            keys = pygame.key.get_pressed()
+            self.level.ship.control(keys)   
 
     def update_menu_status(self):
         """Check if the current level is solved or the player is game over"""
-        if self.level.status() != "running":
+        if self.level.status in ["level_solved", "game_won", "game_over"]:
             self.level.play_status_sound()
             self.mode = "menu"
-            self.active_menu = {"level_solved": level_solved_menu,
-                                "game_won": game_won_menu,
-                                "game_over":game_over_menu}[self.level.status()]
+            if self.level.status == "level_solved":
+                self.active_menu = Menu(message=[f"Level {self.level.number} solved!", f"In level {self.level.number+1}, you have to", f"{Level.goal[self.level.number+1]}"],
+                options=["Next level"])
+            else:
+                self.active_menu = {"game_won": game_won_menu,
+                                    "game_over":game_over_menu}[self.level.status]
+
 
     def render_screen(self):
         """Blit all sprites, stats, menu etc onto the display in the correct order"""

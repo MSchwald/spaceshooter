@@ -73,25 +73,29 @@ class Level:
             item.blit(screen)
         self.crosshairs.blit(screen)
 
+    goal = ["Welcome!","Destroy all asteroids!","Defeat all aliens!","Defeat the ufo!","Defeat the blob!","Survive for a minute!"]
+
     def update_level_goal(self):
         """each level has a different goal"""
+        self.goal = Level.goal[self.number]
         match self.number:
             case 0:
-                self.goal = "Welcome!"
                 self.progress = "Ready?"
+                self.alien_random_entrance("big_asteroid",v=settings.alien_speed["big_asteroid"]/2,amount=5,boundary_behaviour="wrap")
+                self.alien_random_entrance("small_asteroid",v=settings.alien_speed["small_asteroid"]/2,amount=5,boundary_behaviour="wrap")
+                self.alien_random_entrance("blob",v=settings.alien_speed["blob"]/2,energy=9,boundary_behaviour="wrap")
+                self.alien_random_entrance("ufo",v=settings.alien_speed["ufo"]/4,boundary_behaviour="wrap")
+                self.alien_random_entrance("purple",v=settings.alien_speed["purple"]/2,amount=2,boundary_behaviour="wrap")
             case 1:
-                self.goal = "Destroy all asteroids!"
                 self.alien_random_entrance("big_asteroid",amount=5,boundary_behaviour="reflect")
                 self.alien_random_entrance("small_asteroid",amount=5,boundary_behaviour="reflect")
             case 2:
-                self.goal = "Defeat all aliens!"
                 self.events.append(Event("asteroid_hail", self, random_cycle_time=(800,1200)))
                 for n in range(2,10,2):
                     self.aliens.add(Alien(type="purple", level=self, grid=(n,1), direction=(1,1), constraints=pygame.Rect([0,0,settings.screen_width,3*settings.grid_width])))
                 for n in range(14,6,-2):
                     self.aliens.add(Alien(type="purple", level=self, grid=(n,5), direction=(-1,-1), constraints=pygame.Rect([0,3*settings.grid_width,settings.screen_width,3*settings.grid_width])))
             case 3:
-                self.goal = "Defeat the ufo!"
                 self.events.append(Event("asteroid_hail", self, random_cycle_time=(800,1000)))
                 self.ufo = Alien(type="ufo", level=self, grid=(1,1), direction=(1,0))
                 self.aliens.add(self.ufo)
@@ -100,11 +104,9 @@ class Level:
                 for n in [10,14]:
                     self.aliens.add(Alien(type="purple", level=self, grid=(n,5), direction=(-1,0), constraints=pygame.Rect([0,3*settings.grid_width,settings.screen_width,3*settings.grid_width]),random_cycle_time=(1200,2000)))
             case 4:
-                self.goal = "Defeat the blob!"
                 self.events.append(Event("asteroid_hail", self, random_cycle_time=(1000,1500)))            
                 self.alien_random_entrance("blob",boundary_behaviour="reflect")
             case 5:
-                self.goal = "Survive for a minute!"
                 self.events.append(Event("asteroid_hail", self, random_cycle_time=(500,800)))
                 self.events.append(Event("alien_attack",self,random_cycle_time=(1000,1500)))        
 
@@ -140,6 +142,7 @@ class Level:
                     return True
         return False
 
+    @property
     def status(self):
         if self.number == 0:
             return "start"
@@ -153,7 +156,7 @@ class Level:
 
     def play_status_sound(self):
         pygame.mixer.stop()
-        match self.status():
+        match self.status:
             case "game_over":
                 sound.game_over.play()
             case "level_solved":
@@ -234,7 +237,7 @@ class Level:
         """Check if enemies hit the ship"""
         for asteroid in self.asteroids:
             if pygame.sprite.collide_mask(self.ship, asteroid):
-                if self.ship.status == "shield":
+                if self.ship.status == "shield" or self.status == "start":
                     asteroid.reflect()
                 else:
                     self.ship.get_damage(asteroid.energy)
@@ -242,7 +245,7 @@ class Level:
                     asteroid.kill()
         for alien in self.aliens:
             if pygame.sprite.collide_mask(self.ship, alien):
-                if self.ship.status == "shield":
+                if self.ship.status == "shield" or self.status == "start":
                     alien.reflect()
                 else:
                     self.ship.get_damage(alien.energy)
@@ -309,10 +312,11 @@ class Level:
                 if type in ["big_asteroid","small_asteroid"]:
                     self.asteroids.add(alien)
                 elif type == "blob":
-                    sound.blob_spawns.play()
+                    if self.status != "start":
+                        sound.blob_spawns.play()
                     self.blobs.add(alien)
                     self.aliens.add(alien)
                 else:
                     self.aliens.add(alien)
-            if type == "blob":
+            if type == "blob" and self.status != "start":
                     sound.blob_spawns.play()

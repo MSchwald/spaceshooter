@@ -128,7 +128,7 @@ class Menu():
                 game.player_name = game.player_name[:-1]
             elif event.key == K_RETURN:
                     game.highscores.save()
-                    game.active_menu = Menu.create_main_menu(self)
+                    game.active_menu = Menu.create_main_menu(game)
                     game.mode = "menu"
 
     @classmethod

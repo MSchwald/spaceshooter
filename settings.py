@@ -7,10 +7,10 @@ color = {"white":(255, 255, 255), "blue": (0, 0, 200), "yellow": (255, 255, 0),
 
 # Overall game settings
 
-# Screen settings get handled automatically from screen.py
+# Standard screen settings (screen.py handles rescaling)
 screen_width, screen_height = 1920,1080
 screen_ratio = (16,9)
-grid_width = screen_width//16 #default: 100
+grid_width = screen_width//16 #default: 120
 padding_color = color["dark_grey"]
 bg_color = color["black"]
 

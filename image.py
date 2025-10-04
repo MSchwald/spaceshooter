@@ -31,13 +31,15 @@ class Image:
 
     def rescale(self, scaling_width=None, scaling_height=None, scaling_factor=None):
         '''Allows rescaling images either to a given width, height or by a factor'''
-        factor = Display.grid_width/100
+        factor = None
         if scaling_width:
-            factor *= scaling_width / self.w
+            factor = Display.grid_width/100 * scaling_width / self.w
         elif scaling_height:
-            factor = scaling_height / self.h
+            factor = Display.grid_width/100 * scaling_height / self.h
         elif scaling_factor:
             factor = scaling_factor
+        if factor is None:
+            return self
         return self.scale_by(factor)
 
     @classmethod

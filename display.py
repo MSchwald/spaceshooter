@@ -30,6 +30,7 @@ class Display:
         Display.screen_width = self.screen.get_width()
         Display.screen_height = self.screen.get_height()
         Display.grid_width = Display.screen_width // settings.grid[0]
+        print(self.width, self.height, Display.screen_width, Display.screen_height, Display.grid_width)
         return self.screen
 
     def update(self, padding_color):

@@ -1,11 +1,7 @@
-import pygame
-from pygame.locals import *
-import settings
-import image
+import pygame, settings, sound
 from display import Display
 from sprite import Sprite
 from image import Image
-import sound
 from math import ceil
 
 class Bullet(Sprite):

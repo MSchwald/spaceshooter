@@ -1,5 +1,4 @@
 import pygame, settings
-import settings
 from image import Image
 from sprite import Sprite
 from display import Display

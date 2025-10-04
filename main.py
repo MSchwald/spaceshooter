@@ -1,5 +1,5 @@
-from game import Game
 import sys
+from game import Game
 from highscores import Highscores
 
 

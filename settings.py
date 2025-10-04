@@ -1,32 +1,27 @@
-import pygame
-from pygame.locals import *
-from display import Display
-
+# Color names
 color = {"white":(255, 255, 255), "blue": (0, 0, 200), "yellow": (255, 255, 0),
     "light_grey": (200, 200, 255), "grey": (100, 100, 100), "red": (180, 0, 0),
     "green": (100, 255, 100), "dark_grey": (50,50,50), "black": (0,0,0)}
 
-# Overall game settings
-
-# Standard screen settings (screen.py handles rescaling)
+# All sizes refer to the following
+# standard screen settings
+# (screen.py handles rescaling to user's display settings)
 screen_width, screen_height = 1600, 900
 grid = (16,9)
 standard_grid_width = 100 # = 1600 / 16
 padding_color = color["dark_grey"]
 bg_color = color["black"]
 
-# Game settings
-game_starting_level = 5
+# Game and ship settings
+game_starting_level = 1
 starting_score = 0
-
-# Ship settings
+ship_lives = 3
+shield_starting_timer = 3
+max_shield_duration = 15
 ship_starting_rank = 1
 rank_speed = {1: 0.5, 2: 0.6, 3: 0.7}
 rank_energy = {1: 15, 2: 30, 3: 45}
-ship_lives = 3
 ship_width = {1:100, 2:100, 3:120}
-shield_starting_timer = 3
-max_shield_duration = 15
 
 # Alien settings
 asteroid_pieces = 4
@@ -36,7 +31,7 @@ alien_points = {"big_asteroid": 20,"small_asteroid": 10,
                 "purple": 100, "ufo": 500, "blob": 30}
 alien_width = {"big_asteroid": 100, "small_asteroid": None,
                 "purple": 150, "ufo": 100, "blob": 300}
-alien_width["small_asteroid"]=alien_width["big_asteroid"]*asteroid_pieces**(-1/3)
+alien_width["small_asteroid"] = alien_width["big_asteroid"] * asteroid_pieces ** (-1/3)
 alien_colorkey = {"big_asteroid": (0,0,0), "small_asteroid": (0,0,0),
                 "purple": (254,254,254), "ufo": (0,0,0), "blob": (0,0,0)}
 
@@ -53,7 +48,10 @@ bullet_speed = {1:1,2:1,3:1,4:1,"missile":0, "g":0.2, "blubber":0.4}
 bullet_effect_time = {1:None,2:None,3:None,4:None,"missile":1000*missile_duration, "g":None, "blubber":None}
 
 # Item settings
-item_types = ["size_plus","size_minus", "score_buff", "bullets_buff", "hp_plus", "invert_controlls", "life_plus","life_minus", "magnet", "missile", "shield", "ship_buff", "speed_buff", "speed_nerf"]
+item_types = ["size_plus","size_minus", "score_buff", "bullets_buff",
+            "hp_plus", "invert_controlls", "life_plus","life_minus",
+            "magnet", "missile", "shield", "ship_buff",
+            "speed_buff", "speed_nerf"]
 item_size = 50
 invert_controlls_duration = 5
 size_change_duration = 10

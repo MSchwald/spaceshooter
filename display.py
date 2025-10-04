@@ -1,5 +1,4 @@
-import pygame
-import settings
+import pygame, settings
 
 class Display:
     # Go into fullscreen mode with the current display settings of the player
@@ -33,10 +32,10 @@ class Display:
         Display.grid_width = Display.screen_width // settings.grid[0]
         return self.screen
 
-    def update(self,padding_color):
+    def update(self, padding_color):
         """blits screen centered on display,
-                                padding visible if screen ratio is not as fixed
-                                in the settings"""
+        padding visible if screen ratio is not as fixed
+        in the settings"""
         self.display.fill(padding_color)
         self.display.blit(self.screen,self.screen_rect)
         pygame.display.flip()

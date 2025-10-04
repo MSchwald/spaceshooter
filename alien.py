@@ -1,17 +1,12 @@
-import pygame
-from pygame.locals import *
-import settings
-import image
+import pygame, settings, sound
 from image import Image
 from sprite import Sprite
 from bullet import Bullet
-from random import random,choice,randint
-import sound
 from display import Display
 from item import Item
+from random import random, choice, randint
 from math import pi, sqrt, sin, cos
 from math import hypot
-
 
 def norm(v):
     return hypot(v[0],v[1])

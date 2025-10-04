@@ -1,7 +1,5 @@
-import pygame
+import pygame, settings, sound
 from pygame.locals import *
-import settings
-import sound
 from image import Image
 from level import Level
 from settings import color

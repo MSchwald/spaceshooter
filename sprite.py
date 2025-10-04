@@ -1,12 +1,10 @@
 import pygame, settings
-from math import sin, cos, pi
-from random import random
 from image import Image
 from display import Display
 #from numpy.linalg import norm
 from math import hypot as norm
-from random import choice
-from math import sqrt
+from math import sqrt, sin, cos, pi
+from random import random, choice
 
 class Sprite(pygame.sprite.Sprite):
     # class for all sprites

@@ -1,8 +1,5 @@
-import pygame
+import pygame, settings, json, string
 from pathlib import Path
-import json
-import settings
-import string
 from menu import Menu, color
 
 class Highscores:

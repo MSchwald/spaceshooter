@@ -1,10 +1,8 @@
-import pygame
+import pygame, settings, sound
 from pygame.locals import *
-import settings
 from image import Image
 from sprite import Sprite
 from bullet import Bullet
-import sound
 from display import Display
 
 

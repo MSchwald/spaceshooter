@@ -1,6 +1,5 @@
-import pygame
+import pygame, settings
 from image import Image
-import settings
 from text import *
 from settings import color
 from display import Display

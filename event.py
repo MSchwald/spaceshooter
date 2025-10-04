@@ -1,5 +1,5 @@
 import pygame, settings
-from random import randint,random
+from random import randint, random
 
 class Event:
     def __init__(self, type, level, cycle_time=None, random_cycle_time=None):

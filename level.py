@@ -1,12 +1,9 @@
-import pygame, settings
-from pygame.locals import *
+import pygame, settings, sound
 from ship import Ship
 from alien import Alien
-import sound
-from random import random
+from random import random, randint
 from math import hypot
 from event import Event
-from random import randint
 from sprite import Sprite
 from image import Image
 from statusbar import Statusbar

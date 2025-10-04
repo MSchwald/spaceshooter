@@ -1,5 +1,4 @@
-import pygame
-import settings
+import pygame, settings
 from pathlib import Path
 from display import Display
 
@@ -154,5 +153,3 @@ class Image:
         raw_blubber = cls.load(f'images/bullet/blubber.png')
         cls.blubber = [raw_blubber.scale_by((N/n)**(-1/3)) for n in range(1,N+1)]
         cls.reflected_blubber = [cls.reflect(image, flip_x=True, flip_y=True) for image in cls.blubber]
-
-

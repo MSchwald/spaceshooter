@@ -1,9 +1,5 @@
 import pygame
-from pygame.locals import *
-import settings
 from settings import color
-import sound
-from image import Image
 
 def pad_surface(surface, padding_size, padding_color=None, vertical_padding=True, horizontal_padding=True):
     x,y = 0,0

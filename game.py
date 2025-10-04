@@ -1,16 +1,12 @@
-import pygame
+import pygame, settings, sound
 from pygame.locals import *
-import settings
 from alien import Alien
 from level import Level
-from menu import *
+from menu import Menu
 from image import Image
 from random import random, choice
 from item import Item
 from sprite import Sprite
-import sound
-from pathlib import Path
-import json,string
 from display import Display
 from highscores import Highscores
 
@@ -27,6 +23,7 @@ class Game:
         self.screen = self.display.get_game_surface_with_ratio(settings.screen_width,settings.screen_height)
 
         self.player_name = "" # Gets entered when achieving a high score 
+        Menu.init_settings()
         self.level = Level(0)
         self.highscores = Highscores()  
         self.clock = pygame.time.Clock()
@@ -35,7 +32,6 @@ class Game:
         """Starts the main loop for the game."""
         self.running = True  # Is False when the player exits the game
         self.mode = "menu"  # possible modes: "game", "menu", "enter name" (for highscores)
-        Menu.init_settings()
         self.active_menu = Menu.create_main_menu(self)
         self.level.start()
 

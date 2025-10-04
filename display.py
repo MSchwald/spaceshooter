@@ -15,22 +15,21 @@ class Display:
         if ratio == 0:
             # display has the desired ratio, no padding necessary
             screen_w,screen_h = (self.width,self.height)
-            self.padding_w, self.padding_h = (0,0)  
+            Display.padding_w, Display.padding_h = (0,0)  
         elif ratio > 0:
             # display is too wide
             screen_w, screen_h = w * self.height // h, self.height
-            self.padding_w, self.padding_h = (self.width - screen_w) // 2, 0
+            Display.padding_w, Display.padding_h = (self.width - screen_w) // 2, 0
         else:
             # display is too high
             screen_w, screen_h = self.width, self.width * h // w
-            self.padding_w, self.padding_h = 0, (self.height - screen_h) // 2
+            Display.padding_w, Display.padding_h = 0, (self.height - screen_h) // 2
 
         self.screen = pygame.Surface((screen_w,screen_h))
-        self.screen_rect = pygame.Rect(self.padding_w,self.padding_h,screen_w,screen_h)
+        self.screen_rect = pygame.Rect(Display.padding_w,Display.padding_h,screen_w,screen_h)
         Display.screen_width = self.screen.get_width()
         Display.screen_height = self.screen.get_height()
         Display.grid_width = Display.screen_width // settings.grid[0]
-        print(self.width, self.height, Display.screen_width, Display.screen_height, Display.grid_width)
         return self.screen
 
     def update(self, padding_color):

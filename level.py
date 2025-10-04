@@ -178,7 +178,8 @@ class Level:
             alien.update(dt)
         for item in self.items:
             item.update(dt)
-        self.crosshairs.rect.center = pygame.mouse.get_pos()
+        x,y = pygame.mouse.get_pos()
+        self.crosshairs.rect.center = x-Display.padding_w, y-Display.padding_h
         self.crosshairs.x = self.crosshairs.rect.x
         self.crosshairs.y = self.crosshairs.rect.y
         self.collision_checks()

@@ -35,17 +35,10 @@ class Level:
     def blit(self, screen):
         """blit the current state of the level"""
         self.statusbar.blit(screen)
-        for bullet in self.bullets:
-            bullet.blit(screen)
+        for group in [self.bullets, self.asteroids, self.aliens, self.items]:
+            for sprite in group:
+                sprite.blit(screen)
         self.ship.blit(screen)
-
-        for asteroid in self.asteroids:
-            asteroid.blit(screen)
-        for alien in self.aliens:
-            alien.blit(screen)
-        for item in self.items:
-            item.blit(screen)
-
         self.crosshairs.blit(screen)
 
     def start_current(self):
@@ -55,11 +48,9 @@ class Level:
         self.goal = self.goals[self.number]
         # Resets the Groups of bullets and enemies
         self.events=[]
-        self.ship_bullets.empty()
-        self.bullets.empty()
-        self.asteroids.empty()
-        self.aliens.empty()
-        self.blobs.empty()
+        for group in [self.ship_bullets, self.bullets,
+                    self.asteroids, self.aliens, self.blobs]:
+            group.empty()
         self.load_level(self.number)
 
     def start_next(self):
@@ -118,6 +109,7 @@ class Level:
             case 3: return f"Ufo health: {self.ufo.energy}"
             case 4: return f"Blob energy: {sum([blob.energy for blob in self.blobs])}"
             case 5: return f"Timer: {int(60-self.timer/1000)}"
+            case _: return ""
 
     @property
     def goal_fulfilled(self):
@@ -128,6 +120,7 @@ class Level:
             case 3: return self.ufo.energy == 0
             case 4: return not self.blobs
             case 5: return self.timer > 60000
+            case _: return False
 
     @property
     def status(self):
@@ -161,23 +154,21 @@ class Level:
 
     def update_sprites(self, dt):
         """update the status of all level objects"""
-        for bullet in self.bullets:
-            bullet.update(dt)
+        for group in [self.bullets, self.asteroids, self.aliens, self.items]:
+            for sprite in group:
+                sprite.update(dt)
         self.ship.update(dt)
-        for asteroid in self.asteroids:
-            asteroid.update(dt)
-        for alien in self.aliens:
-            alien.update(dt)
-        for item in self.items:
-            item.update(dt)
+        self.update_crosshairs()
+        self.collision_checks()
+
+    def update_crosshairs(self):
         x,y = pygame.mouse.get_pos()
         self.crosshairs.rect.center = x-Display.padding_w, y-Display.padding_h
         self.crosshairs.x = self.crosshairs.rect.x
         self.crosshairs.y = self.crosshairs.rect.y
-        self.collision_checks()
 
     def collision_checks(self):
-        """Checks for collisions of sprites, inflicts damage, adds points, generates items"""
+        """Check for collisions of sprites, inflict damage, add points, generate items"""
         self.bullets_hit()
         self.enemies_hit_ship()
         self.ship_collects_item()
@@ -316,5 +307,3 @@ class Level:
                     self.aliens.add(alien)
                 else:
                     self.aliens.add(alien)
-            if type == "blob" and self.status != "start":
-                    sound.blob_spawns.play()

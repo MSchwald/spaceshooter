@@ -13,17 +13,10 @@ class Bullet(Sprite):
             boundary_behaviour="vanish",
             animation_type=None, frames=None, fps=None, animation_time=None):
         self.type = type
-        if owner is None:
-            owner = settings.bullet_owner[type]
-        self.owner = owner
-        if damage is None:
-            damage = settings.bullet_damage[type]
-        self.damage = damage
-        if effect_time is None:
-            effect_time = settings.bullet_effect_time[type]
-        self.effect_time = effect_time
-        if constraints is None:
-            constraints = pygame.Rect([0, 0, Display.screen_width, Display.screen_height])
+        self.owner = owner or settings.bullet_owner[type]
+        self.damage = damage or settings.bullet_damage[type]
+        self.effect_time = effect_time or settings.bullet_effect_time[type]
+        constraints = constraints or pygame.Rect([0, 0, Display.screen_width, Display.screen_height])
         if type in [1,2,3]:
             if image is None:
                 image = Image.load(f'images/bullet/{type}.png')

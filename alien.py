@@ -27,12 +27,10 @@ class Alien(Sprite):
         #level: needs access to the level object from the game file
         #cycle_time: Alien periodically does actions after given time (in ms)
         #random_cycle_time is a tuple of floats: cycle times vary randomly between given lower and upper bound (in ms)
-        if energy is None:
-            energy = settings.alien_energy[type]
+        self.energy = energy or settings.alien_energy[type]
         if v is None:
             v = settings.alien_speed[type]
-        if constraints is None:
-            constraints = pygame.Rect([0, 0, Display.screen_width, Display.screen_height])
+        constraints = constraints or pygame.Rect([0, 0, Display.screen_width, Display.screen_height])
         #Load frames and images
         if type in ["big_asteroid", "small_asteroid"]:
             super().__init__(frames = Image.load(f"images/alien/{type}", colorkey=settings.alien_colorkey[type]),
@@ -66,7 +64,6 @@ class Alien(Sprite):
             self.cycle_time = randint(random_cycle_time[0],random_cycle_time[1])
         if self.cycle_time:
             self.action_timer = 0
-        self.energy = energy
 
     def update(self, dt):
         #asteroids can collide (elastic collision of 2d balls)

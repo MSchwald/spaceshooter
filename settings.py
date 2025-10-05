@@ -13,7 +13,7 @@ padding_color = color["dark_grey"]
 bg_color = color["black"]
 
 # Game and ship settings
-game_starting_level = 1
+game_starting_level = 4
 starting_score = 0
 ship_lives = 3
 shield_starting_timer = 3

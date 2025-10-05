@@ -33,7 +33,7 @@ class Game:
         self.running = True  # Is False when the player exits the game
         self.mode = "menu"  # possible modes: "game", "menu", "enter name" (for highscores)
         self.active_menu = Menu.create_main_menu(self)
-        self.level.start()
+        self.level.start_current()
 
         #main loop of the game
         while self.running:

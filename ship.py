@@ -11,8 +11,9 @@ class Ship(Sprite):
 
     def __init__(self, level, x=0, y=0, ship_lives=settings.ship_lives, rank=settings.ship_starting_rank):
         #level: needs access to the level object from the game file
-        super().__init__(Image.load(f"images/ship/a-{rank}.png"), x=0, y=0, constraints=pygame.Rect(
-            [0, 5/9*Display.screen_height, Display.screen_width, 4/9*Display.screen_height]), boundary_behaviour="clamp")
+        super().__init__(Image.load(f"images/ship/a-{rank}.png"), x=0, y=0,
+            constraints=pygame.Rect([0, 5/9*Display.screen_height, Display.screen_width, 4/9*Display.screen_height]),
+            boundary_behaviour="clamp")
         self.level = level
         self.start_new_game(ship_lives, rank)
 
@@ -73,7 +74,7 @@ class Ship(Sprite):
         if self.lives > 0:
             self.set_rank(1)
             self.reset_items()
-            self.level.start()
+            self.level.start_current()
             sound.lose_life.play()
 
     def get_damage(self, damage):

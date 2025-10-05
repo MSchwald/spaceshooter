@@ -13,7 +13,7 @@ class Level:
     """A class to manage the game levels"""
 
     def __init__(self, number):
-        '''Initializes all ingame objects and sprite groups'''
+        """Initialize ingame objects and sprite groups"""
         self.ship = Ship(self)
         self.statusbar = Statusbar(self)
         self.crosshairs = Sprite(Image.load('images/bullet/aim.png'))
@@ -48,8 +48,11 @@ class Level:
 
         self.crosshairs.blit(screen)
 
-    def start(self):
+    def start_current(self):
+        """(re)start current level"""
         self.ship.reset_position()
+        self.timer = 0
+        self.goal = self.goals[self.number]
         # Resets the Groups of bullets and enemies
         self.events=[]
         self.ship_bullets.empty()
@@ -57,38 +60,26 @@ class Level:
         self.asteroids.empty()
         self.aliens.empty()
         self.blobs.empty()
-        self.update_level_goal()
-        self.timer = 0
+        self.load_level(self.number)
 
-    def next(self):
-        '''start the next level'''
+    def start_next(self):
+        """start the next level"""
         if self.number < self.max_level:
             self.number += 1
-            self.start()
+            self.start_current()
 
-    def restart(self):
-        '''restart the game from starting level'''
+    def restart_game(self):
+        '''restart from starting level'''
         sound.level_solved.play()
         self.number = settings.game_starting_level
         self.items.empty()
         self.ship.start_new_game()
-        self.start()
+        self.start_current()
 
-    def update(self, dt):
-        '''update level status according to passed time dt'''
-        self.timer += dt
-        self.update_sprites(dt)
-        for event in self.events:
-            event.update(dt)
-        self.update_level_progress()  
-
-    def update_level_goal(self):
-        """each level has a different goal,
-        update is necessary when changing level"""
-        self.goal = self.goals[self.number]
-        match self.number:
+    def load_level(self, number):
+        """load enemies and level events"""
+        match number:
             case 0:
-                self.progress = "Ready?"
                 self.alien_random_entrance("big_asteroid",v=settings.alien_speed["big_asteroid"]/2,amount=5,boundary_behaviour="wrap")
                 self.alien_random_entrance("small_asteroid",v=settings.alien_speed["small_asteroid"]/2,amount=5,boundary_behaviour="wrap")
                 self.alien_random_entrance("blob",v=settings.alien_speed["blob"]/2,energy=9,boundary_behaviour="wrap")
@@ -118,19 +109,17 @@ class Level:
                 self.events.append(Event("asteroid_hail", self, random_cycle_time=(500,800)))
                 self.events.append(Event("alien_attack",self,random_cycle_time=(1000,1500)))        
 
-    def update_level_progress(self):
+    @property
+    def progress(self):
         match self.number:
-            case 1:                
-                self.progress = f"{len(self.asteroids)} left"
-            case 2:
-                self.progress = f"{len(self.aliens)} left"
-            case 3:
-                self.progress = f"Ufo health: {self.ufo.energy}"
-            case 4:
-                self.progress = f"Blob energy: {sum([blob.energy for blob in self.blobs])}"
-            case 5:
-                self.progress = f"Timer: {int(60-self.timer/1000)}"
+            case 0: return "Ready?"
+            case 1: return f"{len(self.asteroids)} left"
+            case 2: return f"{len(self.aliens)} left"
+            case 3: return f"Ufo health: {self.ufo.energy}"
+            case 4: return f"Blob energy: {sum([blob.energy for blob in self.blobs])}"
+            case 5: return f"Timer: {int(60-self.timer/1000)}"
 
+    @property
     def goal_fulfilled(self):
         '''Return True or False if current goal is fulfilled'''
         match self.number:
@@ -146,7 +135,7 @@ class Level:
             return "start"
         if self.ship.lives <= 0:         
             return "game_over"
-        if self.goal_fulfilled():
+        if self.goal_fulfilled:
             if self.number < self.max_level:
                 return "level_solved"
             return "game_won"
@@ -163,6 +152,12 @@ class Level:
             case "game_won":
                 sound.game_won.play()
 
+    def update(self, dt):
+        '''update level status according to passed time dt'''
+        self.timer += dt
+        self.update_sprites(dt)
+        for event in self.events:
+            event.update(dt)
 
     def update_sprites(self, dt):
         """update the status of all level objects"""

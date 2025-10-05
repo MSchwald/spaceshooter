@@ -40,11 +40,11 @@ class Alien(Sprite):
             #mass is so far only relevant for collisions between the asteroids and blobs
             self.m = (self.w/Display.grid_width)**3
         elif type == "blob":
-            super().__init__(image=Image.blob[energy-1],
+            super().__init__(image=Image.blob[self.energy-1],
                         grid=grid, center=center, x=x, y=y, v=v, direction=direction,
                         constraints=constraints, boundary_behaviour=boundary_behaviour)
             #mass of blobs is proportional to their energy points
-            self.m = energy
+            self.m = self.energy
             #blobs gravitate towards the place they got split the last time
             self.parent_center = None
             self.a = None

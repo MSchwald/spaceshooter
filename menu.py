@@ -140,14 +140,14 @@ class Menu():
         match game.active_menu.options.lines[game.active_menu.current_selection]:
             case "Restart" | "Start game" | "New game":
                 game.mode = "game"
-                game.level.restart()
+                game.level.restart_game()
             case "Continue":
                 game.mode = "game"
             case "Exit":
                 game.running = False
             case "Next level":
                 game.mode = "game"
-                game.level.next()
+                game.level.start_next()
             case "How to play" | "Back to controls":
                 game.active_menu = Menu.create(["Controls", "W,A,S,D: control the ship", "  and navigate the menu", "SPACE: shoot bullets", "LEFT SHIFT: activate shield", "Left click: drop missile", "RETURN: pause the game","Escape: end the game"],
                                         ["Item list","Go back"])

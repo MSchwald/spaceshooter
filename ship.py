@@ -41,22 +41,6 @@ class Ship(Sprite):
         self.update_image()
         self.max_energy = settings.rank_energy[rank]
         self.energy = self.max_energy
-        self.reset_firepoints()
-
-    def reset_firepoints(self):
-        """Resets where the ship shoots bullets, consistent with size changes of the ship"""
-        if self.rank == 1:
-            self.fire_points = [(self.w/2, 0)]
-            self.bullet_sizes = [1]
-        elif self.rank == 2:
-            self.fire_points = [(9/106*self.w, 54/146*self.h),
-                                (self.w/2, 0), (95/106*self.w, 54/146*self.h)]
-            self.bullet_sizes = [1, 2, 1]
-        elif self.rank == 3:
-            self.fire_points = [(12/133*self.w, 71/178*self.h), (23/133*self.w, 49/178*self.h),
-                                (self.w/2, 0), (109/133*self.w, 49/178*self.h), (120/133*self.w, 71/178*self.h)]
-            self.bullet_sizes = [1, 2, 3, 2, 1]
-        self.bullet_sizes = [min(3,n+self.bullets_buff) for n in self.bullet_sizes]
 
     def gain_rank(self):
         if self.rank < 3:
@@ -81,6 +65,41 @@ class Ship(Sprite):
         self.energy = max(0,self.energy-damage)
         if self.energy == 0:
             self.lose_rank()
+
+    @property
+    def default_fire_points(self):
+        """fire points depending only on the original ship sprites"""
+        match self.rank:
+            case 1: return [(51.5,0)]
+            case 2: return [(9,54),(53,0),(95,54)]
+            case 3: return [(12,71),(23,49),(66.5,0),(109,49),(120,71)]
+
+    @property
+    def default_width(self):
+        match self.rank:
+            case 1: return 103
+            case 2: return 106
+            case 3: return 133
+
+    @property
+    def default_height(self):
+        match self.rank:
+            case 1: return 79
+            case 2: return 146
+            case 3: return 178
+
+    @property
+    def fire_points(self):
+        """Rescale where the ship shoots bullets, consistent with size changes of the ship"""
+        return [(x*self.w/self.default_width,y*self.h/self.default_height) for (x,y) in self.default_fire_points]
+        
+    @property
+    def bullet_sizes(self):
+        match self.rank:
+            case 1: sizes = [1]
+            case 2: sizes = [1,2,1]
+            case 3: sizes = [1,2,3,2,1]
+        return [min(3, size + self.bullets_buff) for size in sizes]
 
     def shoot_bullets(self):
         # if there aren't too many bullets from the ship on the screen yet
@@ -109,17 +128,14 @@ class Ship(Sprite):
             else:
                 self.change_direction(keys[K_d]-keys[K_a], keys[K_s]-keys[K_w])
 
-
     def update_image(self):
         letter = {"normal":"a", "inverse_controlls":"g", "shield":"h", "magnetic":"e"}[self.status]
         self.change_image(Image.load(f'images/ship/{letter}-{self.rank}.png').scale_by(self.size_factor))
-        self.reset_firepoints()
 
     def collect_item(self, type):
         match type:
             case "bullets_buff":
                 self.bullets_buff += 1
-                self.reset_firepoints()
                 sound.item_collect.play()
             case "hp_plus":
                 self.energy = min(self.max_energy, self.energy+settings.hp_plus)

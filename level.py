@@ -13,25 +13,28 @@ class Level:
     """A class to manage the game levels"""
 
     def __init__(self, number):
-        # Initializes the Ship
+        '''Initializes all ingame objects and sprite groups'''
         self.ship = Ship(self)
-        # Initializes level number and empty sprite groups
+        self.statusbar = Statusbar(self)
+        self.crosshairs = Sprite(Image.load('images/bullet/aim.png'))
+        Image.load_blob()
         self.number = number
-        self.max_level = 5
+        self.goals = ["Welcome!","Destroy all asteroids!","Defeat all aliens!","Defeat the ufo!","Defeat the blob!","Survive for a minute!"]
+        self.max_level = len(self.goals)-1
+
         self.events = []
+        # empty sprite groups
         self.ship_bullets = pygame.sprite.Group()
         self.bullets = pygame.sprite.Group()
         self.items = pygame.sprite.Group()
         self.asteroids = pygame.sprite.Group()
         self.aliens = pygame.sprite.Group()
         self.blobs = pygame.sprite.Group()
-        self.statusbar = Statusbar(self)
-        self.crosshairs = Sprite(Image.load('images/bullet/aim.png'))
-        Image.load_blob()
+        
 
     def blit(self, screen):
         """blit the current state of the level"""
-        self.statusbar.blit(screen) # game stats
+        self.statusbar.blit(screen)
         for bullet in self.bullets:
             bullet.blit(screen)
         self.ship.blit(screen)
@@ -42,6 +45,7 @@ class Level:
             alien.blit(screen)
         for item in self.items:
             item.blit(screen)
+
         self.crosshairs.blit(screen)
 
     def start(self):
@@ -57,11 +61,13 @@ class Level:
         self.timer = 0
 
     def next(self):
+        '''start the next level'''
         if self.number < self.max_level:
             self.number += 1
             self.start()
 
     def restart(self):
+        '''restart the game from starting level'''
         sound.level_solved.play()
         self.number = settings.game_starting_level
         self.items.empty()
@@ -69,17 +75,17 @@ class Level:
         self.start()
 
     def update(self, dt):
+        '''update level status according to passed time dt'''
         self.timer += dt
         self.update_sprites(dt)
         for event in self.events:
             event.update(dt)
-        self.update_level_progress()
-
-    goal = ["Welcome!","Destroy all asteroids!","Defeat all aliens!","Defeat the ufo!","Defeat the blob!","Survive for a minute!"]
+        self.update_level_progress()  
 
     def update_level_goal(self):
-        """each level has a different goal"""
-        self.goal = Level.goal[self.number]
+        """each level has a different goal,
+        update is necessary when changing level"""
+        self.goal = self.goals[self.number]
         match self.number:
             case 0:
                 self.progress = "Ready?"
@@ -126,23 +132,13 @@ class Level:
                 self.progress = f"Timer: {int(60-self.timer/1000)}"
 
     def goal_fulfilled(self):
+        '''Return True or False if current goal is fulfilled'''
         match self.number:
-            case 1:
-                if not self.asteroids:
-                    return True
-            case 2:
-                if not self.aliens:
-                    return True
-            case 3:
-                if self.ufo.energy == 0:
-                    return True
-            case 4:
-                if not self.blobs:
-                    return True
-            case 5:
-                if self.timer > 60000:
-                    return True
-        return False
+            case 1: return not self.asteroids
+            case 2: return not self.aliens
+            case 3: return self.ufo.energy == 0
+            case 4: return not self.blobs
+            case 5: return self.timer > 60000
 
     @property
     def status(self):
@@ -157,6 +153,7 @@ class Level:
         return "running"
 
     def play_status_sound(self):
+        """status sounds are played when a level ends"""
         pygame.mixer.stop()
         match self.status:
             case "game_over":
@@ -168,7 +165,7 @@ class Level:
 
 
     def update_sprites(self, dt):
-        """update the status of all level objects, the crosshairs"""
+        """update the status of all level objects"""
         for bullet in self.bullets:
             bullet.update(dt)
         self.ship.update(dt)
@@ -309,10 +306,8 @@ class Level:
                             break
 
     def alien_random_entrance(self, type, amount=1, energy=None, v=None, constraints = None, boundary_behaviour = "vanish"):
-            if constraints is None:
-                constraints = pygame.Rect(0, 0, Display.screen_width, Display.screen_height)
-            if v is None or v == 0:
-                v = settings.alien_speed[type]
+            constraints = constraints or pygame.Rect(0, 0, Display.screen_width, Display.screen_height)
+            v = v or settings.alien_speed[type]
             for i in range(amount):
                 alien = Alien(type, self, energy=energy, v=v, constraints=constraints, boundary_behaviour = boundary_behaviour)
                 alien.change_direction(random()*(constraints.w-alien.w)+constraints.x-alien.x, constraints.bottom-alien.rect.bottom)

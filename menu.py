@@ -107,7 +107,7 @@ class Menu():
             match level.status:
                 case "level_solved":
                     return Menu.create([f"Level {level.number} solved!",
-                                f"In level {level.number+1}, you have to", f"{Level.goal[level.number+1]}"],
+                                f"In level {level.number+1}, you have to", f"{level.goals[level.number+1]}"],
                                 ["Next level"])
                 case "game_won":
                     return Menu.create(["Congratulations!", "You have finished", "all available levels!"],

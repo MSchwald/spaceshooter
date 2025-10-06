@@ -118,14 +118,14 @@ class Ship(Sprite):
         if keys[KEY.SHIELD]:
             if self.status != "shield":
                 self.activate_shield()
-                self.change_direction(0,0)
+                self.direction = (0,0)
         else:
             if self.status == "shield":
                 self.deactivate_shield()
             if self.status == "inverse_controls":
-                self.change_direction(-keys[KEY.RIGHT]+keys[KEY.LEFT], -keys[KEY.DOWN]+keys[KEY.UP])
+                self.direction = (-keys[KEY.RIGHT]+keys[KEY.LEFT], -keys[KEY.DOWN]+keys[KEY.UP])
             else:
-                self.change_direction(keys[KEY.RIGHT]-keys[KEY.LEFT], keys[KEY.DOWN]-keys[KEY.UP])
+                self.direction = (keys[KEY.RIGHT]-keys[KEY.LEFT], keys[KEY.DOWN]-keys[KEY.UP])
 
     def update_graphic(self):
         letter = {"normal":"a", "inverse_controls":"g", "shield":"h", "magnetic":"e"}[self.status]

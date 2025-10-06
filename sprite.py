@@ -86,10 +86,6 @@ class Sprite(pygame.sprite.Sprite):
         # rescales the image preserving the center of the sprite
         self.change_image(self.image.scale_by(factor))
 
-    def change_direction(self, x, y):
-        # function could be removed
-        self.direction = (x, y)
-
     def change_position(self, x, y):
         if self.constraints is None or self.boundary_behaviour == "vanish":
             self.x, self.y = x, y

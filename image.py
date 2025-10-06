@@ -43,29 +43,6 @@ class Image:
             return self
         return self.scale_by(factor)
 
-    @classmethod 
-    def determine_scaling_width(cls, path): # obsolete now?
-        '''Depending on the prefix of the path and the properties in settings.py,
-        return the optimal scaling width for the image with given path'''
-        path_obj = Path(path)
-        parts = path_obj.parts
-        if parts[0] == "images":
-            match parts[1]:
-                case "item":
-                    return settings.Item.SIZE
-                case "alien":
-                    return settings.alien_width[Path(parts[2]).stem]
-                case "bullet":
-                    return settings.bullet_width[Path(parts[2]).stem]
-                case "ship":
-                    ship_rank = int(parts[2][2])
-                    return SHIP.WIDTH[ship_rank]
-                case "statusbar":
-                    return 72 #height of the empty health bar picture
-                case _:
-                    raise ValueError(f"No scaling rule for path {path}")
-        raise ValueError(f"image path should start with 'images'")
-
     cache = {}
     @classmethod
     def load(cls, path, colorkey=COLOR.BLACK, scaling_width=None, scaling_height=None, scaling_factor=None):

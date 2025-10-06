@@ -246,7 +246,7 @@ class Level:
         for item in self.items:
             if pygame.sprite.collide_mask(self.ship, item):
                 if self.ship.status == "shield":
-                    item.change_direction(-item.direction[0],-item.direction[1])
+                    item.direction = (-item.direction[0],-item.direction[1])
                 else:
                     self.ship.collect_item(item)
                     item.kill()
@@ -283,7 +283,7 @@ class Level:
             v = v or type.speed
             for i in range(amount):
                 alien = Alien(type, self, energy=energy, v=v, constraints=constraints, boundary_behaviour = boundary_behaviour)
-                alien.change_direction(random()*(constraints.w-alien.w)+constraints.x-alien.x, constraints.bottom-alien.rect.bottom)
+                alien.direction = (random()*(constraints.w-alien.w)+constraints.x-alien.x, constraints.bottom-alien.rect.bottom)
                 alien.change_position(x=random()*(constraints.w-alien.w)+constraints.x, y=constraints.y-alien.h)           
                 if self.status != "start":
                     alien.play_spawing_sound()

@@ -1,6 +1,6 @@
 import pygame, settings, json, string
 from pathlib import Path
-from menu import Menu, color
+from menu import Menu
 
 class Highscores:
     """class to load, render, update and save highscores"""
@@ -23,12 +23,12 @@ class Highscores:
         return [str(x[1]) for x in self.score_list]
 
     def load_default_highscores(self):
-        self.score_list = sorted(settings.default_highscores, key=lambda x: x[1], reverse=True)[:settings.max_number_of_highscores]
+        self.score_list = sorted(settings.DEFAULT_HIGHSCORES, key=lambda x: x[1], reverse=True)[:settings.MAX_NUMBER_OF_HIGHSCORES]
         self.fill_list_with_zeros()
         self.save()
 
     def fill_list_with_zeros(self):
-        while len(self.score_list) < settings.max_number_of_highscores:
+        while len(self.score_list) < settings.MAX_NUMBER_OF_HIGHSCORES:
             self.score_list.append(("",0))
  
     def save(self):
@@ -36,7 +36,7 @@ class Highscores:
             json.dump(self.score_list, f)
 
     def highscore_rank(self, score):
-        beaten_scores = [i for i in range(settings.max_number_of_highscores) if score > self.score_list[i][1]]
+        beaten_scores = [i for i in range(settings.MAX_NUMBER_OF_HIGHSCORES) if score > self.score_list[i][1]]
         if beaten_scores:
             return beaten_scores[0]
         return None

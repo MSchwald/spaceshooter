@@ -1,5 +1,6 @@
 import pygame, settings
 from random import randint, random
+from settings import BIG_ASTEROID, PURPLE, BLOB
 
 class Event:
     def __init__(self, type, level, cycle_time=None, random_cycle_time=None):
@@ -15,18 +16,18 @@ class Event:
 
     def update(self,dt):
         if self.cycle_time and not self.timer_on_hold:
-                self.action_timer += dt
-                if self.action_timer >= self.cycle_time:
-                    self.action_timer -= self.cycle_time
-                    if self.random_cycle_time:
-                        self.cycle_time = randint(self.random_cycle_time[0],self.random_cycle_time[1])
-                    self.do_action()
+            self.action_timer += dt
+            if self.action_timer >= self.cycle_time:
+                self.action_timer -= self.cycle_time
+                if self.random_cycle_time:
+                    self.cycle_time = randint(self.random_cycle_time[0],self.random_cycle_time[1])
+                self.do_action()
 
     def do_action(self):
         if self.type == "asteroid_hail":
-            self.level.alien_random_entrance("big_asteroid")
+            self.level.alien_random_entrance(BIG_ASTEROID)
         if self.type == "alien_attack":
             if random() > 0.5:
-                self.level.alien_random_entrance("purple", boundary_behaviour="reflect")
+                self.level.alien_random_entrance(PURPLE, boundary_behaviour="reflect")
             else:
-                self.level.alien_random_entrance("blob", energy=settings.alien_energy["blob"]//4, boundary_behaviour="reflect")
+                self.level.alien_random_entrance(BLOB, energy=BLOB.energy//4, boundary_behaviour="reflect")

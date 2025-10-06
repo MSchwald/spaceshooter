@@ -1,5 +1,6 @@
 import pygame, sys
 from menu import Menu
+from settings import Color
 
 pygame.init()
 
@@ -24,12 +25,10 @@ cropped = pygame.Surface(bounding_rect.size, pygame.SRCALPHA)
 cropped.blit(raw_image,(0,0), bounding_rect)
 #surface.blit(cropped,(0,0),bounding_rect)
 
-menu = Menu.create(["Controlls", "W,A,S,D: controll the ship", "  and navigate the menu", "SPACE: shoot bullets", "LEFT SHIFT: activate shield", "Left click: drop missile", "RETURN: pause the game","Escape: end the game"],
-                                        ["Item list","Go back"])
 
 while True:
-       
-    menu.blit(screen)
+    
+    screen.fill(Color.WHITE)
     pygame.display.flip()
 
 

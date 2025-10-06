@@ -1,5 +1,5 @@
 import pygame, settings, sound
-from pygame.locals import *
+from settings import Key, BULLET1, BULLET2, BULLET3, MISSILE
 from image import Image
 from sprite import Sprite
 from bullet import Bullet
@@ -9,7 +9,7 @@ from display import Display
 class Ship(Sprite):
     """A class to manage the ship."""
 
-    def __init__(self, level, x=0, y=0, ship_lives=settings.ship_lives, rank=settings.ship_starting_rank):
+    def __init__(self, level, x=0, y=0, ship_lives=settings.Ship.LIVES, rank=settings.Ship.RANK):
         #level: needs access to the level object from the game file
         super().__init__(Image.load(f"images/ship/a-{rank}.png"), x=0, y=0,
             constraints=pygame.Rect(0, 5/9*Display.screen_height, Display.screen_width, 4/9*Display.screen_height),
@@ -17,7 +17,7 @@ class Ship(Sprite):
         self.level = level
         self.start_new_game(ship_lives, rank)
 
-    def start_new_game(self, ship_lives=settings.ship_lives, rank=settings.ship_starting_rank):
+    def start_new_game(self, ship_lives=settings.Ship.LIVES, rank=settings.Ship.RANK):
         """Start new game"""
         self.reset_item_effects()
         self.reset_stats(ship_lives, rank)
@@ -28,18 +28,18 @@ class Ship(Sprite):
         self.rect.midbottom = self.constraints.midbottom
         self.x, self.y = self.rect.x, self.rect.y
 
-    def reset_stats(self, ship_lives=settings.ship_lives, rank=settings.ship_starting_rank):
+    def reset_stats(self, ship_lives=settings.Ship.LIVES, rank=settings.Ship.RANK):
         """Ship starts the game with given stats"""
-        self.score = settings.starting_score
+        self.score = settings.Ship.SCORE
         self.set_rank(rank)
         self.lives = ship_lives
 
     def set_rank(self, rank):
         """Updates the rank and dependend variables of the ship"""
         self.rank = rank
-        self.v = self.speed_factor*settings.rank_speed[rank]
+        self.v = self.speed_factor*settings.Ship.SPEED[rank]
         self.update_image()
-        self.max_energy = settings.rank_energy[rank]
+        self.max_energy = settings.Ship.ENERGY[rank]
         self.energy = self.max_energy
 
     def gain_rank(self):
@@ -103,16 +103,17 @@ class Ship(Sprite):
 
     def shoot_bullets(self):
         # if there aren't too many bullets from the ship on the screen yet
-        if len(self.level.ship_bullets) < settings.max_bullets*(2*self.rank-1) and self.status != "shield":
+        if len(self.level.ship_bullets) < settings.Ship.MAX_BULLETS*(2*self.rank-1) and self.status != "shield":
             # Takes Doppler effect into account to calculate the bullets' speed
             doppler = self.vy
             # Fires bullets
             for (fp_x,fp_y), size in zip(self.fire_points, self.bullet_sizes):
-                self.level.bullets.add(Bullet(size, v=settings.bullet_speed[size]-doppler,
-                                        center=(self.x+fp_x,self.y+fp_y)))
+                bullet = Bullet.from_size(size, v=Bullet.from_size(size).v-doppler,center=(self.x+fp_x,self.y+fp_y))
+                self.level.bullets.add(bullet)
+            bullet.play_firing_sound()
 
     def control(self, keys):
-        if keys[K_LSHIFT]:
+        if keys[Key.SHIELD]:
             if self.status != "shield":
                 self.activate_shield()
                 self.change_direction(0,0)
@@ -120,9 +121,9 @@ class Ship(Sprite):
             if self.status == "shield":
                 self.deactivate_shield()
             if self.status == "inverse_controls":
-                self.change_direction(-keys[K_d]+keys[K_a], -keys[K_s]+keys[K_w])
+                self.change_direction(-keys[Key.RIGHT]+keys[Key.LEFT], -keys[Key.DOWN]+keys[Key.UP])
             else:
-                self.change_direction(keys[K_d]-keys[K_a], keys[K_s]-keys[K_w])
+                self.change_direction(keys[Key.RIGHT]-keys[Key.LEFT], keys[Key.DOWN]-keys[Key.UP])
 
     def update_image(self):
         letter = {"normal":"a", "inverse_controls":"g", "shield":"h", "magnetic":"e"}[self.status]
@@ -132,7 +133,7 @@ class Ship(Sprite):
         item.play_collecting_sound()
         match item.type:
             case "bullets_buff": self.bullets_buff += 1
-            case "hp_plus": self.energy = min(self.max_energy, self.energy+settings.hp_plus)
+            case "hp_plus": self.energy = min(self.max_energy, self.energy+settings.Item.HP_PLUS)
             case "invert_controls":
                 if self.status == "inverse_controls":
                     self.status = "normal"
@@ -154,31 +155,31 @@ class Ship(Sprite):
             case "score_buff":
                 if self.score_factor == 1:
                     self.score_buff_timer = item.effect_duration
-                self.score_factor *= settings.item_score_buff
+                self.score_factor *= settings.Item.SCORE_BUFF
             case "shield":
-                self.shield_timer = min(1000*settings.max_shield_duration, self.shield_timer+1000*settings.shield_duration)
+                self.shield_timer = min(1000*settings.Ship.MAX_SHIELD_DURATION, self.shield_timer+1000*settings.Item.SHIELD_DURATION)
             case "ship_buff": self.gain_rank()
             case "size_minus":
-                if self.size_factor*settings.item_size_minus>=0.3:
-                    self.size_factor *= settings.item_size_minus
+                if self.size_factor*settings.Item.SIZE_MINUS>=0.3:
+                    self.size_factor *= settings.Item.SIZE_MINUS
                     self.update_image()
                     if self.size_factor != 1:
                         self.size_change_timer = item.effect_duration
             case "size_plus":
-                if self.size_factor*settings.item_size_plus<=1/0.3:
-                    self.size_factor *= settings.item_size_plus
+                if self.size_factor*settings.Item.SIZE_PLUS<=1/0.3:
+                    self.size_factor *= settings.Item.SIZE_PLUS
                     self.update_image()
                     if self.size_factor != 1:
                         self.size_change_timer = item.effect_duration
             case "speed_buff":
-                if self.v*settings.speed_buff < settings.bullet_speed[1]:
-                    self.speed_factor = settings.speed_buff
-                    self.v = self.speed_factor*settings.rank_speed[self.rank]
+                if self.v*settings.Item.SPEED_BUFF < settings.BULLET1.speed:
+                    self.speed_factor = settings.Item.SPEED_BUFF
+                    self.v = self.speed_factor*settings.Ship.SPEED[self.rank]
                     if self.speed_factor != 1:
                         self.speed_change_timer = item.effect_duration
             case "speed_nerf":
-                self.speed_factor = settings.speed_nerf
-                self.v = self.speed_factor*settings.rank_speed[self.rank]
+                self.speed_factor = settings.Item.SPEED_NERF
+                self.v = self.speed_factor*settings.Ship.SPEED[self.rank]
                 if self.speed_factor != 1:
                     self.speed_change_timer = item.effect_duration
 
@@ -197,7 +198,9 @@ class Ship(Sprite):
         """shoots missile to position = (x,y)"""
         if self.missiles > 0:
             self.missiles -= 1
-            self.level.bullets.add(Bullet("missile", center=position))
+            missile = Bullet(MISSILE, center=position)
+            self.level.bullets.add(missile)
+            missile.play_firing_sound()
 
     def get_points(self, points):
         self.score += int(self.score_factor*points)
@@ -206,9 +209,9 @@ class Ship(Sprite):
         self.bullets_buff = 0
         self.speed_factor = 1
         self.magnet = False
-        self.missiles = settings.starting_missiles
+        self.missiles = settings.Ship.STARTING_MISSILES
         self.score_factor = 1
-        self.shield_timer = 1000*settings.shield_starting_timer
+        self.shield_timer = 1000*settings.Ship.SHIELD_STARTING_TIMER
         self.size_factor = 1
         self.status = "normal"
         self.last_status = "normal"
@@ -227,7 +230,7 @@ class Ship(Sprite):
             self.speed_change_timer -= dt
             if self.speed_change_timer <= 0:
                 self.speed_factor = 1
-                self.v = settings.rank_speed[self.rank]
+                self.v = settings.Ship.SPEED[self.rank]
         if self.size_factor != 1:
             self.size_change_timer -= dt
             if self.size_change_timer <= 0:

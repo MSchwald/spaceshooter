@@ -44,6 +44,7 @@ class Sprite(pygame.sprite.Sprite):
                 if fps:
                     self.frame_duration_ms = int(1/fps*1000)
                 elif animation_time:
+                    self.animation_time = animation_time
                     self.frame_duration_ms = int(animation_time*1000/len(frames))
         self.timer = 0
         self.timer_on_hold = False
@@ -160,7 +161,7 @@ class Sprite(pygame.sprite.Sprite):
         self.update_frame(dt)
 
     def update_position(self, dt):
-        self.change_position(self.x+dt*self.vx*Display.grid_width/settings.standard_grid_width, self.y+dt*self.vy*Display.grid_width/settings.standard_grid_width)
+        self.change_position(self.x+dt*self.vx*Display.grid_width/settings.GRID_WIDTH, self.y+dt*self.vy*Display.grid_width/settings.GRID_WIDTH)
     
     def update_velocity(self, dt):
         self.direction = (self.vx+self.a[0]*dt,self.vy+self.a[1]*dt)

@@ -122,7 +122,7 @@ class Menu():
 
     def handle_input(self, game, event):
         if event.type == pygame.KEYDOWN:
-            if event.unicode in game.highscores.allowed_chars and len(game.player_name) <= MAX_NAME_LENGTH:
+            if event.unicode in game.highscores.allowed_chars and len(game.player_name) < MAX_NAME_LENGTH:
                 game.player_name += event.unicode
             elif event.key == KEY.BACK:
                 game.player_name = game.player_name[:-1]

@@ -1,6 +1,6 @@
 import pygame, sound
 from settings import KEY, BULLET, SHIP
-from image import Image
+from image import Image, GraphicData
 from sprite import Sprite
 from bullet import Bullet
 from display import Display
@@ -9,9 +9,10 @@ from display import Display
 class Ship(Sprite):
     """Manage the ship's position and status properties"""
 
-    def __init__(self, level, x=0, y=0, ship_lives=SHIP.LIVES, rank=SHIP.RANK):
-        #level: needs access to the level object from the game file
-        super().__init__(Image.load(f"images/ship/a-{rank}.png"), x=0, y=0,
+    def __init__(self, level, ship_lives=SHIP.LIVES, rank=SHIP.RANK):
+        # level: needs access to the level object from the game file
+        graphic = GraphicData(path = f"images/ship/a-{rank}.png", scaling_width = SHIP.WIDTH[rank])
+        super().__init__(graphic = graphic,
             constraints=pygame.Rect(0, 5/9*Display.screen_height, Display.screen_width, 4/9*Display.screen_height),
             boundary_behaviour="clamp")
         self.level = level
@@ -38,7 +39,7 @@ class Ship(Sprite):
         """Updates the rank and dependend variables of the ship"""
         self.rank = rank
         self.v = self.speed_factor*SHIP.SPEED[rank]
-        self.update_image()
+        self.update_graphic()
         self.max_energy = SHIP.ENERGY[rank]
         self.energy = self.max_energy
 
@@ -108,7 +109,8 @@ class Ship(Sprite):
             doppler = self.vy
             # Fires bullets
             for (fp_x,fp_y), size in zip(self.fire_points, self.bullet_sizes):
-                bullet = Bullet.from_size(size, v=Bullet.from_size(size).v-doppler,center=(self.x+fp_x,self.y+fp_y))
+                bullet = Bullet.from_size(size, center=(self.x+fp_x,self.y+fp_y))
+                bullet.v -= doppler
                 self.level.bullets.add(bullet)
             bullet.play_firing_sound()
 
@@ -125,9 +127,10 @@ class Ship(Sprite):
             else:
                 self.change_direction(keys[KEY.RIGHT]-keys[KEY.LEFT], keys[KEY.DOWN]-keys[KEY.UP])
 
-    def update_image(self):
+    def update_graphic(self):
         letter = {"normal":"a", "inverse_controls":"g", "shield":"h", "magnetic":"e"}[self.status]
-        self.change_image(Image.load(f'images/ship/{letter}-{self.rank}.png').scale_by(self.size_factor))
+        self.graphic = GraphicData(path = f"images/ship/{letter}-{self.rank}.png", scaling_width = SHIP.WIDTH[self.rank])
+        self.change_image(self.graphic.image.scale_by(self.size_factor))
 
     def collect_item(self, item):
         item.play_collecting_sound()
@@ -141,7 +144,7 @@ class Ship(Sprite):
                     self.status = "inverse_controls"
                     self.controls_timer = item.duration_ms
                     sound.bad_item.play()
-                self.update_image()
+                self.update_graphic()
             case "life_minus":
                 self.lives -= 1
                 if self.lives > 0:
@@ -150,7 +153,7 @@ class Ship(Sprite):
             case "magnet":
                 self.magnet = True
                 self.status = "magnetic"
-                self.update_image()
+                self.update_graphic()
             case "missile": self.missiles += 1
             case "score_buff":
                 if self.score_factor == 1:
@@ -162,13 +165,13 @@ class Ship(Sprite):
             case "size_minus":
                 if self.size_factor * item.type.effect >= 0.3:
                     self.size_factor *= item.type.effect
-                    self.update_image()
+                    self.update_graphic()
                     if self.size_factor != 1:
                         self.size_change_timer = item.duration_ms
             case "size_plus":
                 if self.size_factor * item.type.effect <= 1/0.3:
                     self.size_factor *= item.type.effect
-                    self.update_image()
+                    self.update_graphic()
                     if self.size_factor != 1:
                         self.size_change_timer = item.duration_ms
             case "speed_buff":
@@ -187,12 +190,12 @@ class Ship(Sprite):
         if self.shield_timer > 0:
             sound.shield.play()
             self.last_status, self.status = self.status, "shield"
-            self.update_image()
+            self.update_graphic()
 
     def deactivate_shield(self):
         if self.status == "shield":
             self.status = self.last_status
-            self.update_image()
+            self.update_graphic()
 
     def shoot_missile(self, position):
         """shoots missile to position = (x,y)"""
@@ -221,7 +224,7 @@ class Ship(Sprite):
             self.shield_timer = max(self.shield_timer - dt, 0)
             if self.shield_timer == 0:
                 self.status = self.last_status
-                self.update_image()
+                self.update_graphic()
         if self.score_factor != 1:
             self.score_buff_timer -= dt
             if self.score_buff_timer <= 0:
@@ -235,10 +238,10 @@ class Ship(Sprite):
             self.size_change_timer -= dt
             if self.size_change_timer <= 0:
                 self.size_factor = 1
-                self.update_image()
+                self.update_graphic()
         if self.status == "inverse_controls":
             self.controls_timer -= dt
             if self.controls_timer <= 0:
                 self.status = "normal"
-                self.update_image()
+                self.update_graphic()
         super().update(dt)

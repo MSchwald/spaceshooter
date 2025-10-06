@@ -1,5 +1,5 @@
 import pygame, sound
-from image import Image
+from image import Image, GraphicData
 from sprite import Sprite
 from display import Display
 from math import hypot as norm
@@ -8,13 +8,14 @@ from settings import ItemType, ITEM
 class Item(Sprite):
     """A class to manage the items"""
 
-    def __init__(self, type: ItemType, level, grid=None, center=None, x=0, y=0, direction=(0,1), v=None):
-        v = v or type.speed
+    def __init__(self, type: ItemType, level, **pos_kwargs):
         self.type = type
         self.level = level
         self.duration_ms = int(1000*type.duration) if type.duration is not None else None
-        super().__init__(Image.load(f'images/item/{str(type.name)}.png'), grid=grid, center=center, x=x, y=y, v=v, direction=direction,
-                         constraints=pygame.Rect([0, 0, Display.screen_width, Display.screen_height]), boundary_behaviour="vanish")
+        graphic = GraphicData(path = f'images/item/{str(type.name)}', scaling_width = type.size)
+        super().__init__(graphic = graphic, direction=(0,1), v=type.speed,
+                constraints=pygame.Rect([0, 0, Display.screen_width, Display.screen_height]),
+                boundary_behaviour="vanish", **pos_kwargs)
         
     def play_collecting_sound(self):
         match self.type.name:

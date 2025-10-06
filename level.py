@@ -5,10 +5,10 @@ from random import random, randint
 from math import hypot
 from event import Event
 from sprite import Sprite
-from image import Image
+from image import Image, GraphicData
 from statusbar import Statusbar
 from display import Display
-from settings import AlienType, ALIEN, SHIP
+from settings import AlienType, ALIEN, SHIP, BULLET
 
 class Level:
     """Manage loading and logic of game levels and their ingame objects"""
@@ -17,7 +17,7 @@ class Level:
         """Initialize ingame objects and sprite groups"""
         self.ship = Ship(self)
         self.statusbar = Statusbar(self)
-        self.crosshairs = Sprite(Image.load('images/bullet/aim.png'))
+        self.crosshairs = Sprite(GraphicData(path = 'images/bullet/aim.png', scaling_width = BULLET.MISSILE.width))
         Image.load_blob()
         self.number = number
         self.goals = ["Welcome!","Destroy all asteroids!","Defeat all aliens!","Defeat the ufo!","Defeat the blob!","Survive for a minute!"]
@@ -92,13 +92,13 @@ class Level:
                 for n in [2,6]:
                     self.aliens.add(Alien(ALIEN.PURPLE, level=self, grid=(n,1), direction=(1,0), constraints=pygame.Rect([0,0,Display.screen_width,3*Display.grid_width])))
                 for n in [10,14]:
-                    self.aliens.add(Alien(ALIEN.PURPLE, level=self, grid=(n,5), direction=(-1,0), constraints=pygame.Rect([0,3*Display.grid_width,Display.screen_width,3*Display.grid_width]),random_cycle_time=(1200,2000)))
+                    self.aliens.add(Alien(ALIEN.PURPLE, level=self, grid=(n,5), direction=(-1,0), constraints=pygame.Rect([0,3*Display.grid_width,Display.screen_width,3*Display.grid_width])))
             case 4:
                 self.events.append(Event("asteroid_hail", self, random_cycle_time=(1000,1500)))            
-                self.alien_random_entrance(ALIEN.BLOB,boundary_behaviour="reflect")
+                self.alien_random_entrance(ALIEN.BLOB, boundary_behaviour="reflect")
             case 5:
                 self.events.append(Event("asteroid_hail", self, random_cycle_time=(500,800)))
-                self.events.append(Event("alien_attack",self,random_cycle_time=(1000,1500)))        
+                self.events.append(Event("alien_attack", self,random_cycle_time=(1000,1500)))        
 
     @property
     def progress(self):

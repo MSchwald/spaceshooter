@@ -1,5 +1,5 @@
 import pygame, settings, sound
-from image import Image
+from image import Image, GraphicData
 from sprite import Sprite
 from bullet import Bullet
 from display import Display
@@ -21,43 +21,34 @@ def normalize(v):
 class Alien(Sprite):
     """Manage sprites, spawning and actions of enemies"""
 
-    def __init__(self, type: AlienType, level, cycle_time=None, random_cycle_time=(800,1500),
-                grid=None, center=None, x=0, y=0, v=None, direction=None, constraints=None, boundary_behaviour="reflect",
-                energy=None):
-        #level: needs access to the level object from the game file
-        #cycle_time: Alien periodically does actions after given time (in ms)
-        #random_cycle_time is a tuple of floats: cycle times vary randomly between given lower and upper bound (in ms)
+    def __init__(self, type: AlienType, level, energy=None, v=None,
+                constraints=None, boundary_behaviour="reflect",
+                **pos_kwargs):
+        # level: needs access to the level object from the game file
+        # energy and v allow overwriting their standard settings for given AlienType        
+        self.type = type
         v = v if v is not None else type.speed
         constraints = constraints or pygame.Rect(0, 0, Display.screen_width, Display.screen_height)
         self.energy = energy or type.energy
-        #Load frames and images
-        if type.animation_type:
-            image = None
-            frames = Image.load(f"images/alien/{type.name}", colorkey=type.colorkey)
-            animation_type, fps = type.animation_type, type.fps
-        else:
-            frames, animation_type, fps = None, None, None
-            if type.name == "blob":
-                image = Image.blob[self.energy-1]
-            else:
-                image = Image.load(f'images/alien/{type.name}.png',colorkey=type.colorkey)
-                
-        super().__init__(image=image,
-                            grid=grid, center=center, x=x, y=y, v=v, direction=direction,
-                            constraints=constraints, boundary_behaviour=boundary_behaviour,
-                            animation_type=animation_type, frames=frames, fps=fps)
-        self.type = type
         self.level = level
-        self.points = type.points
-        self.cycle_time = cycle_time
-        self.random_cycle_time = random_cycle_time
-        if random_cycle_time:
-            self.cycle_time = randint(random_cycle_time[0],random_cycle_time[1])
-        if self.cycle_time:
+        self.random_cycle_time = type.random_cycle_time
+        if self.random_cycle_time:
+            self.cycle_time = randint(self.random_cycle_time[0],self.random_cycle_time[1])
             self.action_timer = 0
-        #blobs gravitate towards the place they got split the last time
+        else:
+            self.cycle_time, self.action_timer = None, None
+
+        # Load alien graphics
         if type.name == "blob":
             self.parent_center = None
+            graphic = GraphicData(image = Image.blob[self.energy-1])
+        else:
+            graphic = GraphicData(path = f"images/alien/{type.name}", scaling_width = type.width, colorkey = type.colorkey,
+                    animation_type = type.animation_type, fps = type.fps)
+                
+        super().__init__(graphic = graphic,
+                v=v, constraints=constraints, boundary_behaviour=boundary_behaviour, **pos_kwargs)
+            
 
     def play_spawing_sound(self):
         match self.type.name:
@@ -112,7 +103,7 @@ class Alien(Sprite):
                     if self.random_cycle_time:
                         self.cycle_time = randint(self.random_cycle_time[0],self.random_cycle_time[1])
                     self.do_action()
-            #blobs gravitate towards their parent center
+            #blobs gravitate towards their parent center where they split last
             if self.type.name == "blob" and self.parent_center:
                 x1,y1 = self.rect.center
                 x2,y2 = self.parent_center
@@ -203,7 +194,7 @@ class Alien(Sprite):
         """removes an enemy, triggers splitting for asteroids and blobs""" 
         if self.energy <= 0:
             {"big_asteroid": sound.asteroid, "small_asteroid": sound.small_asteroid, "purple": sound.alienblob, "ufo":sound.alienblob, "blob":sound.alienblob}[self.type.name].play()
-            self.level.ship.get_points(self.points)
+            self.level.ship.get_points(self.type.points)
             if random() <= ITEM.PROBABILITY:
                 self.level.items.add(Item(choice(ITEM.LIST), self.level, center=self.rect.center))
         if self.type.name == "big_asteroid":
@@ -220,7 +211,7 @@ class Alien(Sprite):
                     self.level.blobs.add(blob)
             elif self.energy == 1:
                 sound.alienblob.play()
-                self.level.ship.get_points(self.points)
+                self.level.ship.get_points(self.type.points)
                 self.hard_kill()
         super().kill()
 

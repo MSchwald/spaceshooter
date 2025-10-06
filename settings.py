@@ -27,9 +27,8 @@ class KEY:
     START = pygame.K_RETURN
     BACK = pygame.K_BACKSPACE
 
-
 # Standard screen settings
-# (screen.py handles rescaling all sizes to user's display settings)
+# (display.py handles rescaling all sizes to user's display settings)
 class SCREEN:
     WIDTH, HEIGHT = 1600, 900
     GRID = (16,9)
@@ -64,13 +63,16 @@ class AlienType:
     colorkey: tuple = COLOR.BLACK
     pieces: int | None = None
     acceleration: float | None = None
+    # Alien periodically does actions after given time (in ms)
+    # cycle times vary randomly between given lower and upper bound (in ms)
+    random_cycle_time: tuple[int,int] | None = None
 
 class ALIEN:
     BIG_ASTEROID = AlienType("big_asteroid", 0.3, 4, 20, 100, animation_type = "loop", fps = 10, pieces = 4)
     SMALL_ASTEROID = AlienType("small_asteroid",0.6, 1, 10, BIG_ASTEROID.width * BIG_ASTEROID.pieces ** (-1/3), animation_type = "loop", fps = 10)
-    PURPLE = AlienType("purple", 0.4, 10, 100, 150, colorkey = (254, 254, 254))
-    UFO = AlienType("ufo", 1, 20, 500, 100)
-    BLOB = AlienType("blob", 0.5, 32, 30, 300, pieces = 2, acceleration = 1/160)
+    PURPLE = AlienType("purple", 0.4, 10, 100, 150, colorkey = (254, 254, 254), random_cycle_time = (800,1500))
+    UFO = AlienType("ufo", 1, 20, 500, 100, random_cycle_time = (800,1500))
+    BLOB = AlienType("blob", 0.5, 32, 30, 300, pieces = 2, acceleration = 1/160, random_cycle_time = (800,1500))
 
 # Bullet settings and types in the game
 @dataclass

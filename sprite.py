@@ -1,13 +1,13 @@
-import pygame, settings
+import pygame
+from settings import SCREEN
 from image import Image
 from display import Display
-#from numpy.linalg import norm
 from math import hypot as norm
 from math import sqrt, sin, cos, pi
 from random import random, choice
 
 class Sprite(pygame.sprite.Sprite):
-    # class for all sprites
+    """Manage movement, boundary collision and animation of ingame objects"""
     def __init__(self, image=None,
                 grid=None, center=None, x=0, y=0,
                 v=0, a=None, direction=(0, 0),
@@ -161,7 +161,7 @@ class Sprite(pygame.sprite.Sprite):
         self.update_frame(dt)
 
     def update_position(self, dt):
-        self.change_position(self.x+dt*self.vx*Display.grid_width/settings.GRID_WIDTH, self.y+dt*self.vy*Display.grid_width/settings.GRID_WIDTH)
+        self.change_position(self.x+dt*self.vx*Display.grid_width/SCREEN.GRID_WIDTH, self.y+dt*self.vy*Display.grid_width/SCREEN.GRID_WIDTH)
     
     def update_velocity(self, dt):
         self.direction = (self.vx+self.a[0]*dt,self.vy+self.a[1]*dt)

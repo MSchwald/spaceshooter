@@ -1,12 +1,14 @@
-import pygame, settings, json, string
+import pygame, json
+from string import ascii_letters, digits
 from pathlib import Path
 from menu import Menu
+from settings import DEFAULT_HIGHSCORES, MAX_NUMBER_OF_HIGHSCORES
 
 class Highscores:
-    """class to load, render, update and save highscores"""
+    """Load, render, update and save highscores"""
     def __init__(self):
-        """load saved high scores or use the default ones from the settings"""
-        self.allowed_chars = string.ascii_letters + string.digits # characters allowed in the players' names
+        """load saved high scores or the default ones from the settings"""
+        self.allowed_chars = ascii_letters + digits # characters allowed in the players' names
         try:
             with open("highscores.json", "r", encoding="utf-8") as f:
                 self.score_list = json.load(f)
@@ -23,12 +25,12 @@ class Highscores:
         return [str(x[1]) for x in self.score_list]
 
     def load_default_highscores(self):
-        self.score_list = sorted(settings.DEFAULT_HIGHSCORES, key=lambda x: x[1], reverse=True)[:settings.MAX_NUMBER_OF_HIGHSCORES]
+        self.score_list = sorted(DEFAULT_HIGHSCORES, key=lambda x: x[1], reverse=True)[:MAX_NUMBER_OF_HIGHSCORES]
         self.fill_list_with_zeros()
         self.save()
 
     def fill_list_with_zeros(self):
-        while len(self.score_list) < settings.MAX_NUMBER_OF_HIGHSCORES:
+        while len(self.score_list) < MAX_NUMBER_OF_HIGHSCORES:
             self.score_list.append(("",0))
  
     def save(self):
@@ -36,7 +38,7 @@ class Highscores:
             json.dump(self.score_list, f)
 
     def highscore_rank(self, score):
-        beaten_scores = [i for i in range(settings.MAX_NUMBER_OF_HIGHSCORES) if score > self.score_list[i][1]]
+        beaten_scores = [i for i in range(MAX_NUMBER_OF_HIGHSCORES) if score > self.score_list[i][1]]
         if beaten_scores:
             return beaten_scores[0]
         return None

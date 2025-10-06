@@ -1,11 +1,10 @@
-import pygame, settings
+import pygame
 from pathlib import Path
 from display import Display
-from settings import Color
+from settings import COLOR, SCREEN, ITEM, ALIEN, SHIP
 
 class Image:
-    '''Class to manage loading images to be used as surfaces for sprites.
-    (Inheriting properties directly from the 'Surface'-class is not be possible in pygame)'''
+    '''Manage lazy loading and transforming images and masks to be used for sprites'''
     def __init__(self, surface, mask, colorkey = None, reflected = False, path = None):
         self.surface = surface
         self.mask = mask
@@ -34,9 +33,9 @@ class Image:
         '''Allows rescaling images either to a given width, height or by a factor'''
         factor = None
         if scaling_width:
-            factor = Display.grid_width/settings.GRID_WIDTH * scaling_width / self.w
+            factor = Display.grid_width/SCREEN.GRID_WIDTH * scaling_width / self.w
         elif scaling_height:
-            factor = Display.grid_width/settings.GRID_WIDTH * scaling_height / self.h
+            factor = Display.grid_width/SCREEN.GRID_WIDTH * scaling_height / self.h
         elif scaling_factor:
             factor = scaling_factor
         if factor is None:
@@ -59,7 +58,7 @@ class Image:
                     return settings.bullet_width[Path(parts[2]).stem]
                 case "ship":
                     ship_rank = int(parts[2][2])
-                    return settings.Ship.WIDTH[ship_rank]
+                    return SHIP.WIDTH[ship_rank]
                 case "statusbar":
                     return 72 #height of the empty health bar picture
                 case _:
@@ -68,7 +67,7 @@ class Image:
 
     cache = {}
     @classmethod
-    def load(cls, path, colorkey=Color.BLACK, scaling_width=None, scaling_height=None, scaling_factor=None):
+    def load(cls, path, colorkey=COLOR.BLACK, scaling_width=None, scaling_height=None, scaling_factor=None):
         '''lazy image loader, each image gets loaded and formated only once,
             either the desired width or height can be specified
             path: either a single path as a string oder a list of paths as strings'''
@@ -95,7 +94,7 @@ class Image:
             raw_image = pygame.image.load(path)
             #If boundary is not black, we first need to remove it without
             #losing pixels in the inside of the figure
-            if colorkey != Color.BLACK: 
+            if colorkey != COLOR.BLACK: 
                 temp = raw_image.copy()
                 temp.set_colorkey(colorkey)
                 #temp has now transparent boundary, but unfortunately
@@ -146,8 +145,8 @@ class Image:
     # blob and blubber images
     @classmethod
     def load_blob(cls):
-        N=settings.BLOB.energy
-        raw_blob = cls.load("images/alien/blob", colorkey=settings.BLOB.colorkey)
+        N=ALIEN.BLOB.energy
+        raw_blob = cls.load("images/alien/blob", colorkey=ALIEN.BLOB.colorkey)
         cls.blob = [raw_blob[2].scale_by((N/n)**(-1/3)) for n in range(1,N//8)]+[raw_blob[1].scale_by((N/n)**(-1/3)) for n in range(N//8,N//4+1)]+[raw_blob[0].scale_by((N/n)**(-1/3)) for n in range(N//4+1, N+1)]
         raw_blubber = cls.load(f'images/bullet/blubber.png')
         cls.blubber = [raw_blubber.scale_by((N/n)**(-1/3)) for n in range(1,N+1)]

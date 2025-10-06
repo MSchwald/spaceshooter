@@ -3,10 +3,10 @@ from display import Display
 from sprite import Sprite
 from image import Image
 from math import ceil
-from settings import BulletType, BULLET1, BULLET2, BULLET3, MISSILE, GREEN_BULLET, BLUBBER
+from settings import BulletType, BULLET
 
 class Bullet(Sprite):
-    """A class to manage the bullets shot by the player or enemies"""
+    """Manage creation and properties of the player's and enemies' bullets"""
 
     def __init__(self, type: BulletType, size=None, owner=None, damage=None, image=None,
             v=None, grid=None, center=None, x=0, y=0, direction=None,
@@ -23,9 +23,9 @@ class Bullet(Sprite):
             else:
                 direction = (0,1)
         if type.name == "blubber":
-            self.size = size or settings.BLOB.energy
+            self.size = size or settings.ALIEN.BLOB.energy
             image = Image.blubber[size-1]
-            self.damage = ceil(size/settings.BLOB.energy*type.damage)
+            self.damage = ceil(size/settings.ALIEN.BLOB.energy*type.damage)
             frames = None
         else:
             if type.animation_type is None:
@@ -43,7 +43,7 @@ class Bullet(Sprite):
 
     @classmethod
     def from_size(cls, size, **kwargs):
-        return [Bullet(BULLET1, **kwargs), Bullet(BULLET2, **kwargs), Bullet(BULLET3, **kwargs)][size-1]
+        return [Bullet(BULLET.BULLET1, **kwargs), Bullet(BULLET.BULLET2, **kwargs), Bullet(BULLET.BULLET3, **kwargs)][size-1]
 
     def play_firing_sound(self):
         match self.type.name:

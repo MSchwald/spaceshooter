@@ -1,8 +1,9 @@
-import pygame, settings
+import pygame
 from random import randint, random
-from settings import BIG_ASTEROID, PURPLE, BLOB
+from settings import ALIEN
 
 class Event:
+    """Create and manage cyclic level events like repeated enemy spawns"""
     def __init__(self, type, level, cycle_time=None, random_cycle_time=None):
         self.type=type
         self.level=level
@@ -25,9 +26,9 @@ class Event:
 
     def do_action(self):
         if self.type == "asteroid_hail":
-            self.level.alien_random_entrance(BIG_ASTEROID)
+            self.level.alien_random_entrance(ALIEN.BIG_ASTEROID)
         if self.type == "alien_attack":
             if random() > 0.5:
-                self.level.alien_random_entrance(PURPLE, boundary_behaviour="reflect")
+                self.level.alien_random_entrance(ALIEN.PURPLE, boundary_behaviour="reflect")
             else:
-                self.level.alien_random_entrance(BLOB, energy=BLOB.energy//4, boundary_behaviour="reflect")
+                self.level.alien_random_entrance(ALIEN.BLOB, energy=ALIEN.BLOB.energy//4, boundary_behaviour="reflect")

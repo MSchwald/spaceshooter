@@ -1,18 +1,13 @@
-import pygame, settings, sound
-from settings import Key
-from alien import Alien
+import pygame, sound
+from settings import KEY, SCREEN
 from level import Level
 from menu import Menu
-from image import Image
 from random import random, choice
-from item import Item
-from sprite import Sprite
 from display import Display
 from highscores import Highscores
 
-
 class Game:
-    """Overall class to manage the games logic and updating the screen """
+    """Manage the game's logic, user input, menu and rendering loop"""
 
     def __init__(self):
         """Initialize the game and starting stats"""
@@ -20,7 +15,7 @@ class Game:
         pygame.init()
 
         self.display = Display()
-        self.screen = self.display.get_game_surface_with_ratio(settings.SCREEN_WIDTH,settings.SCREEN_HEIGHT)
+        self.screen = self.display.get_game_surface_with_ratio(SCREEN.WIDTH,SCREEN.HEIGHT)
 
         self.player_name = "" # Gets entered when achieving a high score 
         Menu.init_settings()
@@ -61,7 +56,7 @@ class Game:
             # The 'X' of the window and ESCAPE end the game
             if(
                 event.type == pygame.QUIT or
-                (event.type == pygame.KEYDOWN and event.key == Key.EXIT)
+                (event.type == pygame.KEYDOWN and event.key == KEY.EXIT)
             ):
                 self.running = False
                 break
@@ -70,12 +65,12 @@ class Game:
             if self.mode == "game":
                 if event.type == pygame.KEYDOWN:
                     # RETURN pauses the game and opens the main menu
-                    if event.key == Key.START:
+                    if event.key == KEY.START:
                         self.mode = "menu"
                         self.active_menu = Menu.create_main_menu(self)
                         break
                     # SPACE shoots bullets
-                    elif event.key == Key.SHOOT:
+                    elif event.key == KEY.SHOOT:
                         self.level.ship.shoot_bullets()
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     self.level.ship.shoot_missile(event.pos)
@@ -90,9 +85,9 @@ class Game:
             # Navigating the menu
             if self.mode == "menu":
                 if event.type == pygame.KEYDOWN:
-                    if event.key in [Key.UP, Key.DOWN]:
+                    if event.key in [KEY.UP, KEY.DOWN]:
                         self.active_menu.move_selection(event.key)
-                    if event.key == Key.START:
+                    if event.key == KEY.START:
                         Menu.choose_current_selection(self)
 
         # Control ship direction and shield according to keyboard input
@@ -102,9 +97,9 @@ class Game:
 
     def render(self):
         """Blit all stats, sprites, menu etc onto the display in the correct order"""
-        self.screen.fill(settings.BG_COLOR) # black background
+        self.screen.fill(SCREEN.BG_COLOR) # black background
         self.level.blit(self.screen) # statusbar, ship, enemies, items, bullets, crosshairs
         if self.mode == "menu" or self.mode == "enter name":
             self.active_menu.blit(self.screen)
         
-        self.display.update(padding_color=settings.PADDING_COLOR)
+        self.display.update(padding_color=SCREEN.PADDING_COLOR)

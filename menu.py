@@ -1,32 +1,30 @@
-import pygame, settings, sound
+import pygame, sound
 from image import Image
 from level import Level
-from settings import Color, Key
+from settings import COLOR, KEY, SCREEN, FONT, MENU, ITEM, MAX_NAME_LENGTH
 from text import *
 from display import Display
 
-#Fonts and menu formatting automatically rescale with the screen width
-
 class Menu():
-    """Class to create menus with a given title message and a given list of options"""
+    """Manage creation and navigation of menus consisting of a title message and a list of options"""
     
     @classmethod
     def init_settings(cls):
-        '''scales menu formating to user's display setting'''
+        '''Rescale menu formating to user's display setting'''
         pygame.font.init()
-        cls.menu_font_size = int(settings.Font.MENU_SIZE*Display.screen_width/settings.SCREEN_WIDTH)
-        cls.text_font_size = int(settings.Font.TEXT_SIZE*Display.screen_width/settings.SCREEN_WIDTH)
-        cls.menu_font = pygame.font.Font(settings.Font.MENU, cls.menu_font_size)
-        cls.text_font = pygame.font.Font(settings.Font.TEXT, cls.text_font_size)
-        cls.boundary_size = int(settings.Menu.BOUNDARY_SIZE*Display.screen_width/settings.SCREEN_WIDTH)
-        cls.title_distance = int(settings.Menu.TITLE_DISTANCE*Display.screen_width/settings.SCREEN_WIDTH)
-        cls.line_distance = int(settings.Menu.LINE_DISTANCE*Display.screen_width/settings.SCREEN_WIDTH)
+        cls.menu_font_size = int(FONT.MENU_SIZE*Display.screen_width/SCREEN.WIDTH)
+        cls.text_font_size = int(FONT.TEXT_SIZE*Display.screen_width/SCREEN.WIDTH)
+        cls.menu_font = pygame.font.Font(FONT.MENU, cls.menu_font_size)
+        cls.text_font = pygame.font.Font(FONT.TEXT, cls.text_font_size)
+        cls.boundary_size = int(MENU.BOUNDARY_SIZE*Display.screen_width/SCREEN.WIDTH)
+        cls.title_distance = int(MENU.TITLE_DISTANCE*Display.screen_width/SCREEN.WIDTH)
+        cls.line_distance = int(MENU.LINE_DISTANCE*Display.screen_width/SCREEN.WIDTH)
 
     def __init__(self, header_surface, options, current_selection=0):
         self.header_surface = header_surface
-        self.inactive_options = Text(options, Menu.menu_font, Color.LIGHT_GREY, Color.BLUE)
-        self.highlighted_options = Text(options, Menu.menu_font, Color.YELLOW, Color.GREY)
-        self.options = Text(options, Menu.menu_font, Color.LIGHT_GREY, Color.BLUE)
+        self.inactive_options = Text(options, Menu.menu_font, COLOR.LIGHT_GREY, COLOR.BLUE)
+        self.highlighted_options = Text(options, Menu.menu_font, COLOR.YELLOW, COLOR.GREY)
+        self.options = Text(options, Menu.menu_font, COLOR.LIGHT_GREY, COLOR.BLUE)
         self.current_selection = current_selection
         self.highlight()
         self.rendered_menu = self.render()
@@ -39,9 +37,9 @@ class Menu():
 
     def render(self):
         """Renders the the menu"""
-        rendered_options = self.options.render("center",Menu.line_distance, padding_color=Color.BLUE, center_title=False)
-        rendered_menu = align_surfaces([self.header_surface,rendered_options], orientation="vertical", spacing = Menu.title_distance, padding_size = Menu.boundary_size//2, padding_color = Color.BLUE)
-        return pad_surface(rendered_menu, padding_size=Menu.boundary_size//2, padding_color=Color.RED)
+        rendered_options = self.options.render("center",Menu.line_distance, padding_color=COLOR.BLUE, center_title=False)
+        rendered_menu = align_surfaces([self.header_surface,rendered_options], orientation="vertical", spacing = Menu.title_distance, padding_size = Menu.boundary_size//2, padding_color = COLOR.BLUE)
+        return pad_surface(rendered_menu, padding_size=Menu.boundary_size//2, padding_color=COLOR.RED)
 
     def blit(self, screen):
         """blits the menu with the current selection highlighted"""
@@ -52,7 +50,7 @@ class Menu():
         """Navigate through the menu"""
         sound.menu_move.play()
         self.current_selection = (
-            (self.current_selection + {Key.UP : -1, Key.DOWN : 1}[event_key]) % len(self.options.lines)
+            (self.current_selection + {KEY.UP : -1, KEY.DOWN : 1}[event_key]) % len(self.options.lines)
         )
         self.highlight()
         self.rendered_menu = self.render()
@@ -63,15 +61,15 @@ class Menu():
         allows for showing the highsores in between"""
         if highscores is not None:
             message += [""]
-        text = Text(message, Menu.text_font, Color.WHITE, Color.BLUE)
-        rendered_message = text.render("left", Menu.line_distance, padding_color=Color.BLUE, title_distance=Menu.title_distance)
+        text = Text(message, Menu.text_font, COLOR.WHITE, COLOR.BLUE)
+        rendered_message = text.render("left", Menu.line_distance, padding_color=COLOR.BLUE, title_distance=Menu.title_distance)
         if highscores is not None:
-            players = Text(highscores.players, Menu.menu_font, Color.WHITE, Color.BLUE)
-            scores = Text(highscores.scores, Menu.menu_font, Color.WHITE, Color.BLUE)
-            rendered_players = players.render("left", Menu.line_distance, padding_color=Color.BLUE, center_title=False)
-            rendered_scores = scores.render("right", Menu.line_distance, padding_color=Color.BLUE, center_title=False)
-            table = align_surfaces([rendered_players,rendered_scores],orientation="horizontal",spacing=Menu.title_distance,padding_color=Color.BLUE)
-            header_surface = align_surfaces([rendered_message,table],orientation="vertical",spacing=Menu.line_distance,padding_color=Color.BLUE)
+            players = Text(highscores.players, Menu.menu_font, COLOR.WHITE, COLOR.BLUE)
+            scores = Text(highscores.scores, Menu.menu_font, COLOR.WHITE, COLOR.BLUE)
+            rendered_players = players.render("left", Menu.line_distance, padding_color=COLOR.BLUE, center_title=False)
+            rendered_scores = scores.render("right", Menu.line_distance, padding_color=COLOR.BLUE, center_title=False)
+            table = align_surfaces([rendered_players,rendered_scores],orientation="horizontal",spacing=Menu.title_distance,padding_color=COLOR.BLUE)
+            header_surface = align_surfaces([rendered_message,table],orientation="vertical",spacing=Menu.line_distance,padding_color=COLOR.BLUE)
         else:
             header_surface = rendered_message
         return Menu(header_surface, options, current_selection=current_selection)
@@ -124,11 +122,11 @@ class Menu():
 
     def handle_input(self, game, event):
         if event.type == pygame.KEYDOWN:
-            if event.unicode in game.highscores.allowed_chars and len(game.player_name)<=10:
+            if event.unicode in game.highscores.allowed_chars and len(game.player_name) <= MAX_NAME_LENGTH:
                 game.player_name += event.unicode
-            elif event.key == Key.BACK:
+            elif event.key == KEY.BACK:
                 game.player_name = game.player_name[:-1]
-            elif event.key == Key.START:
+            elif event.key == KEY.START:
                     game.highscores.save()
                     game.active_menu = Menu.create_main_menu(game)
                     game.mode = "menu"
@@ -154,17 +152,17 @@ class Menu():
                 game.active_menu = Menu.create(["Item list",
                                     [pygame.image.load("images/item/bullets_buff.png"), " upgrades your bullets"],
                                     [pygame.image.load("images/item/ship_buff.png"), " upgrades your ship"],
-                                    [pygame.image.load("images/item/hp_plus.png"), f" gives back {settings.Item.HP_PLUS} energy"],
-                                    [pygame.image.load("images/item/invert_controls.png"), f" inverts controls for {settings.Item.EFFECT_DURATION["invert_controls"]}s"],
+                                    [pygame.image.load("images/item/hp_plus.png"), f" gives back {ITEM.HP_PLUS.effect} energy"],
+                                    [pygame.image.load("images/item/invert_controls.png"), f" inverts controls for {ITEM.INVERT_CONTROLS.duration}s"],
                                     [pygame.image.load("images/item/magnet.png"), " attracts items to you"],
-                                    [pygame.image.load("images/item/score_buff.png"), f" score multiplier {settings.Item.SCORE_BUFF} for {settings.Item.EFFECT_DURATION["score_buff"]}s"]],
+                                    [pygame.image.load("images/item/score_buff.png"), f" score multiplier {ITEM.SCORE_BUFF.effect} for {ITEM.SCORE_BUFF.duration}s"]],
                                     ["More items", "Back to controls","Back to menu"])
             case "More items":
                 game.active_menu = Menu.create(["Item list",
                                     [pygame.image.load(f"images/item/life_plus.png"), " ", pygame.image.load(f"images/item/life_minus.png"), " gives or takes a life"],
-                                    [pygame.image.load(f"images/item/size_plus.png"), " ", pygame.image.load(f"images/item/size_minus.png"), f" increases or decreases ship size for {settings.Item.EFFECT_DURATION["size_plus"]}s"],
-                                    [pygame.image.load(f"images/item/speed_buff.png"), " ", pygame.image.load(f"images/item/speed_nerf.png"), f" increases or decreases ship speed {settings.Item.EFFECT_DURATION["speed_buff"]}s"],
-                                    [pygame.image.load(f"images/item/shield.png"), f" increases shield timer by {settings.Item.SHIELD_DURATION}s,"],
+                                    [pygame.image.load(f"images/item/size_plus.png"), " ", pygame.image.load(f"images/item/size_minus.png"), f" increases or decreases ship size for {ITEM.SIZE_PLUS.duration}s"],
+                                    [pygame.image.load(f"images/item/speed_buff.png"), " ", pygame.image.load(f"images/item/speed_nerf.png"), f" increases or decreases ship speed {ITEM.SPEED_BUFF.duration}s"],
+                                    [pygame.image.load(f"images/item/shield.png"), f" increases shield timer by {ITEM.SHIELD.effect}s,"],
                                     "use it to reflect enemies and bullets.",
                                     [pygame.image.load(f"images/item/missile.png"), " gives an extra missile."],
                                     "They are strong, use them wisely!"],

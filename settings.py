@@ -1,8 +1,11 @@
 from dataclasses import dataclass
 import pygame.locals
 
+# Structured collection of all ingame parameters for comfortable adjustment
+# and creation of new types of aliens, bullets or items
+
 # Color and key names
-class Color(tuple):
+class COLOR(tuple):
     WHITE = (255, 255, 255)
     BLUE = (0, 0, 200)
     YELLOW = (255, 255, 0)
@@ -13,7 +16,7 @@ class Color(tuple):
     GREEN = (100, 255, 100)
     BLACK = (0,0,0)
 
-class Key:
+class KEY:
     EXIT = pygame.K_ESCAPE
     UP = pygame.K_w
     DOWN = pygame.K_s
@@ -25,17 +28,17 @@ class Key:
     BACK = pygame.K_BACKSPACE
 
 
-# All sizes refer to the following
-# standard screen settings
-# (screen.py handles rescaling to user's display settings)
-SCREEN_WIDTH, SCREEN_HEIGHT = 1600, 900
-GRID = (16,9)
-GRID_WIDTH = 100 # = 1600 / 16
-PADDING_COLOR = Color.DARK_GREY
-BG_COLOR = Color.BLACK
+# Standard screen settings
+# (screen.py handles rescaling all sizes to user's display settings)
+class SCREEN:
+    WIDTH, HEIGHT = 1600, 900
+    GRID = (16,9)
+    GRID_WIDTH = WIDTH // GRID[0] # 1600 / 16 = 100
+    PADDING_COLOR = COLOR.DARK_GREY
+    BG_COLOR = COLOR.BLACK
 
-# Game and ship settings
-class Ship:
+# Game and ship starting settings
+class SHIP:
     SCORE = 0
     LIVES = 3
     GAME_LEVEL = 1
@@ -48,7 +51,7 @@ class Ship:
     ENERGY = {1: 15, 2: 30, 3: 45}
     WIDTH = {1:100, 2:100, 3:120}
 
-# Alien settings
+# Alien settings and types in the game
 @dataclass
 class AlienType:
     name: str
@@ -58,19 +61,18 @@ class AlienType:
     width: int
     animation_type: str | None = None
     fps: int | None = None
-    colorkey: tuple = Color.BLACK
+    colorkey: tuple = COLOR.BLACK
     pieces: int | None = None
     acceleration: float | None = None
 
-BIG_ASTEROID = AlienType("big_asteroid", 0.3, 4, 20, 100, animation_type = "loop", fps = 10, pieces = 4)
-w = BIG_ASTEROID.width * BIG_ASTEROID.pieces ** (-1/3)
-SMALL_ASTEROID = AlienType("small_asteroid",0.6, 1, 10, w, animation_type = "loop", fps = 10)
-PURPLE = AlienType("purple", 0.4, 10, 100, 150, colorkey = (254, 254, 254))
-UFO = AlienType("ufo", 1, 20, 500, 100)
-BLOB = AlienType("blob", 0.5, 32, 30, 300, pieces = 2, acceleration = 1/160)
+class ALIEN:
+    BIG_ASTEROID = AlienType("big_asteroid", 0.3, 4, 20, 100, animation_type = "loop", fps = 10, pieces = 4)
+    SMALL_ASTEROID = AlienType("small_asteroid",0.6, 1, 10, BIG_ASTEROID.width * BIG_ASTEROID.pieces ** (-1/3), animation_type = "loop", fps = 10)
+    PURPLE = AlienType("purple", 0.4, 10, 100, 150, colorkey = (254, 254, 254))
+    UFO = AlienType("ufo", 1, 20, 500, 100)
+    BLOB = AlienType("blob", 0.5, 32, 30, 300, pieces = 2, acceleration = 1/160)
 
-
-# Bullet settings
+# Bullet settings and types in the game
 @dataclass
 class BulletType:
     name: str
@@ -81,52 +83,67 @@ class BulletType:
     animation_type: str | None = None
     animation_time: float | None = None
 
-BULLET1 = BulletType("1", 14, 1, "player", 1)
-BULLET2 = BulletType("2", 18, 2, "player", 1)
-BULLET3 = BulletType("3", 22, 3, "player", 1)
-MISSILE = BulletType("explosion", 150, 15, "player", 0, animation_type = "vanish", animation_time = 0.5)
-GREEN_BULLET = BulletType("g", 26, 3, "enemy", 0.2, animation_type = "once", animation_time = 0.5)
-BLUBBER = BulletType("blubber", 150, 16, "enemy", 0.4)
+class BULLET:
+    BULLET1 = BulletType("1", 14, 1, "player", 1)
+    BULLET2 = BulletType("2", 18, 2, "player", 1)
+    BULLET3 = BulletType("3", 22, 3, "player", 1)
+    MISSILE = BulletType("explosion", 150, 15, "player", 0, animation_type = "vanish", animation_time = 0.5)
+    GREEN = BulletType("g", 26, 3, "enemy", 0.2, animation_type = "once", animation_time = 0.5)
+    BLUBBER = BulletType("blubber", 150, 16, "enemy", 0.4)
 
-# Item settings
-class Item:
-    SIZE = 50
+# Item settings and types in the game
+@dataclass
+class ItemType:
+    name: str
+    size: int = 50
+    speed: int = 0.3
+    effect: float | None = None
+    duration: int | None = None
+
+class ITEM:
     PROBABILITY = 0.3
-    SPEED = 0.3
-    SHIELD_DURATION = 3
-    HP_PLUS = 5
-    SPEED_BUFF = 1.8
-    SPEED_NERF = 1/SPEED_BUFF
-    SCORE_BUFF = 1.5
-    SIZE_PLUS = 1.5
-    SIZE_MINUS = 1/SIZE_PLUS
-    MAGNET_STRENGTH = 1/30
-    TYPES = ["size_plus","size_minus", "score_buff", "bullets_buff",
-            "hp_plus", "invert_controls", "life_plus","life_minus",
-            "magnet", "missile", "shield", "ship_buff",
-            "speed_buff", "speed_nerf"]
-    EFFECT_DURATION = {"size_plus":10,"size_minus":10,
-            "score_buff":10, "bullets_buff":None,
-            "hp_plus":None, "invert_controls":5,
-            "life_plus":None,"life_minus":None,
-            "magnet":None, "missile":None,
-            "shield":None, "ship_buff":None,
-            "speed_buff":5, "speed_nerf":5}
+    #ship size *= effect
+    SIZE_PLUS = ItemType("size_plus", effect = 1.5, duration = 10)
+    SIZE_MINUS = ItemType("size_minus", effect = 1/SIZE_PLUS.effect, duration = SIZE_PLUS.duration)
+    #scored points *= effect
+    SCORE_BUFF = ItemType("score_buff", effect = 1.5, duration = 10)
+    # bullet sizes += 1
+    BULLETS_BUFF = ItemType("bullets_buff")
+    # health += effect
+    HP_PLUS = ItemType("hp_plus", effect = 5)
+    # invert ship controls
+    INVERT_CONTROLS = ItemType("invert_controls", duration = 5)
+    # ship lives += or -= 1
+    LIFE_PLUS = ItemType("life_plus")
+    LIFE_MINUS = ItemType("life_minus")
+    # gravitational acceleration of items to ship = effect
+    MAGNET = ItemType("magnet", effect = 1/30)
+    # missiles += 1
+    MISSILE = ItemType("missile")
+    # shield timer += effect seconds
+    SHIELD = ItemType("shield", effect = 3)
+    # ship rank += 1
+    SHIP_BUFF = ItemType("ship_buff")
+    # ship speed *= effect
+    SPEED_BUFF = ItemType("speed_buff", effect = 1.8, duration = 5)
+    SPEED_NERF = ItemType("speed_nerf", effect = 1/SPEED_BUFF.effect, duration = SPEED_BUFF.duration)
+    LIST = [SIZE_PLUS, SIZE_MINUS, SCORE_BUFF, BULLETS_BUFF, HP_PLUS, INVERT_CONTROLS,
+        LIFE_PLUS, LIFE_MINUS, MAGNET, MISSILE, SHIELD, SHIP_BUFF, SPEED_BUFF, SPEED_NERF]
 
 # Fonts and menu formatting
-class Font:
+class FONT:
     STATS = "fonts/ARCADE_I.ttf"
     MENU = "fonts/ARCADE_N.ttf"
     TEXT = "fonts/ARCADE_R.ttf"
     MENU_SIZE = 30
     TEXT_SIZE = 30
 
-class Menu:
+class MENU:
     BOUNDARY_SIZE = 20
     TITLE_DISTANCE = 30
     LINE_DISTANCE = 12
 
-# Highscores
+# Highscore settings
 DEFAULT_HIGHSCORES = [["Markus",1000],["Tobi",900],["Nadine",800],["Marc",600],["Katharina",400]]
 MAX_NUMBER_OF_HIGHSCORES = 5
 MAX_NAME_LENGTH = 10

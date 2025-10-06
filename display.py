@@ -1,7 +1,8 @@
-import pygame, settings
+import pygame
+from settings import SCREEN
 
 class Display:
-    # Go into fullscreen mode with the current display settings of the player
+    """Render game in fullscreen mode adapted to the player's display settings"""
     def __init__(self):
         pygame.display.init()
         self.info = pygame.display.Info()
@@ -9,7 +10,7 @@ class Display:
         self.display = pygame.display.set_mode((self.width, self.height), pygame.FULLSCREEN)
 
     def get_game_surface_with_ratio(self,w,h):
-        #Fix a maximal surface "screen" on the display with following width:height ratio
+        """Fix a maximal surface "screen" on the display with following width:height ratio"""
         ratio = h*self.width-w*self.height
 
         if ratio == 0:
@@ -29,7 +30,7 @@ class Display:
         self.screen_rect = pygame.Rect(Display.padding_w,Display.padding_h,screen_w,screen_h)
         Display.screen_width = self.screen.get_width()
         Display.screen_height = self.screen.get_height()
-        Display.grid_width = Display.screen_width // settings.GRID[0]
+        Display.grid_width = Display.screen_width // SCREEN.GRID[0]
         return self.screen
 
     def update(self, padding_color):

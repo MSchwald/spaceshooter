@@ -1,5 +1,7 @@
 import pygame
 
+# sound library for convenient access from other modules
+
 pygame.mixer.init()
 
 #enemy sounds

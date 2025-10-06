@@ -5,9 +5,8 @@ from bullet import Bullet
 from display import Display
 from item import Item
 from random import random, choice, randint, sample
-from math import pi, sqrt, sin, cos
-from math import hypot
-from settings import AlienType, BIG_ASTEROID, SMALL_ASTEROID, PURPLE, UFO, BLOB, GREEN_BULLET, BLUBBER
+from math import pi, sqrt, sin, cos, hypot
+from settings import AlienType, ALIEN, BULLET, ITEM
 
 def norm(v):
     return hypot(v[0],v[1])
@@ -20,7 +19,7 @@ def normalize(v):
     return (v[0]/norm_v,v[1]/norm_v)
 
 class Alien(Sprite):
-    """A class to manage the enemies"""
+    """Manage sprites, spawning and actions of enemies"""
 
     def __init__(self, type: AlienType, level, cycle_time=None, random_cycle_time=(800,1500),
                 grid=None, center=None, x=0, y=0, v=None, direction=None, constraints=None, boundary_behaviour="reflect",
@@ -119,16 +118,16 @@ class Alien(Sprite):
                 x2,y2 = self.parent_center
                 n = normalize((x2-x1,y2-y1))
                 vr = self.vx*n[0]+self.vy*n[1]
-                ar = -BLOB.acceleration*(vr-self.splitting_speed)*abs(vr+self.splitting_speed)
+                ar = -ALIEN.BLOB.acceleration*(vr-self.splitting_speed)*abs(vr+self.splitting_speed)
                 self.a = (ar*n[0],ar*n[1])
             #timer, movement and animation get handled in the Sprite class
             super().update(dt)
 
     def do_action(self):
         match self.type.name:
-            case "purple": self.shoot(GREEN_BULLET)
-            case "ufo": self.throw_alien(PURPLE)
-            case "blob": self.shoot(BLUBBER, size=self.energy)
+            case "purple": self.shoot(BULLET.GREEN)
+            case "ufo": self.throw_alien(ALIEN.PURPLE)
+            case "blob": self.shoot(BULLET.BLUBBER, size=self.energy)
 
     # types of alien actions
     def shoot(self, bullet_type, size=None):
@@ -137,7 +136,7 @@ class Alien(Sprite):
         bullet.play_firing_sound()
 
     def throw_alien(self, alien_type):
-        self.level.aliens.add(Alien(PURPLE,self.level,center=self.rect.midbottom, direction=(2*random()-1,1)))
+        self.level.aliens.add(Alien(ALIEN.PURPLE,self.level,center=self.rect.midbottom, direction=(2*random()-1,1)))
 
     def get_damage(self, damage):
         if self.type.name == "big_asteroid":
@@ -198,23 +197,23 @@ class Alien(Sprite):
             new_dir = (vx_new / new_v, vy_new / new_v)
         else:
             new_dir = (0, 0)
-        return Alien(BLOB, blob1.level, energy=blob1.energy+blob2.energy,center=new_center,direction=new_dir,v=new_v)
+        return Alien(ALIEN.BLOB, blob1.level, energy=blob1.energy+blob2.energy,center=new_center,direction=new_dir,v=new_v)
 
     def kill(self):
         """removes an enemy, triggers splitting for asteroids and blobs""" 
         if self.energy <= 0:
             {"big_asteroid": sound.asteroid, "small_asteroid": sound.small_asteroid, "purple": sound.alienblob, "ufo":sound.alienblob, "blob":sound.alienblob}[self.type.name].play()
             self.level.ship.get_points(self.points)
-            if random() <= settings.Item.PROBABILITY:
-                self.level.items.add(Item(choice(settings.Item.TYPES), self.level, center=self.rect.center))
+            if random() <= ITEM.PROBABILITY:
+                self.level.items.add(Item(choice(ITEM.LIST), self.level, center=self.rect.center))
         if self.type.name == "big_asteroid":
             # big asteroids split into smaller asteroids when hit
-            for piece in self.split(SMALL_ASTEROID, self.type.pieces):
+            for piece in self.split(ALIEN.SMALL_ASTEROID, self.type.pieces):
                 self.level.asteroids.add(piece)
         if self.type.name == "blob":
             if self.energy > 1:
                 sound.slime_hit.play()
-                for blob in self.split(BLOB, self.type.pieces):
+                for blob in self.split(ALIEN.BLOB, self.type.pieces):
                     blob.splitting_speed = blob.v # needed later to calculate the gravitation towards the parent center
                     blob.parent_center = self.rect.center
                     self.level.aliens.add(blob)

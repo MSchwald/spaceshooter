@@ -41,7 +41,7 @@ class SCREEN:
 class SHIP:
     SCORE = 0
     LIVES = 3
-    GAME_LEVEL = 2
+    GAME_LEVEL = 1
     SHIELD_STARTING_TIMER = 3
     MAX_SHIELD_DURATION = 15
     MAX_BULLETS = 3

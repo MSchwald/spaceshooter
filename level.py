@@ -314,8 +314,6 @@ class Level:
                 )
                 alien_i.vel = speed * normalize(target - spawning_pos)
                 alien_i.spawn(pos = spawning_pos)           
-                if self.status != "start":
-                    alien_i.play_spawing_sound()
                 if template.name in ["big_asteroid","small_asteroid"]:
                     self.asteroids.add(alien_i)
                 elif template.name == "blob":

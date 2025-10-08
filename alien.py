@@ -50,6 +50,10 @@ class Alien(Sprite):
         super().__init__(graphic = graphic, pos = pos, vel = vel, acc = acc,
                     constraints = constraints, boundary_behaviour = boundary_behaviour)
             
+    def spawn(self, **kwargs):
+        if self.level.number != 0:
+            self.play_spawing_sound()
+        super().spawn(**kwargs)
 
     def play_spawing_sound(self):
         match self.template.name:
@@ -150,7 +154,7 @@ class Alien(Sprite):
             energy = masses[i] if piece_template.name == "blob" else None
             piece = Alien(piece_template, self.level, energy=energy, vel=vel_i,
                 constraints=self.constraints, boundary_behaviour=self.boundary_behaviour)
-            piece.spawn(center = self.center)
+            Sprite.spawn(piece, center = self.center)
             pieces.append(piece)
         return pieces
 
@@ -162,7 +166,7 @@ class Alien(Sprite):
         m1, m2 = blob1.mass, blob2.mass
         new_center, new_vel = inelastic_collision(p1, p2, v1, v2, m1, m2)
         blob = Alien(ALIEN.BLOB, blob1.level, energy = blob1.energy + blob2.energy, vel = new_vel)
-        blob.spawn(center = new_center)
+        Sprite.spawn(blob, center = new_center)
         return blob
 
     def kill(self):

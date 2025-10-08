@@ -41,8 +41,9 @@ class Menu():
         rendered_menu = align_surfaces([self.header_surface,rendered_options], orientation="vertical", spacing = Menu.title_distance, padding_size = Menu.boundary_size//2, padding_color = COLOR.BLUE)
         return pad_surface(rendered_menu, padding_size=Menu.boundary_size//2, padding_color=COLOR.RED)
 
-    def blit(self, screen):
+    def blit(self, screen = None):
         """blits the menu with the current selection highlighted"""
+        screen = screen or Display.screen
         screen.blit(self.rendered_menu, ((
             screen.get_width()-self.w)//2, (screen.get_height()-self.h)//2))
 

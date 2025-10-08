@@ -6,50 +6,59 @@ from display import Display
 
 class Statusbar:
     """Format and render a two lined status bar with the relevant game stats"""
-    def __init__(self, level, rescaling = True):
+    initialized = False
+
+    @classmethod
+    def init(cls, level, rescaling = True):
+        '''Load images and initialize fonts once'''
+        if cls.initialized:
+            return
+
+        cls.rescaling = rescaling
+
+        cls.empty_bar = pygame.image.load("images/statusbar/empty_bar.png").convert_alpha()
             
-            self.level = level
-            self.rescaling = rescaling
+        cls.h = cls.empty_bar.get_height()
+        cls.health = pygame.image.load("images/statusbar/health_bar.png").convert_alpha()
+        cls.shield_timer = pygame.image.load("images/statusbar/shield_bar.png").convert_alpha()
 
-            self.empty_bar = pygame.image.load("images/statusbar/empty_bar.png").convert_alpha()
+        cls.font_size = cls.h*7//8
+        cls.font = pygame.font.Font(FONT.STATS, cls.font_size)
+        cls.stats_padding = (cls.h-cls.font_size)//2
             
-            self.h = self.empty_bar.get_height()
-            self.health = pygame.image.load("images/statusbar/health_bar.png").convert_alpha()
-            self.shield_timer = pygame.image.load("images/statusbar/shield_bar.png").convert_alpha()
+        cls.lives_icon = pygame.image.load("images/statusbar/lives_icon.png").convert_alpha()
+        cls.energy_icon = pygame.image.load("images/statusbar/energy_icon.png").convert_alpha()
+        cls.shield_icon = pygame.image.load("images/statusbar/shield_icon.png").convert_alpha()     
+        cls.missiles_icon = pygame.image.load("images/statusbar/missiles_icon.png").convert_alpha()
 
-            self.font_size = self.h*7//8
-            self.font = pygame.font.Font(FONT.STATS, self.font_size)
-            self.stats_padding = (self.h-self.font_size)//2
-            
-            self.lives_icon = pygame.image.load("images/statusbar/lives_icon.png").convert_alpha()
-            self.energy_icon = pygame.image.load("images/statusbar/energy_icon.png").convert_alpha()
-            self.shield_icon = pygame.image.load("images/statusbar/shield_icon.png").convert_alpha()     
-            self.missiles_icon = pygame.image.load("images/statusbar/missiles_icon.png").convert_alpha()
+        cls.score_font_size = cls.font_size//2
+        cls.score_font = pygame.font.Font(FONT.STATS, cls.score_font_size)
+        cls.score_padding = (cls.h//2-cls.score_font_size)//2                
 
-            self.score_font_size = self.font_size//2
-            self.score_font = pygame.font.Font(FONT.STATS, self.score_font_size)
-            self.score_padding = (self.h//2-self.score_font_size)//2                
-
-    def blit(self, screen):
-        self.health_bar = self.empty_bar.copy()
-        self.shield_bar = self.empty_bar.copy()
-        self.health_bar.blit(self.health, (19*self.h//72,18*self.h//72), area=(0,0,self.level.ship.energy*self.health.get_width()//self.level.ship.max_energy,self.h))
-        self.shield_bar.blit(self.shield_timer, (19*self.h//72,18*self.h//72), area=(0,0,self.level.ship.shield_timer*self.shield_timer.get_width()//(1000*SHIP.MAX_SHIELD_DURATION),self.h))   
-        self.missiles = pad_surface(self.font.render(f"{self.level.ship.missiles%100:02d}", False, COLOR.WHITE), self.stats_padding, vertical_padding=True, horizontal_padding=True)
-        self.level_number = pad_surface(self.font.render(f"L{self.level.number%100:02d}", False, COLOR.WHITE), self.stats_padding, vertical_padding=True, horizontal_padding=True)
-        self.lives = pad_surface(self.font.render(f"{self.level.ship.lives%100:02d}", False, COLOR.WHITE), self.stats_padding, vertical_padding=True, horizontal_padding=True)
-        self.first_row = align_surfaces([self.level_number,self.lives_icon,self.lives,
-                                        self.energy_icon,self.health_bar,self.shield_icon,
-                                        self.shield_bar,self.missiles_icon,self.missiles],
-                                        "horizontal", rescale_to_surface = self.health_bar, spacing=self.h//16)
-        self.score = self.score_font.render(f"Score {int(self.level.ship.score)}", False, {False: COLOR.WHITE, True: COLOR.GREEN}[self.level.ship.score_factor > 1])
-        self.goal = self.score_font.render(self.level.goal, False, COLOR.WHITE)
-        self.progress = self.score_font.render(self.level.progress, False, COLOR.WHITE)
-        self.second_row = pygame.Surface((self.first_row.get_width(),self.score_font_size))
-        self.second_row.blit(self.score,(0,0))
-        self.second_row.blit(self.goal,((self.first_row.get_width()-self.goal.get_width())//2,0))
-        self.second_row.blit(self.progress,(self.first_row.get_width()-self.progress.get_width(),0))
-        self.both_rows = align_surfaces([self.first_row,self.second_row], "vertical", spacing=self.h//32)
-        if self.rescaling:
-            self.both_rows = pygame.transform.scale_by(self.both_rows, Display.screen_width/self.first_row.get_width())
-        screen.blit(self.both_rows,(0,0))
+    @classmethod
+    def blit(cls, level, screen = None):
+        screen = screen or Display.screen
+        if not cls.initialized:
+            cls.init(level)
+        cls.health_bar = cls.empty_bar.copy()
+        cls.shield_bar = cls.empty_bar.copy()
+        cls.health_bar.blit(cls.health, (19*cls.h//72,18*cls.h//72), area=(0,0,level.ship.energy*cls.health.get_width()//level.ship.max_energy,cls.h))
+        cls.shield_bar.blit(cls.shield_timer, (19*cls.h//72,18*cls.h//72), area=(0,0,level.ship.shield_timer*cls.shield_timer.get_width()//(1000*SHIP.MAX_SHIELD_DURATION),cls.h))   
+        cls.missiles = pad_surface(cls.font.render(f"{level.ship.missiles%100:02d}", False, COLOR.WHITE), cls.stats_padding, vertical_padding=True, horizontal_padding=True)
+        cls.level_number = pad_surface(cls.font.render(f"L{level.number%100:02d}", False, COLOR.WHITE), cls.stats_padding, vertical_padding=True, horizontal_padding=True)
+        cls.lives = pad_surface(cls.font.render(f"{level.ship.lives%100:02d}", False, COLOR.WHITE), cls.stats_padding, vertical_padding=True, horizontal_padding=True)
+        cls.first_row = align_surfaces([cls.level_number,cls.lives_icon,cls.lives,
+                                        cls.energy_icon,cls.health_bar,cls.shield_icon,
+                                        cls.shield_bar,cls.missiles_icon,cls.missiles],
+                                        "horizontal", rescale_to_surface = cls.health_bar, spacing=cls.h//16)
+        cls.score = cls.score_font.render(f"Score {int(level.ship.score)}", False, {False: COLOR.WHITE, True: COLOR.GREEN}[level.ship.score_factor > 1])
+        cls.goal = cls.score_font.render(level.goal, False, COLOR.WHITE)
+        cls.progress = cls.score_font.render(level.progress, False, COLOR.WHITE)
+        cls.second_row = pygame.Surface((cls.first_row.get_width(),cls.score_font_size))
+        cls.second_row.blit(cls.score,(0,0))
+        cls.second_row.blit(cls.goal,((cls.first_row.get_width()-cls.goal.get_width())//2,0))
+        cls.second_row.blit(cls.progress,(cls.first_row.get_width()-cls.progress.get_width(),0))
+        cls.both_rows = align_surfaces([cls.first_row,cls.second_row], "vertical", spacing=cls.h//32)
+        if cls.rescaling:
+            cls.both_rows = pygame.transform.scale_by(cls.both_rows, Display.screen_width/cls.first_row.get_width())
+        screen.blit(cls.both_rows,(0,0))

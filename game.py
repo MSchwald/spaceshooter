@@ -1,6 +1,7 @@
 import pygame, sound
 from settings import KEY, SCREEN
 from level import Level
+from statusbar import Statusbar
 from menu import Menu
 from random import random, choice
 from display import Display
@@ -98,7 +99,8 @@ class Game:
     def render(self):
         """Blit all stats, sprites, menu etc onto the display in the correct order"""
         self.screen.fill(SCREEN.BG_COLOR) # black background
-        self.level.blit(self.screen) # statusbar, ship, enemies, items, bullets, crosshairs
+        Statusbar.blit(self.level)
+        self.level.blit() # statusbar, ship, enemies, items, bullets, crosshairs
         if self.mode == "menu" or self.mode == "enter name":
-            self.active_menu.blit(self.screen)
+            self.active_menu.blit()
         Display.update(padding_color = SCREEN.PADDING_COLOR)

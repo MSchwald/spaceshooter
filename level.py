@@ -6,7 +6,6 @@ from math import hypot
 from event import Event
 from sprite import Sprite
 from image import Image, GraphicData
-from statusbar import Statusbar
 from display import Display
 from settings import AlienTemplate, ALIEN, SHIP, BULLET
 from physics import Vector, normalize
@@ -17,7 +16,6 @@ class Level:
     def __init__(self, number):
         """Initialize ingame objects and sprite groups"""
         self.ship = Ship(self)
-        self.statusbar = Statusbar(self)
         self.crosshairs = Sprite(GraphicData(path = 'images/bullet/aim.png', scaling_width = BULLET.MISSILE.width))
         Image.load_blob()
         self.number = number
@@ -35,9 +33,9 @@ class Level:
         self.blobs = pygame.sprite.Group()
         
 
-    def blit(self, screen):
+    def blit(self, screen = None):
         """blit the current state of the level"""
-        self.statusbar.blit(screen)
+        screen = screen or Display.screen
         for group in [self.bullets, self.asteroids, self.aliens, self.items]:
             for sprite in group:
                 sprite.blit(screen)

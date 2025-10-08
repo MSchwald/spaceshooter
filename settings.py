@@ -94,6 +94,18 @@ class BULLET:
     GREEN = BulletTemplate("g", 26, 3, "enemy", 0.2, animation_type = "once", animation_time = 0.5)
     BLUBBER = BulletTemplate("blubber", 150, 16, "enemy", 0.4)
 
+# Level settings and templates in the game
+@dataclass
+class AlienSpawn:
+    template: AlienTemplate
+    amount: int = 1
+    grid: tuple[int] | None = None
+    speed_factor: float | None = None
+    direction: tuple[int] | None = None
+    energy: int | None = None
+    constraints: pygame.Rect | None = None
+    boundary_behaviour: str | None = None
+
 # Item settings and templates in the game
 @dataclass
 class ItemTemplate:

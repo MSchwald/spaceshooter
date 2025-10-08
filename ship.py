@@ -119,6 +119,7 @@ class Ship(Sprite):
                 bullet = Bullet.from_size(size)
                 bullet.spawn(center = fp)
                 bullet.vel.y -= doppler
+                self.level.ship_bullets.add(bullet)
                 self.level.bullets.add(bullet)
             bullet.play_firing_sound()
 

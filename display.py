@@ -8,6 +8,7 @@ class Display:
     screen_width: int = 0
     screen_height: int = 0
     screen_size: tuple[int, int] = (0, 0)
+    grid: tuple[int, int] = (0, 0)
     grid_width: int = 0
     padding_w: int = 0
     padding_h: int = 0
@@ -40,6 +41,7 @@ class Display:
         Display.screen_rect = pygame.Rect(Display.padding_w, Display.padding_h, screen_w, screen_h)
         Display.screen_width, Display.screen_height = screen_w, screen_h
         Display.screen_size = (screen_w, screen_h)
+        Display.grid = screen_grid
         Display.grid_width = Display.screen_width // screen_grid[0]
 
     @classmethod
@@ -54,4 +56,11 @@ class Display:
         cls.display.fill(padding_color)
         cls.display.blit(cls.screen, cls.screen_rect)
         pygame.display.flip()
+
+    @classmethod
+    def grid_rect(cls, x_min: int = 0, y_min: int = 0,
+                width: int = grid[0], height: int = grid[1]):
+        return pygame.Rect([x_min * cls.grid_width, y_min * cls.grid_width,
+                            width * cls.grid_width, height * cls.grid_width])
+        
 

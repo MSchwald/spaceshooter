@@ -26,9 +26,9 @@ class Event:
 
     def do_action(self):
         if self.template == "asteroid_hail":
-            self.level.alien_random_entrance(ALIEN.BIG_ASTEROID, boundary_behaviour="vanish")
+            self.level.encounter(ALIEN.BIG_ASTEROID, boundary_behaviour = "vanish")
         if self.template == "alien_attack":
             if random() > 0.5:
-                self.level.alien_random_entrance(ALIEN.PURPLE, boundary_behaviour="reflect")
+                self.level.encounter(ALIEN.PURPLE)
             else:
-                self.level.alien_random_entrance(ALIEN.BLOB, energy=ALIEN.BLOB.energy//4, boundary_behaviour="reflect")
+                self.level.encounter(ALIEN.BLOB, energy = ALIEN.BLOB.energy//4)

@@ -9,6 +9,7 @@ from image import Image, GraphicData
 from display import Display
 from settings import AlienTemplate, ALIEN, SHIP, BULLET
 from physics import Vector, normalize
+from dataclasses import dataclass
 
 class Level:
     """Manage loading and logic of game levels and their ingame objects"""
@@ -67,49 +68,87 @@ class Level:
         self.ship.start_new_game()
         self.start_current()
 
+    def alien_spawn(self, alien: Alien, **kwargs):
+        alien.spawn(**kwargs)
+        if alien.template.name in ["big_asteroid","small_asteroid"]:
+            self.asteroids.add(alien)
+        elif alien.template.name == "blob":
+            self.blobs.add(alien)
+            self.aliens.add(alien)
+        else:
+            self.aliens.add(alien)
+
+    def alien_random_entrance(self, alien: Alien):
+            '''alien spawns at random point over the screen
+            and aims for a random point on the bottom'''
+            constraints = alien.constraints
+            spawning_pos = Vector(
+                constraints.x + random() * (constraints.w - alien.w),
+                constraints.y - alien.h
+            )
+            target_pos = Vector(
+                constraints.x + random() * (constraints.w - alien.w),
+                constraints.bottom
+            )
+            alien.vel = alien.speed * normalize(target_pos - spawning_pos)
+            self.alien_spawn(alien, pos = spawning_pos)   
+
+    def encounter(self, template: AlienTemplate,
+                    amount: int = 1,
+                    grid: tuple[int, int] | None = None,
+                    speed_factor: float = 1,
+                    dir: tuple[int, int] | None = None,
+                    energy: int | None = None,
+                    constraints: pygame.Rect | None = Display.screen,
+                    boundary_behaviour: str | None = None):
+        if dir is not None:
+            direction = Vector(dir[0], dir[1])
+        else:
+            direction = None
+        boundary_behaviour = boundary_behaviour or self.boundary_behaviour
+        for _ in range(amount):
+            alien = Alien(template = template, level = self, energy = energy,
+                    speed = template.speed * speed_factor, direction = direction,
+                    constraints = constraints, boundary_behaviour = boundary_behaviour)
+            if grid is not None:
+                self.alien_spawn(alien, grid = grid)
+            else:
+                self.alien_random_entrance(alien)
+
     def load_level(self, number):
         """load enemies and level events"""
         match number:
             case 0:
                 self.boundary_behaviour = "wrap"
-                self.alien_random_entrance(ALIEN.BIG_ASTEROID,speed=ALIEN.BIG_ASTEROID.speed/2,amount=5)
-                self.alien_random_entrance(ALIEN.SMALL_ASTEROID,speed=ALIEN.SMALL_ASTEROID.speed/2,amount=5)
-                self.alien_random_entrance(ALIEN.BLOB,speed=ALIEN.BLOB.speed/2,energy=9)
-                self.alien_random_entrance(ALIEN.UFO,speed=ALIEN.UFO.speed/4)
-                self.alien_random_entrance(ALIEN.PURPLE,speed=ALIEN.PURPLE.speed/2,amount=2)
+                self.encounter(ALIEN.BIG_ASTEROID, 5, speed_factor = 1/2)
+                self.encounter(ALIEN.SMALL_ASTEROID, 5, speed_factor = 1/2)
+                self.encounter(ALIEN.BLOB, speed_factor = 1/2, energy = 9)
+                self.encounter(ALIEN.UFO, speed_factor = 1/4)
+                self.encounter(ALIEN.PURPLE, 2, speed_factor = 1/2)
             case 1:
                 self.boundary_behaviour = "reflect"
-                self.alien_random_entrance(ALIEN.BIG_ASTEROID,amount=5)
-                self.alien_random_entrance(ALIEN.SMALL_ASTEROID,amount=5)
+                self.encounter(ALIEN.BIG_ASTEROID, 5)
+                self.encounter(ALIEN.SMALL_ASTEROID, 5)
             case 2:
                 self.boundary_behaviour = "reflect"
-                self.events.append(Event("asteroid_hail", self, random_cycle_time=(800,1200)))
-                for n in range(2,10,2):
-                    alien_n = Alien(ALIEN.PURPLE, level=self, direction=Vector(1,1), constraints=pygame.Rect([0,0,Display.screen_width,3*Display.grid_width]))
-                    alien_n.spawn(grid=(n,1))
-                    self.aliens.add(alien_n)
-                for n in range(14,6,-2):
-                    alien_n = Alien(ALIEN.PURPLE, level=self, direction=Vector(-1,-1), constraints=pygame.Rect([0,3*Display.grid_width,Display.screen_width,3*Display.grid_width]))
-                    alien_n.spawn(grid=(n,5))
-                    self.aliens.add(alien_n)
+                self.events.append(Event("asteroid_hail", self, random_cycle_time = (800,1200)))
+                for n in (2,4,6,8):
+                    self.encounter(ALIEN.PURPLE, grid = (n,1), dir = (1,1), constraints = Display.grid_rect(0, 0, 16, 3))
+                for n in (8,10,12,14):
+                    self.encounter(ALIEN.PURPLE, grid = (n,5), dir = (-1,-1), constraints = Display.grid_rect(0, 3, 16, 3))
             case 3:
                 self.boundary_behaviour = "reflect"
                 self.events.append(Event("asteroid_hail", self, random_cycle_time=(800,1000)))
-                self.ufo = Alien(ALIEN.UFO, level=self, direction=Vector(1,0))
-                self.ufo.spawn(grid=(1,1))
-                self.aliens.add(self.ufo)
-                for n in [2,6]:
-                    alien_n = Alien(ALIEN.PURPLE, level=self, direction=Vector(1,0), constraints=pygame.Rect([0,0,Display.screen_width,3*Display.grid_width]))
-                    alien_n.spawn(grid=(n,1))
-                    self.aliens.add(alien_n)
-                for n in [10,14]:
-                    alien_n = Alien(ALIEN.PURPLE, level=self, direction=Vector(-1,0), constraints=pygame.Rect([0,3*Display.grid_width,Display.screen_width,3*Display.grid_width]))
-                    alien_n.spawn(grid=(n,5))
-                    self.aliens.add(alien_n)
+                self.ufo = Alien(ALIEN.UFO, level = self, direction = Vector(1,0))
+                self.alien_spawn(self.ufo, grid = (1,1))
+                self.encounter(ALIEN.PURPLE, grid = (2,1), dir = (1,0), constraints = Display.grid_rect(0, 0, 16, 3))
+                self.encounter(ALIEN.PURPLE, grid = (6,1), dir = (1,0), constraints = Display.grid_rect(0, 0, 16, 3))
+                self.encounter(ALIEN.PURPLE, grid = (10,5), dir = (-1,0), constraints = Display.grid_rect(0, 3, 16, 3))
+                self.encounter(ALIEN.PURPLE, grid = (14,5), dir = (-1,0), constraints = Display.grid_rect(0, 3, 16, 3))
             case 4:
                 self.boundary_behaviour = "reflect"
                 self.events.append(Event("asteroid_hail", self, random_cycle_time=(1000,1500)))            
-                self.alien_random_entrance(ALIEN.BLOB)
+                self.encounter(ALIEN.BLOB)
             case 5:
                 self.boundary_behaviour = "reflect"
                 self.events.append(Event("asteroid_hail", self, random_cycle_time=(500,800)))
@@ -285,37 +324,4 @@ class Level:
                             blob1.hard_kill()
                             blob2.hard_kill()
                             sound.blob_merge.play()
-                            break
-
-    def alien_random_entrance(self, template: AlienTemplate,
-                            amount: int = 1,
-                            energy: int | None = None,
-                            speed: float | None = None,
-                            constraints: pygame.Rect | None = None,
-                            boundary_behaviour: str | None = None):
-            speed = speed or template.speed
-            constraints = constraints or Display.screen_rect
-            boundary_behaviour = boundary_behaviour or self.boundary_behaviour
-            for i in range(amount):
-                alien_i = Alien(template, level=self, energy=energy, speed = speed,
-                            constraints=constraints, boundary_behaviour = boundary_behaviour)
-                # alien spawns at random point over the screen
-                spawning_pos = Vector(
-                    constraints.x + random() * (constraints.w - alien_i.w),
-                    constraints.y - alien_i.h
-                )
-
-                # alien aims for a random point on the bottom of the screen
-                target = Vector(
-                    constraints.x + random() * (constraints.w - alien_i.w),
-                    constraints.bottom
-                )
-                alien_i.vel = speed * normalize(target - spawning_pos)
-                alien_i.spawn(pos = spawning_pos)           
-                if template.name in ["big_asteroid","small_asteroid"]:
-                    self.asteroids.add(alien_i)
-                elif template.name == "blob":
-                    self.blobs.add(alien_i)
-                    self.aliens.add(alien_i)
-                else:
-                    self.aliens.add(alien_i)
+                            break     

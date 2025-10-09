@@ -160,14 +160,14 @@ class Level:
                 self.encounter(ALIEN.BIG_ASTEROID, 5)
                 self.encounter(ALIEN.SMALL_ASTEROID, 5)
             case 2:
-                self.asteroid_hail.set_cyclic_alarm(800, 1000)
+                self.asteroid_hail.set_alarm(800, 1000, cyclic = True)
                 self.boundary_behaviour = "reflect"
                 for n in (2,4,6,8):
                     self.encounter(ALIEN.PURPLE, grid = (n,1), dir = (1,1), constraints = Display.grid_rect(0, 0, 16, 3))
                 for n in (8,10,12,14):
                     self.encounter(ALIEN.PURPLE, grid = (n,5), dir = (-1,-1), constraints = Display.grid_rect(0, 3, 16, 3))
             case 3:
-                self.asteroid_hail.set_cyclic_alarm(800, 1000)
+                self.asteroid_hail.set_alarm(800, 1000, cyclic = True)
                 self.boundary_behaviour = "reflect"
                 self.encounter(ALIEN.UFO, grid = (1,1), dir = (1,0))
                 self.encounter(ALIEN.PURPLE, grid = (2,3), dir = (1,0))
@@ -175,13 +175,13 @@ class Level:
                 self.encounter(ALIEN.PURPLE, grid = (10,5), dir = (-1,0))
                 self.encounter(ALIEN.PURPLE, grid = (14,5), dir = (-1,0))
             case 4:
-                self.asteroid_hail.set_cyclic_alarm(800, 1000)
+                self.asteroid_hail.set_alarm(800, 1000, cyclic = True)
                 self.boundary_behaviour = "reflect"           
                 self.encounter(ALIEN.BLOB)
             case 5:
-                self.timer.set_cyclic_alarm(60000)
-                self.asteroid_hail.set_cyclic_alarm(500, 800)
-                self.alien_hail.set_cyclic_alarm(1000, 1500)
+                self.timer.set_alarm(60000, cyclic = False)
+                self.asteroid_hail.set_alarm(500, 800)
+                self.alien_hail.set_alarm(1000, 1500)
 
     @property
     def progress(self) -> str:
@@ -196,7 +196,7 @@ class Level:
                 ufo = next(iter(self.ufos))
                 return f"Ufo health: {ufo.energy}"
             case 4: return f"Blob energy: {sum([blob.energy for blob in self.blobs])}"
-            case 5: return f"Timer: {int(self.timer.remaining_time/1000)}"
+            case 5: return f"Timer: {int(self.timer.remaining_time / 1000)}"
             case _: return ""
 
     @property
@@ -207,7 +207,7 @@ class Level:
             case 2: return not self.aliens
             case 3: return not self.ufos
             case 4: return not self.blobs
-            case 5: return self.timer.check_alarm()
+            case 5: return self.timer.check_alarm() or self.timer.on_hold
             case _: return False
 
     @property
@@ -244,7 +244,7 @@ class Level:
             if random() > 0.5:
                 self.encounter(ALIEN.PURPLE, boundary_behaviour = "reflect")
             else:
-                self.encounter(ALIEN.BLOB, energy = ALIEN.BLOB.energy//4)
+                self.encounter(ALIEN.BLOB, energy = ALIEN.BLOB.energy//4, boundary_behaviour = "reflect")
         self.update_sprites(dt)
 
     def update_sprites(self, dt: int):

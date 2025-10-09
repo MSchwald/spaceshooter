@@ -38,44 +38,47 @@ class Timer:
 
 class ActionTimer(Timer):
     """Timer for cyclic actions, animation and randomness"""
-    def __init__(self, cycle_min: int | None = None,
-                        cycle_max: int | None = None):
+    def __init__(self, alarm_min: int | None = None,
+                        alarm_max: int | None = None,
+                        cyclic: bool = True):
         super().__init__()
-        self.cycle_min = None
-        self.cycle_max = None
-        self.set_cyclic_alarm(cycle_min, cycle_max)
+        self.set_alarm(alarm_min, alarm_max, cyclic)
 
-    def set_cyclic_alarm(self, cycle_min: int | None = None,
-                                cycle_max: int | None = None):
+    def set_alarm(self, alarm_min: int | None = None,
+                        alarm_max: int | None = None,
+                        cyclic: bool = True):
         self.reset()
-        self.cycle_min = cycle_min
-        self.cycle_max = cycle_max 
-        if self.cycle_min is None and self.cycle_max is None:
-            self.pause()
-            self.alarm_time = None
-            return
+        self.alarm_min = alarm_min
+        self.alarm_max = alarm_max
+        self.cyclic = cyclic 
         self.alarm_time = self._get_new_alarm_time()
 
     def _get_new_alarm_time(self) -> int:
-        if self.cycle_max is None:
-            self.on_hold = self.cycle_min is None
-            return self.cycle_min
-        if self.cycle_min is None:
-            return self.cycle_max
-        if self.cycle_min > self.cycle_max:
-            self.cycle_min, self.cycle_max = self.cycle_max, self.cycle_min
-        return randint(self.cycle_min, self.cycle_max)        
+        if self.alarm_min is None and self.alarm_max is None:
+            self.pause()
+            return 0
+        if self.alarm_max is None:
+            return self.alarm_min
+        if self.alarm_min is None:
+            return self.alarm_max
+        if self.alarm_min > self.alarm_max:
+            self.alarm_min, self.alarm_max = self.alarm_max, self.alarm_min
+        return randint(self.alarm_min, self.alarm_max)        
  
     def check_alarm(self) -> bool:
         """Return True (only once) when timer reaches its alarm time."""
         if self.on_hold:
             return False
-        if self.total_time >= self.alarm_time:
+        if self.total_time < self.alarm_time:
+            return False
+        if self.cyclic:
             self.reset()
             self.alarm_time = self._get_new_alarm_time()
-            return True
+        else:
+            self.pause()
+        return True
 
     @property
     def remaining_time(self) -> int:
-        return self.alarm_time - self.total_time
+        return max(self.alarm_time - self.total_time, 0)
 

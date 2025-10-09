@@ -33,7 +33,7 @@ class Alien(Sprite):
             direction = direction or random_direction()
             vel = speed * direction
         constraints = constraints or Display.screen_rect
-        self.action_timer = ActionTimer(template.cycle_min, template.cycle_max)
+        self.action_timer = ActionTimer(template.alarm_min, template.alarm_max, cyclic = True)
 
         # Load alien graphics
         if template.name == "blob":

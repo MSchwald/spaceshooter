@@ -166,7 +166,7 @@ class Ship(Sprite):
                     self.controls_timer.pause()
                 else:
                     self.status = "inverse_controls"
-                    self.controls_timer.set_cyclic_alarm(item.duration_ms)
+                    self.controls_timer.set_alarm(item.duration_ms, cyclic = False)
                     sound.bad_item.play()
                 self.update_graphic()
             case "life_minus":
@@ -181,32 +181,33 @@ class Ship(Sprite):
             case "missile": self.missiles += 1
             case "score_buff":
                 if self.score_factor == 1:
-                    self.score_buff_timer.set_cyclic_alarm(item.duration_ms)
+                    self.score_buff_timer.set_alarm(item.duration_ms, cyclic = False)
                 self.score_factor *= item.template.effect
             case "shield":
-                self.shield_timer.alarm_time = min(self.shield_time + 1000 * item.template.effect, 1000 * SHIP.MAX_SHIELD_DURATION)
+                self.shield_timer.alarm_time += min(1000 * item.template.effect, 1000 * SHIP.MAX_SHIELD_DURATION - self.shield_time)
+                self.shield_timer.total_timer = 0
             case "ship_buff": self.gain_rank()
             case "size_minus":
                 if self.size_factor * item.template.effect >= 0.3:
                     self.size_factor *= item.template.effect
                     self.update_graphic()
                     if self.size_factor != 1:
-                        self.size_change_timer.set_cyclic_alarm(item.duration_ms)
+                        self.size_change_timer.set_alarm(item.duration_ms, cyclic = False)
             case "size_plus":
                 if self.size_factor * item.template.effect <= 1/0.3:
                     self.size_factor *= item.template.effect
                     self.update_graphic()
                     if self.size_factor != 1:
-                        self.size_change_timer.set_cyclic_alarm(item.duration_ms)
+                        self.size_change_timer.set_alarm(item.duration_ms, cyclic = False)
             case "speed_buff":
                 if self.speed_factor * SHIP.SPEED[self.rank] * item.template.effect < BULLET.BULLET1.speed:
                     self.speed_factor *= item.template.effect
                     if self.speed_factor != 1:
-                        self.speed_change_timer.set_cyclic_alarm(item.duration_ms)
+                        self.speed_change_timer.set_alarm(item.duration_ms, cyclic = False)
             case "speed_nerf":
                 self.speed_factor *= item.template.effect
                 if self.speed_factor != 1:
-                    self.speed_change_timer.set_cyclic_alarm(item.duration_ms)
+                    self.speed_change_timer.set_alarm(item.duration_ms, cyclic = False)
 
     def activate_shield(self):
         if self.shield_time > 0:
@@ -239,7 +240,8 @@ class Ship(Sprite):
         self.magnet = False
         self.missiles = SHIP.STARTING_MISSILES
         self.score_factor = 1
-        self.shield_timer.alarm_time = 1000*SHIP.SHIELD_STARTING_TIMER
+        self.shield_timer.set_alarm(1000*SHIP.SHIELD_STARTING_TIMER, cyclic = False)
+        self.shield_timer.pause()
         self.size_factor = 1
         self.status = "normal"
         self.last_status = "normal"
@@ -249,20 +251,14 @@ class Ship(Sprite):
             timer.update(dt)
         if self.shield_timer.check_alarm():
             self.deactivate_shield()
-            self.shield_timer.alarm_time = 0
-            self.shield_timer.pause()
         if self.score_buff_timer.check_alarm():
-            self.score_buff_timer.pause()
             self.score_factor = 1
         if self.speed_change_timer.check_alarm():
-            self.speed_change_timer.pause()
             self.speed_factor = 1
         if self.size_change_timer.check_alarm():
-            self.size_change_timer.pause()
             self.size_factor = 1
             self.update_graphic()
         if self.controls_timer.check_alarm():
-            self.controls_timer.pause()
             self.status = "normal"
             self.update_graphic()
         super().update(dt)

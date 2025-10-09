@@ -66,15 +66,15 @@ class AlienTemplate:
     acc: float | None = None
     # Alien periodically does actions after given time (in ms)
     # cycle times vary randomly between given lower and upper bound (in ms)
-    cycle_min: int | None = None
-    cycle_max: int | None = None
+    alarm_min: int | None = None
+    alarm_max: int | None = None
 
 class ALIEN:
     BIG_ASTEROID = AlienTemplate("big_asteroid", 0.3, 4, 20, 100, animation_type = "loop", fps = 10, pieces = 4)
     SMALL_ASTEROID = AlienTemplate("small_asteroid",0.6, 1, 10, BIG_ASTEROID.width * BIG_ASTEROID.pieces ** (-1/3), animation_type = "loop", fps = 10)
-    PURPLE = AlienTemplate("purple", 0.4, 10, 100, 150, colorkey = (254, 254, 254), cycle_min = 800, cycle_max = 1500)
-    UFO = AlienTemplate("ufo", 1, 20, 500, 100, cycle_min = 800, cycle_max = 1500)
-    BLOB = AlienTemplate("blob", 0.5, 32, 30, 300, pieces = 2, acc = 1/160, cycle_min = 800, cycle_max = 1500)
+    PURPLE = AlienTemplate("purple", 0.4, 10, 100, 150, colorkey = (254, 254, 254), alarm_min = 800, alarm_max = 1500)
+    UFO = AlienTemplate("ufo", 1, 20, 500, 100, alarm_min = 800, alarm_max = 1500)
+    BLOB = AlienTemplate("blob", 0.5, 32, 30, 300, pieces = 2, acc = 1/160, alarm_min = 800, alarm_max = 1500)
 
 # Bullet settings and templates in the game
 @dataclass

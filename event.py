@@ -11,7 +11,7 @@ class Event(ActionTimer):
                 random_cycle_time: tuple[int, int]):
         self.template = template
         self.level = level
-        super().__init__(random_cycle_time[0], random_cycle_time[1])
+        super().__init__(random_cycle_time[0], random_cycle_time[1], cyclic = True)
 
     def update(self, dt: int):
         if self.check_alarm():

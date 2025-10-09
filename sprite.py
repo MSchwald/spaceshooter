@@ -56,7 +56,7 @@ class Sprite(pygame.sprite.Sprite):
         self.pos, self.vel, self.acc = pos, vel, acc
         self.graphic = graphic
         self.frame_number, self.frame_index = 0, graphic.starting_frame
-        self.animation_timer = ActionTimer(graphic.frame_duration_ms)
+        self.animation_timer = ActionTimer(graphic.frame_duration_ms, cyclic = True)
         self.constraints, self.boundary_behaviour = constraints, boundary_behaviour
         self.rect = self.graphic.image.surface.get_rect()
         self.activated = False

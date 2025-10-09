@@ -62,7 +62,7 @@ class Bullet(Sprite):
         # timer, movement and animation get handled in the Sprite class
         super().update(dt)
         # explosions by missiles need to get deleted manually after their duration
-        if self.graphic.animation_type == "vanish" and self.timer > int(1000 * self.graphic.animation_time):
+        if self.graphic.animation_type == "vanish" and self.animation_timer.total_time > int(1000 * self.graphic.animation_time):
             self.kill()
 
     def reflect(self):

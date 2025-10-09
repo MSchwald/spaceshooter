@@ -43,7 +43,7 @@ class Statusbar:
         cls.health_bar = cls.empty_bar.copy()
         cls.shield_bar = cls.empty_bar.copy()
         cls.health_bar.blit(cls.health, (19*cls.h//72,18*cls.h//72), area=(0,0,level.ship.energy*cls.health.get_width()//level.ship.max_energy,cls.h))
-        cls.shield_bar.blit(cls.shield_timer, (19*cls.h//72,18*cls.h//72), area=(0,0,level.ship.shield_timer*cls.shield_timer.get_width()//(1000*SHIP.MAX_SHIELD_DURATION),cls.h))   
+        cls.shield_bar.blit(cls.shield_timer, (19*cls.h//72,18*cls.h//72), area=(0,0,level.ship.shield_time*cls.shield_timer.get_width()//(1000*SHIP.MAX_SHIELD_DURATION),cls.h))   
         cls.missiles = pad_surface(cls.font.render(f"{level.ship.missiles%100:02d}", False, COLOR.WHITE), cls.stats_padding, vertical_padding=True, horizontal_padding=True)
         cls.level_number = pad_surface(cls.font.render(f"L{level.number%100:02d}", False, COLOR.WHITE), cls.stats_padding, vertical_padding=True, horizontal_padding=True)
         cls.lives = pad_surface(cls.font.render(f"{level.ship.lives%100:02d}", False, COLOR.WHITE), cls.stats_padding, vertical_padding=True, horizontal_padding=True)

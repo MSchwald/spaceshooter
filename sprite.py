@@ -2,6 +2,7 @@ import pygame
 from settings import SCREEN
 from image import Image, GraphicData
 from display import Display
+from timer import Timer, ActionTimer
 from math import sqrt, sin, cos, pi
 from random import random, choice
 from physics import Vector, norm, Ball
@@ -54,7 +55,7 @@ class Sprite(pygame.sprite.Sprite):
         self.pos, self.vel, self.acc = pos, vel, acc
         self.graphic = graphic
         self.frame_number, self.frame_index = 0, graphic.starting_frame
-        self.timer, self.timer_on_hold = 0, False
+        self.animation_timer = ActionTimer(graphic.frame_duration_ms)
         self.constraints, self.boundary_behaviour = constraints, boundary_behaviour
         self.rect = self.graphic.image.surface.get_rect()
         self.activated = False
@@ -178,7 +179,7 @@ class Sprite(pygame.sprite.Sprite):
         if self.activated:
             self.update_vel(dt)
             self.update_pos(dt)
-            self.update_timer(dt)
+            self.animation_timer.update(dt)
             self.update_frame(dt)    
 
     def update_vel(self, dt):
@@ -186,50 +187,34 @@ class Sprite(pygame.sprite.Sprite):
 
     def update_pos(self, dt):
         self.move_to(self.pos + dt * self.vel * Display.grid_width / SCREEN.GRID_WIDTH)
-
-    def update_timer(self, dt):
-        """Timer update respecting pauses"""
-        if self.timer_on_hold:
-            if self.pause_duration:
-                self.pause_timer += dt
-                if self.pause_timer > self.pause_duration:
-                    self.timer_on_hold = False
-        else:
-            self.timer += dt
     
     def update_frame(self, dt):
         """Calculate animation if available"""
-        if not self.timer_on_hold and self.graphic.animation_type not in (None, "manual"):
-            new_index = self.get_new_frame_index()
-            if new_index is None:
-                self.activated = False
-                self.kill()
-            elif new_index != self.frame_index:
-                self.change_image(self.graphic.frames[new_index])
-                self.frame_index = new_index
+        if self.animation_timer.activated:
+            while self.animation_timer.check_alarm():
+                self.next_frame()
+                if self.frame_index is None:
+                    self.activated = False
+                    self.kill()
+                else:
+                    self.change_image(self.graphic.frames[self.frame_index])
 
-    def get_new_frame_index(self):
-        if self.graphic.animation_type is None:
-            return 0
-        frame_number = self.timer // self.graphic.frame_duration_ms
+    def next_frame(self):
+        self.frame_number += 1
         match self.graphic.animation_type:
-            case "random": return choice(range(len(self.graphic.frames)))
+            case None: return
+            case "random": self.frame_index = choice(range(len(self.graphic.frames)))
             case "vanish":
-                if frame_number >= len(self.graphic.frames):
-                    return None
-                return frame_number
+                if self.frame_number >= len(self.graphic.frames):
+                    self.frame_index = None
+                else:
+                    self.frame_index = self.frame_number
             case "pingpong":
-                new_index = frame_number % (2*len(self.graphic.frames)-2)
-                if new_index >= len(self.graphic.frames):
-                    new_index = 2*(len(self.graphic.frames)-1) - new_index
-                return new_index
-            case "loop": return frame_number % len(self.graphic.frames)
-            case "once": return min(frame_number, len(self.graphic.frames)-1)
-
-    def pause_for_ms(self, duration: int | None = None):
-        self.timer_on_hold = True
-        self.pause_timer = 0
-        self.pause_duration = duration
+                self.frame_index = self.frame_number % (2*len(self.graphic.frames)-2)
+                if self.frame_index >= len(self.graphic.frames):
+                    self.frame_index = 2*(len(self.graphic.frames)-1) - self.frame_index
+            case "loop": self.frame_index = self.frame_number % len(self.graphic.frames)
+            case "once": self.frame_index = min(self.frame_number, len(self.graphic.frames)-1)
 
     def reflect(self, flip_x, flip_y):
         self.vel *= -1

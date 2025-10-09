@@ -5,6 +5,7 @@ from sprite import Sprite
 from bullet import Bullet
 from display import Display
 from item import Item
+from timer import ActionTimer
 from random import random, choice, randint, sample
 from math import pi, sqrt, sin, cos
 from settings import AlienTemplate, ALIEN, BULLET, ITEM
@@ -32,12 +33,7 @@ class Alien(Sprite):
             direction = direction or random_direction()
             vel = speed * direction
         constraints = constraints or Display.screen_rect
-        self.random_cycle_time = template.random_cycle_time
-        if self.random_cycle_time:
-            self.cycle_time = randint(self.random_cycle_time[0], self.random_cycle_time[1])
-            self.action_timer = 0
-        else:
-            self.cycle_time, self.action_timer = None, None
+        self.action_timer = ActionTimer(template.cycle_min, template.cycle_max)
 
         # Load alien graphics
         if template.name == "blob":
@@ -72,34 +68,33 @@ class Alien(Sprite):
                 return None
 
     def update(self, dt):
+        super().update(dt)
+        self.action_timer.update(dt)
+        while self.level.status != "start" and self.action_timer.check_alarm():
+            self.do_action()
+
         #asteroids collide elastically like 3d balls
-        if self.template.name in ("big_asteroid","small_asteroid"):
-            for ast in self.level.asteroids:
-                ball1, ball2, m1, m2 = self.ball, ast.ball, self.mass, ast.mass
-                collision_time, new_v1, new_v2 = ball_collision_data(ball1, ball2, m1, m2)
-                if collision_time is not None:
+        match self.template.name:
+            case "big_asteroid" | "small_asteroid":
+                for ast in self.level.asteroids:
+                    if ast is self:
+                        continue
+                    ball1, ball2, m1, m2 = self.ball, ast.ball, self.mass, ast.mass
+                    collision_time, new_v1, new_v2 = ball_collision_data(ball1, ball2, m1, m2)
+                    if collision_time is None:
+                        continue
                     super().update_pos(collision_time)
                     Sprite.update_pos(ast, collision_time)
                     self.vel, ast.vel = new_v1, new_v2                  
                     super().update_pos(-collision_time)
                     Sprite.update_pos(ast, -collision_time)
-            super().update(dt)
-        else:
-            #checks if it is time for the alien to do an action
-            if self.cycle_time and not self.timer_on_hold and self.level.status != "start":
-                self.action_timer += dt
-                if self.action_timer >= self.cycle_time:
-                    self.action_timer -= self.cycle_time
-                    if self.random_cycle_time:
-                        self.cycle_time = randint(self.random_cycle_time[0], self.random_cycle_time[1])
-                    self.do_action()
-            #blobs gravitate towards their parent center where they split last
-            if self.template.name == "blob" and self.parent_center:
+            case "blob":
+                #blobs gravitate towards their parent center where they split last
+                if self.parent_center is None:
+                    return
                 n = normalize(self.parent_center - self.center)
                 vr = self.vel * n
-                self.acc = - ALIEN.BLOB.acc * (vr - self.splitting_speed) * abs(vr + self.splitting_speed) * n
-            #timer, movement and animation get handled in the Sprite class
-            super().update(dt)
+                self.acc = - ALIEN.BLOB.acc * (vr - self.splitting_speed) * abs(vr + self.splitting_speed) * n            
 
     def do_action(self):
         match self.template.name:
@@ -115,8 +110,8 @@ class Alien(Sprite):
         bullet.play_firing_sound()
 
     def throw_alien(self, alien_template=ALIEN.PURPLE):
-        alien = Alien(alien_template, self.level, direction = random_direction(5/4 * pi, 7/4 * pi))
-        alien.spawn(center = self.midbottom)
+        alien = Alien(alien_template, self.level, direction = Vector(self.vel.x, -1))
+        alien.spawn(center = self.center)
         self.level.aliens.add(alien)
 
     def get_damage(self, damage):

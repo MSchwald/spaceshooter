@@ -3,10 +3,10 @@ from ship import Ship
 from alien import Alien
 from random import random, randint
 from math import hypot
-from event import Event
 from sprite import Sprite
 from image import Image, GraphicData
 from display import Display
+from timer import ActionTimer, Timer
 from settings import AlienTemplate, ALIEN, SHIP, BULLET
 from physics import Vector, normalize
 from dataclasses import dataclass
@@ -24,7 +24,6 @@ class Level:
         self.max_level = len(self.goals) - 1
         self.boundary_behaviour = None
 
-        self.events = []
         # empty sprite groups
         self.ship_bullets = pygame.sprite.Group()
         self.bullets = pygame.sprite.Group()
@@ -34,12 +33,12 @@ class Level:
         self.ufos = pygame.sprite.Group()
         self.blobs = pygame.sprite.Group()
 
-        self.LIGHT_HAIL = Event("asteroid_hail", self, random_cycle_time = (1000,1500))
-        self.MEDIUM_HAIL = Event("asteroid_hail", self, random_cycle_time = (800,1000))
-        self.STRONG_HAIL = Event("asteroid_hail", self, random_cycle_time = (500,800))
-        self.ALIEN_HAIL = Event("alien_attack", self, random_cycle_time=(1000,1500))
-        
+        self.timer = Timer()
+        self.asteroid_hail = ActionTimer()
+        self.alien_hail = ActionTimer()
 
+        self.timers = (self.timer, self.asteroid_hail, self.alien_hail)
+        
     def blit(self, screen = None):
         """blit the current state of the level"""
         screen = screen or Display.screen
@@ -52,9 +51,10 @@ class Level:
     def start_current(self):
         """(re)start current level"""
         self.ship.reset_pos()
-        self.timer = 0
+        for timer in self.timers:
+            timer.reset()
         self.goal = self.goals[self.number]
-        self.events=[]
+
         for group in [self.ship_bullets, self.bullets, self.ufos,
                     self.asteroids, self.aliens, self.blobs]:
             group.empty()
@@ -125,11 +125,8 @@ class Level:
             else:
                 self.alien_random_entrance(alien)
 
-    def start_event(self, event):
-        self.events.append(event)
-
     def load_level(self, number):
-        """load enemies and level events"""
+        """load enemies and start action timers"""
         match number:
             case 0:
                 self.boundary_behaviour = "wrap"
@@ -143,27 +140,27 @@ class Level:
                 self.encounter(ALIEN.BIG_ASTEROID, 5)
                 self.encounter(ALIEN.SMALL_ASTEROID, 5)
             case 2:
-                self.start_event(self.MEDIUM_HAIL)
+                self.asteroid_hail.reset(cycle_min = 800, cycle_max = 1000)
                 self.boundary_behaviour = "reflect"
                 for n in (2,4,6,8):
                     self.encounter(ALIEN.PURPLE, grid = (n,1), dir = (1,1), constraints = Display.grid_rect(0, 0, 16, 3))
                 for n in (8,10,12,14):
                     self.encounter(ALIEN.PURPLE, grid = (n,5), dir = (-1,-1), constraints = Display.grid_rect(0, 3, 16, 3))
             case 3:
-                self.start_event(self.MEDIUM_HAIL)
+                self.asteroid_hail.reset(cycle_min = 800, cycle_max = 1000)
                 self.boundary_behaviour = "reflect"
                 self.encounter(ALIEN.UFO, grid = (1,1), dir = (1,0))
-                self.encounter(ALIEN.PURPLE, grid = (2,1), dir = (1,0), constraints = Display.grid_rect(0, 0, 16, 3))
-                self.encounter(ALIEN.PURPLE, grid = (6,1), dir = (1,0), constraints = Display.grid_rect(0, 0, 16, 3))
-                self.encounter(ALIEN.PURPLE, grid = (10,5), dir = (-1,0), constraints = Display.grid_rect(0, 3, 16, 3))
-                self.encounter(ALIEN.PURPLE, grid = (14,5), dir = (-1,0), constraints = Display.grid_rect(0, 3, 16, 3))
+                self.encounter(ALIEN.PURPLE, grid = (2,3), dir = (1,0))
+                self.encounter(ALIEN.PURPLE, grid = (6,3), dir = (1,0))
+                self.encounter(ALIEN.PURPLE, grid = (10,5), dir = (-1,0))
+                self.encounter(ALIEN.PURPLE, grid = (14,5), dir = (-1,0))
             case 4:
-                self.start_event(self.LIGHT_HAIL)
+                self.asteroid_hail.reset(cycle_min = 800, cycle_max = 1000)
                 self.boundary_behaviour = "reflect"           
                 self.encounter(ALIEN.BLOB)
             case 5:
-                self.start_event(self.STRONG_HAIL)
-                self.start_event(self.ALIEN_HAIL)    
+                self.asteroid_hail.reset(cycle_min = 500, cycle_max = 800)
+                self.alien_hail.reset(cycle_min = 1000, cycle_max = 1500)
 
     @property
     def progress(self):
@@ -172,10 +169,12 @@ class Level:
             case 1: return f"{len(self.asteroids)} left"
             case 2: return f"{len(self.aliens)} left"
             case 3:
+                if not self.ufos:
+                    return f"Ufo health: 0"
                 ufo = next(iter(self.ufos))
                 return f"Ufo health: {ufo.energy}"
             case 4: return f"Blob energy: {sum([blob.energy for blob in self.blobs])}"
-            case 5: return f"Timer: {int(60-self.timer/1000)}"
+            case 5: return f"Timer: {int(60-self.timer.total_time/1000)}"
             case _: return ""
 
     @property
@@ -186,7 +185,7 @@ class Level:
             case 2: return not self.aliens
             case 3: return not self.ufos
             case 4: return not self.blobs
-            case 5: return self.timer > 60000
+            case 5: return self.timer.total_time > 60000
             case _: return False
 
     @property
@@ -214,10 +213,16 @@ class Level:
 
     def update(self, dt):
         '''update level status according to passed time dt'''
-        self.timer += dt
+        for timer in self.timers:
+            timer.update(dt)
+        if self.asteroid_hail.check_alarm():
+            self.encounter(ALIEN.BIG_ASTEROID, boundary_behaviour = "vanish")
+        if self.alien_hail.check_alarm():
+            if random() > 0.5:
+                self.encounter(ALIEN.PURPLE, boundary_behaviour = "reflect")
+            else:
+                self.encounter(ALIEN.BLOB, energy = ALIEN.BLOB.energy//4)
         self.update_sprites(dt)
-        for event in self.events:
-            event.update(dt)
 
     def update_sprites(self, dt):
         """update the status of all level objects"""

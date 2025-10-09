@@ -142,30 +142,32 @@ class Sprite(pygame.sprite.Sprite):
         """respects boundary behaviour and updates rectangle"""
         if self.constraints is None or self.boundary_behaviour == "vanish":
             self.pos = pos
-        elif self.boundary_behaviour in ["clamp", "reflect"]:
-            min_bound = Vector(self.constraints.x, self.constraints.y)
-            max_bound = Vector(self.constraints.right - self.w,
-                        self.constraints.bottom - self.h)
-            pos_clamp = pos.clamp(min_bound, max_bound)
+            self.update_rect_pos()
+            if self.boundary_behaviour == "vanish" and not self.rect.colliderect(self.constraints):
+                self.kill()
+            return
+        diag = Vector(self.w, self.h)
+        min_bound = Vector(self.constraints.x, self.constraints.y)
+        max_bound = Vector(self.constraints.right, self.constraints.bottom)
+        if self.boundary_behaviour == "clamp":
+            self.pos = pos.clamp(min_bound, max_bound - diag)
+        elif self.boundary_behaviour == "reflect":
+            pos_clamp = pos.clamp(min_bound, max_bound - diag)
             diff = pos - pos_clamp
-            if self.boundary_behaviour == "reflect":
-                #reflection only prevents exiting, not entering the constraints
-                reflect_x = diff.x * self.vel.x > 0
-                reflect_y = diff.y * self.vel.y > 0
 
-                self.pos.x = 2 * pos_clamp.x - pos.x if reflect_x else pos_clamp.x
-                self.pos.y = 2 * pos_clamp.y - pos.y if reflect_y else pos_clamp.y
+            #reflection only prevents exiting, not entering the constraints
+            reflect_x = diff.x * self.vel.x > 0
+            reflect_y = diff.y * self.vel.y > 0
 
-                self.vel.x *= -1 if reflect_x else 1
-                self.vel.y *= -1 if reflect_y else 1
-            else:
-                self.pos = pos_clamp
+            self.pos.x = 2 * pos_clamp.x - pos.x if reflect_x else pos_clamp.x
+            self.pos.y = 2 * pos_clamp.y - pos.y if reflect_y else pos_clamp.y
+
+            self.vel.x *= -1 if reflect_x else 1
+            self.vel.y *= -1 if reflect_y else 1
+                
         elif self.boundary_behaviour == "wrap":
             # wrapping happens when leaving the the constraints entirely
-            min_bound = Vector(self.constraints.x - self.w,
-                        self.constraints.y - self.h)
-            max_bound = Vector(self.constraints.right, self.constraints.bottom)
-            pos_clamp = pos.clamp(min_bound, max_bound)
+            pos_clamp = pos.clamp(min_bound - diag, max_bound)
             wrap_x = pos.x != pos_clamp.x
             wrap_y = pos.y != pos_clamp.y
 

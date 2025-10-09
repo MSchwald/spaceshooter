@@ -37,7 +37,6 @@ class Level:
         """Initialize the level, its sprite groups, and timers."""
         self.ship = Ship(self)
         self.crosshairs = Sprite(GraphicData(path = 'images/bullet/aim.png', scaling_width = BULLET.MISSILE.width))
-        Image.load_blob()
         self.number = number
         self.goals = ["Welcome!","Destroy all asteroids!","Defeat all aliens!","Defeat the ufo!","Defeat the blob!","Survive for a minute!"]
         self.max_level = len(self.goals) - 1

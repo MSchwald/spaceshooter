@@ -22,7 +22,7 @@ class Bullet(Sprite):
                 constraints: pygame.Rect | None = None,
                 boundary_behaviour: str | None = "vanish"):
         # speed, owner, damage allow overwriting their standard settings for given template
-        # size only relevant for blubber
+        # size is only used for blubber to the size of its image
         self.template = template
         self.owner = owner or template.owner
         self.damage = damage or template.damage
@@ -30,18 +30,18 @@ class Bullet(Sprite):
         if vel is None:
             vel = Vector(0, -speed) if self.owner == "player" else Vector(0, speed)
         constraints = constraints or Display.screen_rect
-        
-        if template.name == "blubber":
-            self.size = size or ALIEN.BLOB.energy
-            self.damage = ceil((size / ALIEN.BLOB.energy) * template.damage)
-            graphic = GraphicData(image = Image.blubber[size-1])
-        else:
-            graphic = GraphicData(path = f'images/bullet/{template.name}', scaling_width = template.width,
+        graphic = GraphicData(path = f'images/bullet/{template.name}', scaling_width = template.width,
                         animation_type = template.animation_type, animation_time = template.animation_time)
-        if self.template.name == "explosion":
-            self.hit_enemies = pygame.sprite.Group()
         super().__init__(graphic = graphic, pos = pos, vel = vel, acc = acc,
             constraints = constraints, boundary_behaviour = boundary_behaviour)
+        if template.name == "blubber":
+            self.size = size or ALIEN.BLOB.energy
+            scaling_factor = (ALIEN.BLOB.energy / self.size) ** (-1/3)
+            self.graphic.image = self.graphic.image.scale_by(scaling_factor)
+            self.damage = ceil((size / ALIEN.BLOB.energy) * template.damage)
+        if self.template.name == "explosion":
+            self.hit_enemies = pygame.sprite.Group()
+        
 
     @classmethod
     def from_size(cls, size: int, **kwargs) -> Bullet:

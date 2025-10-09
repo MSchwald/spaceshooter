@@ -74,7 +74,7 @@ class ALIEN:
     SMALL_ASTEROID = AlienTemplate("small_asteroid",0.6, 1, 10, BIG_ASTEROID.width * BIG_ASTEROID.pieces ** (-1/3), animation_type = "loop", fps = 10)
     PURPLE = AlienTemplate("purple", 0.4, 10, 100, 150, colorkey = (254, 254, 254), alarm_min = 800, alarm_max = 1500)
     UFO = AlienTemplate("ufo", 1, 20, 500, 100, alarm_min = 800, alarm_max = 1500)
-    BLOB = AlienTemplate("blob", 0.5, 32, 30, 300, pieces = 2, acc = 1/160, alarm_min = 800, alarm_max = 1500)
+    BLOB = AlienTemplate("blob", 0.5, 32, 30, 300, animation_type = "manual", pieces = 2, acc = 1/160, alarm_min = 800, alarm_max = 1500)
 
 # Bullet settings and templates in the game
 @dataclass

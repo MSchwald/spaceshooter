@@ -90,7 +90,14 @@ class Image:
                     scaling_height: float | None = None,
                     scaling_factor: float | None = None) -> Image:
         raw_surface = pygame.image.load(path)
-        temp = raw_surface.copy()
+        cropped_surface = Image.crop_boundary(raw_surface, colorkey)
+        mask = pygame.mask.from_surface(cropped_surface)
+        return Image(cropped_surface, mask, path = path).rescale(scaling_width=scaling_width, scaling_height=scaling_height, scaling_factor=scaling_factor)
+
+    @classmethod
+    def crop_boundary(cls, surface: pygame.Surface, colorkey: tuple = COLOR.BLACK) -> pygame.Surface:
+        """Remove boundary of given colorkey from surface"""
+        temp = surface.copy()
         # If boundary is not black, remove it without losing pixels in the inside of the figure
         if colorkey != COLOR.BLACK: 
             temp.set_colorkey(colorkey)
@@ -101,19 +108,14 @@ class Image:
             temp_mask.invert() # its inverse is the mask of the actual figure on the image
             alpha_surf = temp_mask.to_surface(setcolor=(255,255,255,255),
                                                       unsetcolor=(0,0,0,0))
-            new_raw = pygame.Surface(raw_surface.get_size(), pygame.SRCALPHA)
-            new_raw.blit(raw_surface, (0,0))
+            new_raw = pygame.Surface(surface.get_size(), pygame.SRCALPHA)
+            new_raw.blit(surface, (0,0))
             new_raw.blit(alpha_surf, (0,0), special_flags=pygame.BLEND_RGBA_MULT)
-            raw_surface = new_raw # now its boundary is transparent
-        bounding_rect = raw_surface.get_bounding_rect()
-        surface = pygame.Surface(bounding_rect.size, pygame.SRCALPHA)
-        # surface now has its boundary trimmed to the smallest rectangle
-        # containing the complete figure
-        surface.blit(raw_surface,(0,0),bounding_rect)
-        mask = pygame.mask.from_surface(surface)
-                
-        # rescale image according to user's screen settings
-        return Image(surface, mask, path = path).rescale(scaling_width=scaling_width, scaling_height=scaling_height, scaling_factor=scaling_factor)
+            temp = new_raw # now its boundary is transparent
+        bounding_rect = temp.get_bounding_rect()
+        cropped_surface =  pygame.Surface(bounding_rect.size, pygame.SRCALPHA)
+        cropped_surface.blit(temp, (0,0), bounding_rect)
+        return cropped_surface
 
     reflected_cache = {}
     @classmethod
@@ -129,16 +131,6 @@ class Image:
 
     def blit(self, screen: pygame.Surface):
         screen.blit(self.surface, self.rect, colorkey=self.surface.get_colorkey())
-
-    # blob and blubber images
-    @classmethod
-    def load_blob(cls):
-        N=ALIEN.BLOB.energy
-        raw_blob = GraphicData(path = "images/alien/blob", scaling_width = ALIEN.BLOB.width)
-        cls.blob = [raw_blob.frames[2].scale_by((N/n)**(-1/3)) for n in range(1,N//8)]+[raw_blob.frames[1].scale_by((N/n)**(-1/3)) for n in range(N//8,N//4+1)]+[raw_blob.frames[0].scale_by((N/n)**(-1/3)) for n in range(N//4+1, N+1)]
-        raw_blubber = Image.load(path = f'images/bullet/blubber.png', scaling_width = BULLET.BLUBBER.width)
-        cls.blubber = [raw_blubber.scale_by((N/n)**(-1/3)) for n in range(1,N+1)]
-        cls.reflected_blubber = [cls.reflect(image, flip_x=True, flip_y=True) for image in cls.blubber]
 
 @dataclass
 class GraphicData:
@@ -187,5 +179,5 @@ class GraphicData:
                 self.fps = len(self.frames) / self.animation_time
 
     def reflect(self, flip_x: bool, flip_y: bool):
-        self. image = Image.reflect(self.image, flip_x, flip_y)
+        self.image = Image.reflect(self.image, flip_x, flip_y)
         self.frames = [Image.reflect(frame, flip_x, flip_y) for frame in self.frames]

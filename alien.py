@@ -36,16 +36,27 @@ class Alien(Sprite):
         self.action_timer = ActionTimer(template.alarm_min, template.alarm_max, cyclic = True)
 
         # Load alien graphics
-        if template.name == "blob":
-            self.parent_center = None
-            graphic = GraphicData(image = Image.blob[self.energy-1])
-        else:
-            graphic = GraphicData(path = f"images/alien/{template.name}", scaling_width = template.width, colorkey = template.colorkey,
+        graphic = GraphicData(path = f"images/alien/{template.name}", scaling_width = template.width, colorkey = template.colorkey,
                     animation_type = template.animation_type, fps = template.fps)
-                
         super().__init__(graphic = graphic, pos = pos, vel = vel, acc = acc,
                     constraints = constraints, boundary_behaviour = boundary_behaviour)
-            
+        if template.name == "blob":
+            self.parent_center = None
+            self.update_blob_image()
+
+    def update_blob_image(self):
+        """Blobs image and size depends on their energy"""
+        if self.template.name != "blob":
+            return
+        if self.energy < ALIEN.BLOB.energy // 8:
+            self.frame_index = 2
+        elif self.energy <= ALIEN.BLOB.energy // 4:
+            self.frame_index = 1
+        else:
+            self.frame_index = 0
+        scaling_factor = (ALIEN.BLOB.energy / self.energy) ** (-1/3)
+        self.graphic.image = self.graphic.frames[self.frame_index].scale_by(scaling_factor)
+
     def spawn(self, **kwargs):
         if self.level.number != 0:
             self.play_spawing_sound()

@@ -58,7 +58,7 @@ class Level:
 
         self.timers = (self.timer, self.asteroid_hail, self.alien_hail)
         
-    def blit(self, screen = None):
+    def blit(self, screen: pygame.Surface | None = None):
         """Draw all sprites onto the given screen."""
         screen = screen or Display.screen
         for group in [self.bullets, self.asteroids, self.aliens, self.items]:
@@ -145,7 +145,7 @@ class Level:
             else:
                 self.alien_random_entrance(alien)
 
-    def load_level(self, number):
+    def load_level(self, number: int):
         """Load enemies and start action timers of the current level"""
         match number:
             case 0:
@@ -184,7 +184,7 @@ class Level:
                 self.alien_hail.set_cyclic_alarm(1000, 1500)
 
     @property
-    def progress(self):
+    def progress(self) -> str:
         """String, summarizes the player's progress to be rendered in the status bar."""
         match self.number:
             case 0: return "Ready?"
@@ -200,7 +200,7 @@ class Level:
             case _: return ""
 
     @property
-    def goal_fulfilled(self):
+    def goal_fulfilled(self) -> bool:
         """Bool indicating whether the current level goal is fulfilled"""
         match self.number:
             case 1: return not self.asteroids
@@ -211,7 +211,7 @@ class Level:
             case _: return False
 
     @property
-    def status(self):
+    def status(self) -> str:
         """Level status indicates when a level or the game have ended"""
         if self.number == 0:
             return "start"
@@ -234,7 +234,7 @@ class Level:
             case "game_won":
                 sound.game_won.play()
 
-    def update(self, dt):
+    def update(self, dt: int):
         """update level status according to passed time dt"""
         for timer in self.timers:
             timer.update(dt)
@@ -247,7 +247,7 @@ class Level:
                 self.encounter(ALIEN.BLOB, energy = ALIEN.BLOB.energy//4)
         self.update_sprites(dt)
 
-    def update_sprites(self, dt):
+    def update_sprites(self, dt: int):
         """update the status of all level objects"""
         for group in [self.bullets, self.asteroids, self.aliens, self.items]:
             for sprite in group:

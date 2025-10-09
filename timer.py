@@ -38,13 +38,15 @@ class Timer:
 
 class ActionTimer(Timer):
     """Timer for cyclic actions, animation and randomness"""
-    def __init__(self, cycle_min: int | None = None, cycle_max: int | None = None):
+    def __init__(self, cycle_min: int | None = None,
+                        cycle_max: int | None = None):
         super().__init__()
         self.cycle_min = None
         self.cycle_max = None
         self.set_cyclic_alarm(cycle_min, cycle_max)
 
-    def set_cyclic_alarm(self, cycle_min: int | None = None, cycle_max: int | None = None):
+    def set_cyclic_alarm(self, cycle_min: int | None = None,
+                                cycle_max: int | None = None):
         self.reset()
         self.cycle_min = cycle_min
         self.cycle_max = cycle_max 

@@ -44,7 +44,7 @@ class Item(Sprite):
             case "speed_nerf":
                 sound.bad_item.play()
 
-    def update(self, dt):
+    def update(self, dt: int):
         if self.level.ship.magnet:
             dpos = self.level.ship.center-self.center
             dist = norm(dpos)

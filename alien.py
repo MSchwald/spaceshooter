@@ -57,7 +57,7 @@ class Alien(Sprite):
             case "blob": sound.blob_spawns.play()
 
     @property
-    def mass(self):
+    def mass(self) -> int | None:
         """mass of an enemy, relevant for collisions between asteroids and blobs"""
         match self.template.name:
             case "blob": return self.energy
@@ -67,7 +67,7 @@ class Alien(Sprite):
             case _:
                 return None
 
-    def update(self, dt):
+    def update(self, dt: int):
         super().update(dt)
         self.action_timer.update(dt)
         while self.level.status != "start" and self.action_timer.check_alarm():
@@ -103,18 +103,18 @@ class Alien(Sprite):
             case "blob": self.shoot(BULLET.BLUBBER, size=self.energy)
 
     # templates of alien actions
-    def shoot(self, bullet_template, size=None):
+    def shoot(self, bullet_template: BulletTemplate, size: int | None = None):
         bullet = Bullet(bullet_template, size=size)
         bullet.spawn(center = self.midbottom)
         self.level.bullets.add(bullet)
         bullet.play_firing_sound()
 
-    def throw_alien(self, alien_template=ALIEN.PURPLE):
+    def throw_alien(self, alien_template: AlienTemplate = ALIEN.PURPLE):
         alien = Alien(alien_template, self.level, direction = Vector(self.vel.x, -1))
         alien.spawn(center = self.center)
         self.level.aliens.add(alien)
 
-    def get_damage(self, damage):
+    def get_damage(self, damage: int):
         if self.template.name == "big_asteroid":
             self.energy = 0
         elif self.template.name == "blob":
@@ -126,7 +126,7 @@ class Alien(Sprite):
             else:
                 self.kill()
 
-    def split(self, piece_template: AlienTemplate, amount):
+    def split(self, piece_template: AlienTemplate, amount: int) -> list[Alien]:
         if self.speed == 0:
             w = random_direction()
         else:
@@ -154,7 +154,7 @@ class Alien(Sprite):
         return pieces
 
     @classmethod
-    def merge(cls, blob1, blob2):
+    def merge(cls, blob1: Alien, blob2: Alien):
         """merges two blobs, but could be generalized to other aliens"""
         p1, p2 = blob1.center, blob2.center
         v1, v2 = blob1.vel, blob2.vel

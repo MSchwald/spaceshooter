@@ -1,3 +1,4 @@
+from __future__ import annotations
 import pygame
 from settings import SCREEN
 from image import Image, GraphicData
@@ -81,39 +82,39 @@ class Sprite(pygame.sprite.Sprite):
         self.move_to(self.pos)
 
     @property
-    def image(self):
+    def image(self) -> Image:
         return self.graphic.image
 
     @property
-    def surface(self):
+    def surface(self) -> pygame.Surface:
         return self.graphic.image.surface
 
     @property
-    def mask(self):
+    def mask(self) -> pygame.Mask:
         return self.graphic.image.mask
 
     @property
-    def w(self):
+    def w(self) -> int:
         return self.image.w
 
     @property
-    def h(self):
+    def h(self) -> int:
         return self.image.h
 
     @property
-    def center(self):
+    def center(self) -> Vector:
         if self.activated:
             return self.pos + Vector(self.w, self.h) / 2
         return Vector(self.rect.center)
         
     @property
-    def midbottom(self):
+    def midbottom(self) -> Vector:
         if self.activated:
             return self.pos + Vector(self.w / 2, self.h)
         return Vector(self.rect.midbottom)
 
     @property
-    def speed(self):
+    def speed(self) -> int:
         return norm(self.vel)
  
     def set_image(self, image: Image):
@@ -174,7 +175,7 @@ class Sprite(pygame.sprite.Sprite):
         if self.boundary_behaviour == "vanish" and not self.rect.colliderect(self.constraints):
             self.kill()
 
-    def update(self, dt):
+    def update(self, dt: int):
         """Calculate the state of the sprite after dt passed ms"""
         if self.activated:
             self.update_vel(dt)
@@ -182,13 +183,13 @@ class Sprite(pygame.sprite.Sprite):
             self.animation_timer.update(dt)
             self.update_frame(dt)    
 
-    def update_vel(self, dt):
+    def update_vel(self, dt: int):
         self.vel += dt * self.acc
 
-    def update_pos(self, dt):
+    def update_pos(self, dt: int):
         self.move_to(self.pos + dt * self.vel * Display.grid_width / SCREEN.GRID_WIDTH)
     
-    def update_frame(self, dt):
+    def update_frame(self, dt: int):
         """Calculate animation if available"""
         if self.animation_timer.on_hold:
             return
@@ -217,7 +218,7 @@ class Sprite(pygame.sprite.Sprite):
             case "loop": self.frame_index = self.frame_number % len(self.graphic.frames)
             case "once": self.frame_index = min(self.frame_number, len(self.graphic.frames)-1)
 
-    def reflect(self, flip_x, flip_y):
+    def reflect(self, flip_x: bool, flip_y: bool):
         self.vel *= -1
         self.graphic.reflect(flip_x, flip_y)
         #self.update_frame(0)
@@ -227,6 +228,6 @@ class Sprite(pygame.sprite.Sprite):
             screen.blit(self.surface, self.rect)
 
     @property
-    def ball(self):
+    def ball(self) -> Ball:
         """aproximates Sprite with a ball of the same width"""
         return Ball(self.center, self.vel, self.w / 2)

@@ -97,7 +97,7 @@ class Display:
 
     @classmethod
     def grid_rect(cls, x_min: int = 0, y_min: int = 0,
-                width: int = grid[0], height: int = grid[1]):
+                width: int = grid[0], height: int = grid[1]) -> pygame.Rect:
         """Return a rectangle aligned to the display grid."""
         return pygame.Rect([x_min * cls.grid_width, y_min * cls.grid_width,
                             width * cls.grid_width, height * cls.grid_width])

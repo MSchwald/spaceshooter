@@ -4,20 +4,20 @@ from math import sqrt, sin, cos, pi
 from random import uniform
 
 class Vector:
-    def __init__(self, x, y):
+    def __init__(self, x: int | float, y: int | float):
         self.x = x
         self.y = y
 
-    def __add__(self, other):
+    def __add__(self, other: Vector) -> Vector:
         return Vector(self.x + other.x, self.y + other.y)
 
-    def __neg__(self):
+    def __neg__(self) -> Vector:
         return Vector(-self.x, -self.y)
 
-    def __sub__(self, other):
+    def __sub__(self, other: Vector) -> Vector:
         return Vector(self.x - other.x, self.y - other.y)
 
-    def __mul__(self, other):
+    def __mul__(self, other: Vector | int | float) -> int | float | Vector:
         """scalar product or multiplication with scalars"""
         if isinstance(other, Vector):
             return self.x * other.x + self.y * other.y
@@ -25,63 +25,71 @@ class Vector:
             return Vector(other * self.x, other * self.y)
         return NotImplemented
 
-    def __rmul__(self, other):
+    def __rmul__(self, other: Vector | int | float) -> int | float | Vector:
         """allows also multiplication with scalars from the right"""
         return self * other
 
-    def __truediv__(self, s: int | float):
+    def __truediv__(self, s: int | float) -> Vector:
         if isinstance(s, (int, float)):
             if s == 0:
                 raise ValueError("Division by zero")
             return self * (1 / s)
         return NotImplemented
 
-    def __iter__(self):
+    def __iter__(self) -> tuple:
         yield self.x
         yield self.y
 
-    def change_direction(self, other):
+    def change_direction(self, other: Vector) -> Vector:
         self = norm(self) * normalize(other)
 
-    def change_norm(self, n):
+    def change_norm(self, n: int | float) -> Vector:
         self = n * normalize(self)
 
-    def clamp(self, min_v: Vector, max_v: Vector):
+    def clamp(self, min_v: Vector, max_v: Vector) -> Vector:
         return Vector(
             max(min_v.x, min(self.x, max_v.x)),
             max(min_v.y, min(self.y, max_v.y))
         )
 
-    def randomize_direction(self, phi_min: float = 0, phi_max: float = 2 * pi):
+    def randomize_direction(self, phi_min: float = 0,
+                                phi_max: float = 2 * pi) -> Vector:
         phi = uniform(phi_min, phi_max)
         self = norm(self) * Vector(cos(phi), sin(phi))
 
-def norm(v: Vector): return sqrt(v * v)
-def norm2(v: Vector): return v * v
-def normalize(v: Vector):
+def norm(v: Vector) -> int | float:
+    return sqrt(v * v)
+
+def norm2(v: Vector) -> int | float:
+    return v * v
+
+def normalize(v: Vector) -> Vector:
     n = norm(v)
     return v if n == 0 else v / n
-def random_direction(phi_min: float = 0, phi_max: float = 2 * pi):
+
+def random_direction(phi_min: float = 0,
+                    phi_max: float = 2 * pi) -> Vector:
         phi = uniform(phi_min, phi_max)
         return Vector(cos(phi), sin(phi))
-def turn_by_angle(v: Vector, phi: float):
+
+def turn_by_angle(v: Vector, phi: float) -> Vector:
     return Vector(v.x*cos(phi)-v.y*sin(phi), v.x*sin(phi)+v.y*cos(phi))
 
 class Ball:
     def __init__(self, pos: Vector, vel: Vector, r: float):
         self.pos, self.vel, self.r = pos, vel, r
 
-def elastic_collision(v1: Vector, v2: Vector, m1: float, m2: float, n: Vector):
+def elastic_collision(v1: Vector, v2: Vector, m1: float, m2: float, n: Vector) -> tuple(Vector, Vector):
     """calculate new velocity vectors after elastic collision in normal direction n"""
     factor = 2 * (v1 - v2) * n / (m1 + m2)
     return v1 + (-m2 * factor) * n, v2 + (m1 * factor) * n
 
-def inelastic_collision(p1: Vector, p2: Vector, v1: Vector, v2: Vector, m1: float, m2: float):
+def inelastic_collision(p1: Vector, p2: Vector, v1: Vector, v2: Vector, m1: float, m2: float) -> tuple(Vector, Vector):
     """return center of gravity and velocity after completely inelastic collision"""
     m = m1 + m2
     return (m1 * p1 + m2 * p2) / m, (m1 * v1 + m2 * v2) / m
 
-def ball_collision_data(ball1: Ball, ball2: Ball, m1: float, m2: float):
+def ball_collision_data(ball1: Ball, ball2: Ball, m1: float, m2: float) -> tuple(float | None, Vector, Vector):
     """if two balls collided in the past,
     return the (negative) time of collision
     and their new velocity vectors after collision"""

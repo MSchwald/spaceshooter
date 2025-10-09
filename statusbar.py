@@ -1,3 +1,4 @@
+from __future__ import annotations
 import pygame
 from image import Image
 from text import *
@@ -9,7 +10,7 @@ class Statusbar:
     initialized = False
 
     @classmethod
-    def init(cls, level, rescaling = True):
+    def init(cls, level: Level, rescaling: bool = True):
         '''Load images and initialize fonts once'''
         if cls.initialized:
             return
@@ -36,7 +37,7 @@ class Statusbar:
         cls.score_padding = (cls.h//2-cls.score_font_size)//2                
 
     @classmethod
-    def blit(cls, level, screen = None):
+    def blit(cls, level: Level, screen: pygame.Surface | None = None):
         screen = screen or Display.screen
         if not cls.initialized:
             cls.init(level)

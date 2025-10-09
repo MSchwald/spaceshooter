@@ -11,7 +11,9 @@ from physics import Vector, normalize
 class Ship(Sprite):
     """Manage the ship's position and status properties"""
 
-    def __init__(self, level: Level, lives: int = SHIP.LIVES, rank: int = SHIP.RANK):
+    def __init__(self, level: Level,
+                        lives: int = SHIP.LIVES,
+                        rank: int = SHIP.RANK):
         self.level = level
         self.lives = lives
         self.rank = rank
@@ -55,11 +57,11 @@ class Ship(Sprite):
         self.energy = self.max_energy
 
     @property
-    def max_energy(self):
+    def max_energy(self) -> int:
         return SHIP.ENERGY[self.rank]
 
     @property
-    def shield_time(self):
+    def shield_time(self) -> int:
         return self.shield_timer.remaining_time
 
     def gain_rank(self):
@@ -81,13 +83,13 @@ class Ship(Sprite):
             self.level.start_current()
             sound.lose_life.play()
 
-    def get_damage(self, damage):
+    def get_damage(self, damage: int):
         self.energy = max(0, self.energy - damage)
         if self.energy == 0:
             self.lose_rank()
 
     @property
-    def default_fire_points(self):
+    def default_fire_points(self) -> list[tuple]:
         """fire points depending only on the original ship sprites"""
         match self.rank:
             case 1: return [(51.5,0)]
@@ -95,26 +97,26 @@ class Ship(Sprite):
             case 3: return [(12,71),(23,49),(66.5,0),(109,49),(120,71)]
 
     @property
-    def default_width(self):
+    def default_width(self) -> int:
         match self.rank:
             case 1: return 103
             case 2: return 106
             case 3: return 133
 
     @property
-    def default_height(self):
+    def default_height(self) -> int:
         match self.rank:
             case 1: return 79
             case 2: return 146
             case 3: return 178
 
     @property
-    def fire_points(self):
+    def fire_points(self) -> list[Vector]:
         """Rescale where the ship shoots bullets, consistent with size changes of the ship"""
         return [self.pos + Vector(x*self.w/self.default_width, y*self.h/self.default_height) for (x,y) in self.default_fire_points]
         
     @property
-    def bullet_sizes(self):
+    def bullet_sizes(self) -> list[int]:
         match self.rank:
             case 1: sizes = [1]
             case 2: sizes = [1,2,1]
@@ -153,7 +155,7 @@ class Ship(Sprite):
         self.graphic = GraphicData(path = f"images/ship/{letter}-{self.rank}.png", scaling_width = SHIP.WIDTH[self.rank])
         self.change_image(self.graphic.image.scale_by(self.size_factor))
 
-    def collect_item(self, item):
+    def collect_item(self, item: Item):
         item.play_collecting_sound()
         match item.template.name:
             case "bullets_buff": self.bullets_buff += 1
@@ -219,7 +221,7 @@ class Ship(Sprite):
             self.status = self.last_status
             self.update_graphic()
 
-    def shoot_missile(self, pos):
+    def shoot_missile(self, pos: Vector):
         """shoots missile to position = (x,y)"""
         if self.missiles > 0:
             self.missiles -= 1
@@ -228,7 +230,7 @@ class Ship(Sprite):
             self.level.bullets.add(missile)
             missile.play_firing_sound()
 
-    def get_points(self, points):
+    def get_points(self, points: int):
         self.score += int(self.score_factor * points)
 
     def reset_item_effects(self):
@@ -242,7 +244,7 @@ class Ship(Sprite):
         self.status = "normal"
         self.last_status = "normal"
 
-    def update(self, dt):
+    def update(self, dt: int):
         for timer in self.timers:
             timer.update(dt)
         if self.shield_timer.check_alarm():

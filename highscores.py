@@ -17,11 +17,11 @@ class Highscores:
         self.fill_list_with_zeros()
 
     @property
-    def players(self):
+    def players(self) -> list[str]:
         return [x[0] for x in self.score_list]
 
     @property
-    def scores(self):
+    def scores(self) -> list[str]:
         return [str(x[1]) for x in self.score_list]
 
     def load_default_highscores(self):
@@ -37,15 +37,15 @@ class Highscores:
         with open("highscores.json", "w", encoding="utf-8") as f:
             json.dump(self.score_list, f)
 
-    def highscore_rank(self, score):
+    def highscore_rank(self, score: int) -> int | None:
         beaten_scores = [i for i in range(MAX_NUMBER_OF_HIGHSCORES) if score > self.score_list[i][1]]
         if beaten_scores:
             return beaten_scores[0]
         return None
 
-    def insert_score(self, name, score, rank):
+    def insert_score(self, name: str, score: int, rank: int):
         self.score_list = self.score_list[:-1]
         self.score_list.insert(rank, [name, score])
 
-    def update_name(self, name, rank):
+    def update_name(self, name: str, rank: int):
         self.score_list[rank][0] = name

@@ -1,3 +1,4 @@
+from __future__ import annotations
 import pygame, sound
 from image import Image
 from level import Level
@@ -20,7 +21,7 @@ class Menu():
         cls.title_distance = int(MENU.TITLE_DISTANCE*Display.screen_width/SCREEN.WIDTH)
         cls.line_distance = int(MENU.LINE_DISTANCE*Display.screen_width/SCREEN.WIDTH)
 
-    def __init__(self, header_surface, options, current_selection=0):
+    def __init__(self, header_surface: pygame.Surface, options: list[str], current_selection: int = 0):
         self.header_surface = header_surface
         self.inactive_options = Text(options, Menu.menu_font, COLOR.LIGHT_GREY, COLOR.BLUE)
         self.highlighted_options = Text(options, Menu.menu_font, COLOR.YELLOW, COLOR.GREY)
@@ -35,13 +36,13 @@ class Menu():
         self.options.rendered_lines = self.inactive_options.rendered_lines[:]
         self.options.rendered_lines[self.current_selection] = self.highlighted_options.rendered_lines[self.current_selection]
 
-    def render(self):
+    def render(self) -> pygame.Surface:
         """Renders the the menu"""
         rendered_options = self.options.render("center",Menu.line_distance, padding_color=COLOR.BLUE, center_title=False)
         rendered_menu = align_surfaces([self.header_surface,rendered_options], orientation="vertical", spacing = Menu.title_distance, padding_size = Menu.boundary_size//2, padding_color = COLOR.BLUE)
         return pad_surface(rendered_menu, padding_size=Menu.boundary_size//2, padding_color=COLOR.RED)
 
-    def blit(self, screen = None):
+    def blit(self, screen: pygame.Surface | None = None):
         """blits the menu with the current selection highlighted"""
         screen = screen or Display.screen
         screen.blit(self.rendered_menu, ((
@@ -57,7 +58,8 @@ class Menu():
         self.rendered_menu = self.render()
 
     @classmethod
-    def create(cls, message, options, current_selection=0, highscores=None):
+    def create(cls, message: list[str], options: list[str],
+                    current_selection: int = 0, highscores: Highscores | None = None) -> Menu:
         """Creates a menu with given title message and options,
         allows for showing the highsores in between"""
         if highscores is not None:
@@ -76,7 +78,7 @@ class Menu():
         return Menu(header_surface, options, current_selection=current_selection)
 
     @classmethod
-    def create_main_menu(cls, game):
+    def create_main_menu(cls, game: Game) -> Menu:
         """Creates the correct Main / Pause menu in each game situation"""
         match game.player_name, game.level.status:
             case _, "running":
@@ -98,7 +100,7 @@ class Menu():
         return Menu.create(m, options)
 
     @classmethod
-    def create_level_menu(cls, level):
+    def create_level_menu(cls, level: Level) -> Menu:
         """Returns a menu according to the given level status"""
         if level.status in ["level_solved", "game_won", "game_over"]:
             level.play_status_sound()
@@ -115,13 +117,13 @@ class Menu():
                                 ["Check high scores"])
 
     @classmethod
-    def create_enter_name_menu(cls, game):
+    def create_enter_name_menu(cls, game: Game) -> Menu:
         return Menu.create(["Congratulations!", f"Your score ranks on place {game.score_rank+1}.",
                             "Please enter your name and press RETURN."],
                             [f"Name: {game.player_name}"],
                             highscores = game.highscores)
 
-    def handle_input(self, game, event):
+    def handle_input(self, game: Game, event):
         if event.type == pygame.KEYDOWN:
             if event.unicode in game.highscores.allowed_chars and len(game.player_name) < MAX_NAME_LENGTH:
                 game.player_name += event.unicode
@@ -133,7 +135,7 @@ class Menu():
                     game.mode = "menu"
 
     @classmethod
-    def choose_current_selection(cls, game):
+    def choose_current_selection(cls, game: Game):
         sound.menu_select.play()
         match game.active_menu.options.lines[game.active_menu.current_selection]:
             case "Restart" | "Start game" | "New game":

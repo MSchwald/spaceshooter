@@ -1,3 +1,4 @@
+from __future__ import annotations
 import pygame, settings, sound
 from display import Display
 from sprite import Sprite
@@ -43,7 +44,7 @@ class Bullet(Sprite):
             constraints = constraints, boundary_behaviour = boundary_behaviour)
 
     @classmethod
-    def from_size(cls, size, **kwargs):
+    def from_size(cls, size: int, **kwargs) -> Bullet:
         mapping = {1: BULLET.BULLET1, 2: BULLET.BULLET2, 3: BULLET.BULLET3}
         return cls(mapping[size], **kwargs)
 

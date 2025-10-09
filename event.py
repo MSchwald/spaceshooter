@@ -13,7 +13,7 @@ class Event(ActionTimer):
         self.level = level
         super().__init__(random_cycle_time[0], random_cycle_time[1])
 
-    def update(self,dt):
+    def update(self, dt: int):
         if self.check_alarm():
             self.do_action()
 

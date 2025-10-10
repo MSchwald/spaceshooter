@@ -1,48 +1,36 @@
 import pygame, sound
+from settings import AlienTemplate, ALIEN, SHIP, BULLET
+from display import Display
+from image import Image, GraphicData
+from sprite import Sprite
 from ship import Ship
 from alien import Alien
+from timer import ActionTimer
 from random import random, randint
 from math import hypot
-from sprite import Sprite
-from image import Image, GraphicData
-from display import Display
-from timer import ActionTimer
-from settings import AlienTemplate, ALIEN, SHIP, BULLET
 from physics import Vector, normalize
 from dataclasses import dataclass
 
 class Level:
-    """
-    Manage game levels, loading enemies, timers, collisions, and player progress.
+    """Manage game levels, loading enemies, timed events, collisions, and player progress.
 
-    Attributes
-    ----------
-    ship : Ship
-        The player's ship.
-    crosshairs : Sprite
-        Visual crosshairs following the mouse to shoot missiles.
-    number : int
-        Current level number.
-    goals : list[str]
-        Descriptions of objectives for each level.
-    bullets, asteroids, aliens, ufos, blobs, items, ship_bullets : pygame.sprite.Group
-        Sprite groups for level objects.
-    timer, asteroid_hail, alien_hail : Timer / ActionTimer
-        Timers for recurring level events.
-    boundary_behaviour : str | None
-        Default behaviour for alien/asteroid movement at boundaries.
-    """
+    number: int - Current level number.
+    goals: list[str] - Descriptions of objectives for each level.
+    ship, crosshairs: Sprites for level objects
+    bullets, asteroids, aliens, ufos, blobs, items, ship_bullets: Pygame sprite groups
+    timer, asteroid_hail, alien_hail: Timers for level events.
+    boundary_behaviour: Default behaviour for enemies in current level."""
 
     def __init__(self, number):
-        """Initialize the level, its sprite groups, and timers."""
-        self.ship = Ship(self)
-        self.crosshairs = Sprite(GraphicData(path = 'images/bullet/aim.png', scaling_width = BULLET.MISSILE.width))
+        # Level settings
         self.number = number
         self.goals = ["Welcome!","Destroy all asteroids!","Defeat all aliens!","Defeat the ufo!","Defeat the blob!","Survive for a minute!"]
         self.max_level = len(self.goals) - 1
         self.boundary_behaviour = None
 
-        # empty sprite groups
+        # Level sprites and sprite groups
+        self.ship = Ship(self)
+        self.crosshairs = Sprite(GraphicData(path = 'images/bullet/aim.png', scaling_width = BULLET.MISSILE.width))
         self.ship_bullets = pygame.sprite.Group()
         self.bullets = pygame.sprite.Group()
         self.items = pygame.sprite.Group()
@@ -51,14 +39,14 @@ class Level:
         self.ufos = pygame.sprite.Group()
         self.blobs = pygame.sprite.Group()
 
+        # Timers for level events
         self.timer = ActionTimer()
         self.asteroid_hail = ActionTimer()
         self.alien_hail = ActionTimer()
-
         self.timers = (self.timer, self.asteroid_hail, self.alien_hail)
         
     def blit(self, screen: pygame.Surface | None = None):
-        """Draw all sprites onto the given screen."""
+        """Blit all level sprites onto the given screen."""
         screen = screen or Display.screen
         for group in [self.bullets, self.asteroids, self.aliens, self.items]:
             for sprite in group:
@@ -67,7 +55,7 @@ class Level:
         self.crosshairs.blit(screen)
 
     def start_current(self):
-        """(Re)start current level"""
+        """(Re)start current game level."""
         self.ship.reset_pos()
         for timer in self.timers:
             timer.pause()
@@ -79,13 +67,13 @@ class Level:
         self.load_level(self.number)
 
     def start_next(self):
-        """Start the next level"""
+        """Start the next game level."""
         if self.number < self.max_level:
             self.number += 1
             self.start_current()
 
     def restart_game(self):
-        """restart from starting level"""
+        """Restart from starting game level."""
         sound.level_solved.play()
         self.number = SHIP.GAME_LEVEL
         self.items.empty()
@@ -93,7 +81,7 @@ class Level:
         self.start_current()
 
     def alien_spawn(self, alien: Alien, **kwargs):
-        """Spawn alien sprites and play corresponding sound"""
+        """Spawn an alien at a given position and play corresponding sound."""
         alien.spawn(**kwargs)
         match alien.template.name:
             case "big_asteroid" | "small_asteroid":
@@ -108,7 +96,7 @@ class Level:
                 self.aliens.add(alien)
 
     def alien_random_entrance(self, alien: Alien):
-            """Spawn an alien at a random top position, aiming towards a random bottom position."""
+            """Triggers spawning of an alien at a random top position, aiming towards a random bottom position."""
             constraints = alien.constraints
             spawning_pos = Vector(
                 constraints.x + random() * (constraints.w - alien.w),
@@ -129,7 +117,8 @@ class Level:
                     energy: int | None = None,
                     constraints: pygame.Rect | None = Display.screen,
                     boundary_behaviour: str | None = None):
-        """Spawn an amount of aliens. Missing position or direction get set randomly."""
+        """Triggers spawning a given amount of aliens.
+        Missing position or direction get set randomly."""
         if dir is not None:
             direction = Vector(dir[0], dir[1])
         else:
@@ -145,7 +134,7 @@ class Level:
                 self.alien_random_entrance(alien)
 
     def load_level(self, number: int):
-        """Load enemies and start action timers of the current level"""
+        """Load enemies and start action timers of the current game level."""
         match number:
             case 0:
                 self.boundary_behaviour = "wrap"
@@ -184,7 +173,7 @@ class Level:
 
     @property
     def progress(self) -> str:
-        """String, summarizes the player's progress to be rendered in the status bar."""
+        """String summarizing the player's progress to be rendered in the status bar."""
         match self.number:
             case 0: return "Ready?"
             case 1: return f"{len(self.asteroids)} left"
@@ -211,7 +200,7 @@ class Level:
 
     @property
     def status(self) -> str:
-        """Level status indicates when a level or the game have ended"""
+        """String indicating why a game level or the entire game ended."""
         if self.number == 0:
             return "start"
         if self.ship.lives <= 0:         
@@ -223,7 +212,7 @@ class Level:
         return "running"
 
     def play_status_sound(self):
-        """status sounds are played when a level ends"""
+        """Play the appropriate sound when a level ends."""
         pygame.mixer.stop()
         match self.status:
             case "game_over":
@@ -234,7 +223,7 @@ class Level:
                 sound.game_won.play()
 
     def update(self, dt: int):
-        """update level status according to passed time dt"""
+        """Update level status according to passed time dt."""
         for timer in self.timers:
             timer.update(dt)
         if self.asteroid_hail.check_alarm():
@@ -247,7 +236,7 @@ class Level:
         self.update_sprites(dt)
 
     def update_sprites(self, dt: int):
-        """update the status of all level objects"""
+        """Update the status of all level objects."""
         for group in [self.bullets, self.asteroids, self.aliens, self.items]:
             for sprite in group:
                 sprite.update(dt)
@@ -256,12 +245,14 @@ class Level:
         self.collision_checks()
 
     def update_crosshairs(self):
-        """The crosshairs follow the player's mouse"""
+        """The crosshairs follow the player's mouse position."""
         x,y = pygame.mouse.get_pos()
         self.crosshairs.spawn(center=Vector(x - Display.padding_w, y - Display.padding_h))
 
     def collision_checks(self):
-        """Check for collisions of sprites, inflict damage, add points, generate items"""
+        """Check for collisions of level sprites:
+        inflict damage; kill, split or merge enemies;
+        add points to the player's score; generate items."""
         self.bullets_hit()
         self.enemies_hit_ship()
         self.ship_collects_item()
@@ -269,7 +260,7 @@ class Level:
 
     def bullets_hit(self):
         """Check if bullets hit enemies or the ship"""
-        # bullets hitting asteroids
+        # Bullets hitting asteroids
         collisions = pygame.sprite.groupcollide(
             self.bullets, self.asteroids, False, False, collided=pygame.sprite.collide_mask)
         for bullet in collisions.keys():
@@ -283,7 +274,7 @@ class Level:
                     asteroid.get_damage(bullet.damage)
                     asteroid.kill()
 
-        # player's bullets hitting aliens or enemies' bullets hitting the ship
+        # Player's bullets hitting aliens or enemies' bullets hitting the ship
         for bullet in self.bullets:
             if bullet.owner == "player":
                 for alien in self.aliens:
@@ -314,7 +305,7 @@ class Level:
                     sound.player_hit.play()
             
     def enemies_hit_ship(self):
-        """If enemies hit the ship, reflect with shield or inflict damage and kill the enemy"""
+        """If enemies hit the ship, reflect with shield or inflict damage and kill the enemy."""
         for asteroid in self.asteroids:
             if pygame.sprite.collide_mask(self.ship, asteroid):
                 if self.ship.status == "shield" or self.status == "start":
@@ -338,7 +329,7 @@ class Level:
                         self.ship.get_damage(alien.energy)
         
     def ship_collects_item(self):
-        """Check if ship collects an item and activate its effect"""
+        """If the ship collects an item, trigger its effect."""
         for item in self.items:
             if pygame.sprite.collide_mask(self.ship, item):
                 if self.ship.status == "shield":
@@ -348,7 +339,7 @@ class Level:
                     item.kill()
 
     def blobs_collide(self):
-        """Merge colliding blobs if not too big, total impuls and mass are preserved"""
+        """Merge colliding blobs (if not too big) preserving total impuls and mass."""
         merge_occured = False
         for blob1 in self.blobs:
                 if merge_occured:
@@ -368,4 +359,4 @@ class Level:
                             blob1.hard_kill()
                             blob2.hard_kill()
                             sound.blob_merge.play()
-                            break     
+                            break

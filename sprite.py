@@ -1,51 +1,38 @@
 from __future__ import annotations
 import pygame
 from settings import SCREEN
-from image import Image, GraphicData
 from display import Display
+from image import Image, GraphicData
 from timer import Timer, ActionTimer
 from math import sqrt, sin, cos, pi
 from random import random, choice
 from physics import Vector, norm, Ball
 
 class Sprite(pygame.sprite.Sprite):
-    """
-    Manage movement, boundary collision, and animation of ingame objects.
+    """Manage movement, boundary collision and animation of ingame objects.
 
-    Parameters
-    ----------
-    graphic : GraphicData
-        Visual representation of the sprite.
-        Supported animation modes:
-        - **None** – non-animated sprite
-        - **"loop"** – frames cycle periodically
-        - **"once"** – plays once, stops at last frame
-        - **"vanish"** – disappears after animation completes
-        - **"pingpong"** – alternates back and forth
-        - **"random"** – frame indices are chosen randomly
-        - **"manual"** – no automatic frame updates, handled externally
-    pos : Vector, optional
-        Initial position; can be set later.
-    vel : Vector, default=Vector(0, 0)
-        Initial velocity vector.
-    acc : Vector, default=Vector(0, 0)
-        Initial acceleration vector.
-    constraints : pygame.Rect, optional
-        Rectangle defining the allowed movement area.
-    boundary_behaviour : str, optional
-        Defines how the sprite interacts with the boundaries.
-        Supported behaviours:
-        - **None** - no boundary restriction
-        - **"clamp"** - stops at the boundary (the ship)
-        - **"reflect"** - bounces off the boundary (most enemies)
-        - **"vanish"** - is removed when leaving the boundary (bullets, items)
-        - **"wrap"** - reappears on the opposite side (used on starting screen)
+    graphic: GraphicData, for visual representation of the sprite
+        Implemented animation modes:
+        - None – non-animated sprite
+        - "loop" – frames cycle periodically
+        - "once" – plays once, stops at last frame
+        - "vanish" – disappears after animation completes
+        - "pingpong" – alternates back and forth
+        - "random" – frame indices are chosen randomly
+        - "manual" – no automatic frame updates, handled externally
+    pos, vel, acc: position, velocity and acceleration vectors (optional)
+        - vel and acc are set to (0, 0) by default.
+        - If no pos is provided, Sprite can be placed later using spawn(). 
+    constraints, boundary_behaviour: pygame.Rect, str (optional)
+        Movement area of the sprite and its interaction with its boundary.
+        Implemented boundary behaviours:
+        - None - no boundary restriction / interaction
+        - "clamp" - stops at the boundary (the ship)
+        - "reflect" - can enter its constraining area but is then confined
+                    and bounces off the boundary (most enemies)
+        - "vanish" - is removed when leaving the boundary (bullets, items)
+        - "wrap" - reappears on the opposite side (enemies on starting screen)"""
 
-    Notes
-    -----
-    A sprite may exist before being placed; use `spawn()` to assign coordinates later.
-
-    """
     def __init__(self, graphic: GraphicData,
                 pos: Vector | None = None,
                 vel: Vector = Vector(0, 0),
@@ -66,10 +53,8 @@ class Sprite(pygame.sprite.Sprite):
     def spawn(self, pos: Vector | None = None,
                     center: Vector | None = None,
                     grid: tuple[int, int] | None = None):
-        """
-        Spawn and activate sprite at a specified location.
-        Only one of pos, center, or grid should be provided.
-        """
+        """Spawn and activate sprite at a specified location.
+        Exactly one of pos, center or grid must be provided."""
         if sum(arg is not None for arg in (pos, center, grid)) != 1:
             raise ValueError("Provide exactly one of pos, center or grid")
         if grid is not None:
@@ -81,6 +66,7 @@ class Sprite(pygame.sprite.Sprite):
         self.pos = pos  
         self.move_to(self.pos)
 
+    # Short cuts for quick to access to graphical attributes
     @property
     def image(self) -> Image:
         return self.graphic.image
@@ -101,6 +87,7 @@ class Sprite(pygame.sprite.Sprite):
     def h(self) -> int:
         return self.image.h
 
+    # Various positional vectors
     @property
     def diag(self) -> Vector:
         return Vector(self.w, self.h)
@@ -117,20 +104,16 @@ class Sprite(pygame.sprite.Sprite):
             return self.pos + Vector(self.w / 2, self.h)
         return Vector(self.rect.midbottom)
 
+    # Absolute speed calculated from the velocity vector
     @property
     def speed(self) -> int:
         return norm(self.vel)
  
+    # Methods to change the visual representation of the Sprite
     def set_image(self, image: Image):
         """initializes an image preserving pos of the sprite"""
         self.graphic.image = image
         self.update_rect_size()
-
-    def update_rect_pos(self):
-        self.rect.x, self.rect.y = int(self.pos.x), int(self.pos.y)
-
-    def update_rect_size(self):
-        self.rect.w, self.rect.h = int(self.w), int(self.h)
   
     def change_image(self, image: Image):
         """changes the image preserving the center of the sprite"""
@@ -142,8 +125,17 @@ class Sprite(pygame.sprite.Sprite):
         """rescales the image preserving the center of the sprite"""
         self.change_image(self.image.scale_by(factor))
 
+    # The pygame.Rect attribute is needed for blitting the sprite,
+    # should not be manipulated externally, only automatically
+    # updated upon positional or graphical change of the sprite
+    def update_rect_pos(self):
+        self.rect.x, self.rect.y = int(self.pos.x), int(self.pos.y)
+
+    def update_rect_size(self):
+        self.rect.w, self.rect.h = int(self.w), int(self.h)
+
     def move_to(self, pos: Vector):
-        """respects boundary behaviour and updates rectangle"""
+        """Move the sprite respecting its boundary behaviour."""
         if self.constraints is None or self.boundary_behaviour == "vanish":
             self.pos = pos
             self.update_rect_pos()
@@ -195,7 +187,7 @@ class Sprite(pygame.sprite.Sprite):
         self.move_to(self.pos + dt * self.vel * Display.grid_width / SCREEN.GRID_WIDTH)
     
     def update_frame(self, dt: int):
-        """Calculate animation if available"""
+        """Update the Sprite's image to a new animation frame if needed."""
         if self.animation_timer.on_hold:
             return
         while self.animation_timer.check_alarm():
@@ -207,6 +199,7 @@ class Sprite(pygame.sprite.Sprite):
             self.change_image(self.graphic.frames[self.frame_index])
 
     def next_frame(self):
+        """Determine the next frame in the animation depending on provided animation type."""
         self.frame_number += 1
         match self.graphic.animation_type:
             case None: return
@@ -224,15 +217,16 @@ class Sprite(pygame.sprite.Sprite):
             case "once": self.frame_index = min(self.frame_number, len(self.graphic.frames)-1)
 
     def reflect(self, flip_x: bool, flip_y: bool):
+        """Reflects direction of movement and all graphical data along given axes."""
         self.vel *= -1
         self.graphic.reflect(flip_x, flip_y)
-        #self.update_frame(0)
 
     def blit(self, screen: pygame.Surface):
+        """Blit the current state of the sürite onto the screen."""
         if self.activated:
             screen.blit(self.surface, self.rect)
 
     @property
     def ball(self) -> Ball:
-        """aproximates Sprite with a ball of the same width"""
+        """Aproximate the sprite with a 3d ball of the same width."""
         return Ball(self.center, self.vel, self.w / 2)

@@ -1,11 +1,11 @@
 import pygame, json
+from settings import DEFAULT_HIGHSCORES, MAX_NUMBER_OF_HIGHSCORES
 from string import ascii_letters, digits
 from pathlib import Path
-from menu import Menu
-from settings import DEFAULT_HIGHSCORES, MAX_NUMBER_OF_HIGHSCORES
 
 class Highscores:
     """Load, render, update and save highscores"""
+
     def __init__(self):
         """load saved high scores or the default ones from the settings"""
         self.allowed_chars = ascii_letters + digits # characters allowed in the players' names
@@ -30,6 +30,7 @@ class Highscores:
         self.save()
 
     def fill_list_with_zeros(self):
+        """When the default high score list in the settings is to short, fill the table with zeros."""
         while len(self.score_list) < MAX_NUMBER_OF_HIGHSCORES:
             self.score_list.append(("",0))
  
@@ -38,6 +39,7 @@ class Highscores:
             json.dump(self.score_list, f)
 
     def highscore_rank(self, score: int) -> int | None:
+        """For a given score, return its rank in the high score table. Return None if the score is too low."""
         beaten_scores = [i for i in range(MAX_NUMBER_OF_HIGHSCORES) if score > self.score_list[i][1]]
         if beaten_scores:
             return beaten_scores[0]

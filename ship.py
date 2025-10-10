@@ -1,20 +1,23 @@
 from __future__ import annotations
 import pygame, sound
 from settings import KEY, BULLET, SHIP
+from display import Display
 from image import Image, GraphicData
 from sprite import Sprite
 from bullet import Bullet
 from timer import ActionTimer
-from display import Display
 from physics import Vector, normalize
 
 class Ship(Sprite):
-    """Manage the ship's position and status properties"""
+    """Manage the ship's position, status properties and item effects."""
 
     def __init__(self, level: Level,
                         lives: int = SHIP.LIVES,
                         rank: int = SHIP.RANK):
+        # Ship has access to all level objects
         self.level = level
+        
+        # Load the ship's starting properties and sprite
         self.lives = lives
         self.rank = rank
         self.score = SHIP.SCORE
@@ -24,6 +27,7 @@ class Ship(Sprite):
             constraints = Display.grid_rect(0, 5, 16, 4), boundary_behaviour = "clamp")
         self.reset_pos()
 
+        # Initiate timers for shield and item effects
         self.shield_timer = ActionTimer()
         self.controls_timer = ActionTimer()
         self.score_buff_timer = ActionTimer()
@@ -31,39 +35,44 @@ class Ship(Sprite):
         self.speed_change_timer = ActionTimer()
         self.timers = (self.shield_timer, self.controls_timer, self.score_buff_timer,
                     self.size_change_timer, self.speed_change_timer)
+        
+        # Initiate parameters for item effects
         self.reset_item_effects()
 
     def start_new_game(self, lives=SHIP.LIVES, rank=SHIP.RANK):
-        """Start new game"""
+        """Reset the ship to it's default starting settings."""
         self.reset_item_effects()
         self.reset_stats(lives, rank)
         self.reset_pos()
 
     def reset_pos(self):
-        """Ship starts each level at the midbottom"""
+        """Ship starts each level at the midbottom of the screen."""
         self.spawn(pos = Vector(self.constraints.centerx - self.w / 2,
                                     self.constraints.bottom - self.h))
 
     def reset_stats(self, lives=SHIP.LIVES, rank=SHIP.RANK):
-        """Ship starts the game with given stats"""
+        """The ship starts the game with given stats."""
         self.score = SHIP.SCORE
         self.set_rank(rank)
         self.lives = lives
 
     def set_rank(self, rank):
-        """Updates the rank and dependend variables of the ship"""
+        """Changes the rank and updates dependend properties of the ship."""
         self.rank = rank
         self.update_graphic()
         self.energy = self.max_energy
 
     @property
     def max_energy(self) -> int:
+        """The maximal energy of the ship depends on it's current rank"""
         return SHIP.ENERGY[self.rank]
 
     @property
     def shield_time(self) -> int:
+        """Currently remaining shield time."""
         return self.shield_timer.remaining_time
 
+    # Methods to update rank, lives and energy of the ship
     def gain_rank(self):
         if self.rank < 3:
             self.set_rank(self.rank + 1)
@@ -88,9 +97,10 @@ class Ship(Sprite):
         if self.energy == 0:
             self.lose_rank()
 
+    # List of default values to rescale the fire points of the ship depending on it's current size.
     @property
     def default_fire_points(self) -> list[tuple]:
-        """fire points depending only on the original ship sprites"""
+        """Fire points on the original ship sprites."""
         match self.rank:
             case 1: return [(51.5,0)]
             case 2: return [(9,54),(53,0),(95,54)]
@@ -112,8 +122,8 @@ class Ship(Sprite):
 
     @property
     def fire_points(self) -> list[Vector]:
-        """Rescale where the ship shoots bullets, consistent with size changes of the ship"""
-        return [self.pos + Vector(x*self.w/self.default_width, y*self.h/self.default_height) for (x,y) in self.default_fire_points]
+        """Rescale where the ship shoots bullets respecting size changes of the ship."""
+        return [self.pos + Vector(x * self.w / self.default_width, y * self.h / self.default_height) for (x,y) in self.default_fire_points]
         
     @property
     def bullet_sizes(self) -> list[int]:
@@ -124,11 +134,9 @@ class Ship(Sprite):
         return [min(3, size + self.bullets_buff) for size in sizes]
 
     def shoot_bullets(self):
-        # if there aren't too many bullets from the ship on the screen yet
+        """Shoot bullets if there aren't too many ship bullets on the screen yet."""
         if len(self.level.ship_bullets) < SHIP.MAX_BULLETS * (2*self.rank-1) and self.status != "shield":
-            # Takes Doppler effect into account to calculate the bullets' speed
-            doppler = self.vel.y
-            # Fires bullets
+            doppler = self.vel.y # Take Doppler effect into account to calculate the bullets' speed.
             for fp, size in zip(self.fire_points, self.bullet_sizes):
                 bullet = Bullet.from_size(size)
                 bullet.spawn(center = fp)
@@ -138,6 +146,7 @@ class Ship(Sprite):
             bullet.play_firing_sound()
 
     def control(self, keys):
+        """Control the ship's direction and shield according to the current state of the keyboard."""
         if keys[KEY.SHIELD]:
             if self.status != "shield" and self.shield_time > 0:
                 self.activate_shield()
@@ -151,11 +160,13 @@ class Ship(Sprite):
                 self.vel *= -1
 
     def update_graphic(self):
+        """Upon changes of status or size, the ship's graphic must be updated."""
         letter = {"normal":"a", "inverse_controls":"g", "shield":"h", "magnetic":"e"}[self.status]
         self.graphic = GraphicData(path = f"images/ship/{letter}-{self.rank}.png", scaling_width = SHIP.WIDTH[self.rank])
         self.change_image(self.graphic.image.scale_by(self.size_factor))
 
     def collect_item(self, item: Item):
+        """Trigger item effects and sound. Timers are set for temporary effects."""
         item.play_collecting_sound()
         match item.template.name:
             case "bullets_buff": self.bullets_buff += 1
@@ -210,6 +221,7 @@ class Ship(Sprite):
                     self.speed_change_timer.set_alarm(item.duration_ms, cyclic = False)
 
     def activate_shield(self):
+        """Activate shield if the player has remaining shield time left."""
         if self.shield_time > 0:
             self.shield_timer.resume()
             sound.shield.play()
@@ -217,13 +229,14 @@ class Ship(Sprite):
             self.update_graphic()
 
     def deactivate_shield(self):
+        """Method used to deactivate the shield when player releases the shield key or running out of shield time."""
         self.shield_timer.pause()
         if self.status == "shield":
             self.status = self.last_status
             self.update_graphic()
 
     def shoot_missile(self, pos: Vector):
-        """shoots missile to position = (x,y)"""
+        """Shoot missile to the given position on the screen."""
         if self.missiles > 0:
             self.missiles -= 1
             missile = Bullet(BULLET.MISSILE)
@@ -240,13 +253,14 @@ class Ship(Sprite):
         self.magnet = False
         self.missiles = SHIP.STARTING_MISSILES
         self.score_factor = 1
-        self.shield_timer.set_alarm(1000*SHIP.SHIELD_STARTING_TIMER, cyclic = False)
+        self.shield_timer.set_alarm(1000 * SHIP.SHIELD_STARTING_TIMER, cyclic = False)
         self.shield_timer.pause()
         self.size_factor = 1
         self.status = "normal"
         self.last_status = "normal"
 
     def update(self, dt: int):
+        """Update the ship's position, shield and item timers after dt passed ms"""
         for timer in self.timers:
             timer.update(dt)
         if self.shield_timer.check_alarm():

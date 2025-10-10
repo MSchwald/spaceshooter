@@ -1,18 +1,18 @@
 from __future__ import annotations
-import pygame, settings, sound
+import pygame, sound
+from settings import AlienTemplate, ALIEN, BULLET, ITEM
+from display import Display
 from image import Image, GraphicData
 from sprite import Sprite
 from bullet import Bullet
-from display import Display
 from item import Item
 from timer import ActionTimer
 from random import random, choice, randint, sample
 from math import pi, sqrt, sin, cos
-from settings import AlienTemplate, ALIEN, BULLET, ITEM
 from physics import Vector, norm, normalize, random_direction, turn_by_angle, inelastic_collision, ball_collision_data
 
 class Alien(Sprite):
-    """Manage sprites, spawning and actions of enemies"""
+    """Manage sprites, spawning and actions of enemies."""
 
     def __init__(self, template: AlienTemplate,
                 level: Level,
@@ -24,7 +24,7 @@ class Alien(Sprite):
                 acc: Vector = Vector(0, 0),
                 constraints: pygame.Rect | None = None,
                 boundary_behaviour: str | None = "reflect"):
-        # energy and speed allow overwriting their standard settings for given template        
+        """energy, speed: allow for overwriting their default settings for given template."""       
         self.template = template
         self.level = level
         self.energy = energy or template.energy
@@ -45,7 +45,7 @@ class Alien(Sprite):
             self.update_blob_image()
 
     def update_blob_image(self):
-        """Blobs image and size depends on their energy"""
+        """A blob's image and size depend on its energy."""
         if self.template.name != "blob":
             return
         if self.energy < ALIEN.BLOB.energy // 8:
@@ -58,6 +58,7 @@ class Alien(Sprite):
         self.graphic.image = self.graphic.frames[self.frame_index].scale_by(scaling_factor)
 
     def spawn(self, **kwargs):
+        """Place an initiated alien and play it's spawning sound"""
         if self.level.number != 0:
             self.play_spawing_sound()
         super().spawn(**kwargs)
@@ -69,22 +70,24 @@ class Alien(Sprite):
 
     @property
     def mass(self) -> int | None:
-        """mass of an enemy, relevant for collisions between asteroids and blobs"""
+        """Mass of an enemy, relevant for collisions between asteroids and blobs."""
         match self.template.name:
             case "blob": return self.energy
             case "big_asteroid" | "small_asteroid":
-                """make mass independent of display settings"""
+                # Make mass independent of display settings.
                 return (self.w / Display.grid_width) ** 3
             case _:
+                # Not implemented.
                 return None
 
     def update(self, dt: int):
+        """Calculate the state of the alien after dt passed ms"""
         super().update(dt)
         self.action_timer.update(dt)
         while self.level.status != "start" and self.action_timer.check_alarm():
             self.do_action()
 
-        #asteroids collide elastically like 3d balls
+        # Asteroids collide elastically like 3d balls.
         match self.template.name:
             case "big_asteroid" | "small_asteroid":
                 for ast in self.level.asteroids:
@@ -100,7 +103,7 @@ class Alien(Sprite):
                     super().update_pos(-collision_time)
                     Sprite.update_pos(ast, -collision_time)
             case "blob":
-                #blobs gravitate towards their parent center where they split last
+                # Blobs gravitate towards their parent center where they split last.
                 if self.parent_center is None:
                     return
                 n = normalize(self.parent_center - self.center)
@@ -108,12 +111,13 @@ class Alien(Sprite):
                 self.acc = - ALIEN.BLOB.acc * (vr - self.splitting_speed) * abs(vr + self.splitting_speed) * n            
 
     def do_action(self):
+        """Triggers an alien's specific action."""
         match self.template.name:
             case "purple": self.shoot(BULLET.GREEN)
             case "ufo": self.throw_alien(ALIEN.PURPLE)
             case "blob": self.shoot(BULLET.BLUBBER, size=self.energy)
 
-    # templates of alien actions
+    # Templates of alien actions
     def shoot(self, bullet_template: BulletTemplate, size: int | None = None):
         bullet = Bullet(bullet_template, size=size)
         bullet.spawn(center = self.midbottom)
@@ -138,12 +142,13 @@ class Alien(Sprite):
                 self.kill()
 
     def split(self, piece_template: AlienTemplate, amount: int) -> list[Alien]:
+        """Splits an Alien preserving the total impuls. Used for asteroids and blobs."""
         if self.speed == 0:
             w = random_direction()
         else:
             w = normalize(self.vel)
         if piece_template.name == "blob":
-            #blobs split into smaller blobs with integer mass
+            # Blobs split into smaller blobs with integer mass.
             m = self.mass // amount
             diff = self.mass - amount * m
             masses = [m + 1 if i < diff else m for i in sample(range(amount), amount)]
@@ -166,7 +171,7 @@ class Alien(Sprite):
 
     @classmethod
     def merge(cls, blob1: Alien, blob2: Alien):
-        """merges two blobs, but could be generalized to other aliens"""
+        """Merge two blobs. Can also be used for other aliens if their masses are implemented."""
         p1, p2 = blob1.center, blob2.center
         v1, v2 = blob1.vel, blob2.vel
         m1, m2 = blob1.mass, blob2.mass
@@ -176,7 +181,7 @@ class Alien(Sprite):
         return blob
 
     def kill(self):
-        """removes an enemy, triggers splitting for asteroids and blobs""" 
+        """Removes an enemy, trigger splitting for asteroids and blobs.""" 
         if self.energy <= 0:
             {"big_asteroid": sound.asteroid, "small_asteroid": sound.small_asteroid, "purple": sound.alienblob, "ufo":sound.alienblob, "blob":sound.alienblob}[self.template.name].play()
             self.level.ship.get_points(self.template.points)
@@ -185,14 +190,16 @@ class Alien(Sprite):
                 item.spawn(center = self.center)
                 self.level.items.add(item)
         if self.template.name == "big_asteroid":
-            # big asteroids split into smaller asteroids when hit
+            # Big asteroids split into smaller asteroids when hit.
             for piece in self.split(ALIEN.SMALL_ASTEROID, self.template.pieces):
                 self.level.asteroids.add(piece)
         if self.template.name == "blob":
             if self.energy > 1:
                 sound.slime_hit.play()
                 for blob in self.split(ALIEN.BLOB, self.template.pieces):
-                    blob.splitting_speed = blob.speed # needed later to calculate the gravitation towards the parent center
+                    # The splitting data is saved for later to calculate
+                    # the blob's gravitation towards it's parent center.
+                    blob.splitting_speed = blob.speed 
                     blob.parent_center = self.center
                     self.level.aliens.add(blob)
                     self.level.blobs.add(blob)
@@ -203,13 +210,14 @@ class Alien(Sprite):
         super().kill()
 
     def hard_kill(self):
-        """removes an enemy without further splitting"""
+        """Remove an enemy without triggering further splitting."""
         self.level.aliens.remove(self)
         self.level.blobs.remove(self)
         super(Alien, self).kill()
 
     def reflect(self):
+        """Reflecting enemies with shield sound effects."""
         if self.level.status != "start":
             sound.shield.stop()
             sound.shield_reflect.play()
-        super().reflect(flip_x=False, flip_y=False)
+        super().reflect(flip_x = False, flip_y = False)

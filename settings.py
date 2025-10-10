@@ -4,7 +4,7 @@ import pygame.locals
 # Structured collection of all ingame parameters for comfortable adjustment
 # and creation of new templates of aliens, bullets or items
 
-# Color and key names
+# Color names
 class COLOR(tuple):
     WHITE = (255, 255, 255)
     BLUE = (0, 0, 200)
@@ -16,6 +16,7 @@ class COLOR(tuple):
     GREEN = (100, 255, 100)
     BLACK = (0,0,0)
 
+# Key names and settings
 class KEY:
     EXIT = pygame.K_ESCAPE
     UP = pygame.K_w
@@ -27,29 +28,33 @@ class KEY:
     START = pygame.K_RETURN
     BACK = pygame.K_BACKSPACE
 
-# Standard screen settings
-# (display.py handles rescaling all sizes to user's display settings)
+
+# Screen settings
 class SCREEN:
-    WIDTH, HEIGHT = 1600, 900
-    SIZE = (WIDTH, HEIGHT)
-    GRID = (16,9)
-    GRID_WIDTH = WIDTH // GRID[0] # 1600 / 16 = 100
     PADDING_COLOR = COLOR.DARK_GREY
     BG_COLOR = COLOR.BLACK
+    # Default screen settings for the game's development
+    # (display.py handles rescaling subsequent sizes to user's display settings)
+    WIDTH, HEIGHT = 1600, 900
+    SIZE = (WIDTH, HEIGHT)
+    GRID = (16, 9)
+    GRID_WIDTH = WIDTH // GRID[0] # 1600 / 16 = 100
 
-# Game and ship starting settings
+# Game and ship settings
 class SHIP:
+    # Settings upon starting the game
     SCORE = 0
     LIVES = 3
-    GAME_LEVEL = 4
+    GAME_LEVEL = 1
     SHIELD_STARTING_TIMER = 3
     MAX_SHIELD_DURATION = 15
     MAX_BULLETS = 3
     STARTING_MISSILES = 1
     RANK = 1
+    # Default settings depending on the ship's current rank
     SPEED = {1: 0.5, 2: 0.6, 3: 0.7}
     ENERGY = {1: 15, 2: 30, 3: 45}
-    WIDTH = {1:100, 2:100, 3:120}
+    WIDTH = {1: 100, 2: 100, 3:120}
 
 # Alien settings and templates in the game
 @dataclass
@@ -95,18 +100,6 @@ class BULLET:
     GREEN = BulletTemplate("g", 26, 3, "enemy", 0.2, animation_type = "once", animation_time = 0.5)
     BLUBBER = BulletTemplate("blubber", 150, 16, "enemy", 0.4)
 
-# Level settings and templates in the game
-@dataclass
-class AlienSpawn:
-    template: AlienTemplate
-    amount: int = 1
-    grid: tuple[int] | None = None
-    speed_factor: float | None = None
-    direction: tuple[int] | None = None
-    energy: int | None = None
-    constraints: pygame.Rect | None = None
-    boundary_behaviour: str | None = None
-
 # Item settings and templates in the game
 @dataclass
 class ItemTemplate:
@@ -117,11 +110,12 @@ class ItemTemplate:
     duration: int | None = None
 
 class ITEM:
+    # Probability of an item spawn for each defeated enemy
     PROBABILITY = 0.3
-    #ship size *= effect
+    # ship size *= effect
     SIZE_PLUS = ItemTemplate("size_plus", effect = 1.5, duration = 10)
     SIZE_MINUS = ItemTemplate("size_minus", effect = 1/SIZE_PLUS.effect, duration = SIZE_PLUS.duration)
-    #scored points *= effect
+    # scored points *= effect
     SCORE_BUFF = ItemTemplate("score_buff", effect = 1.5, duration = 10)
     # bullet sizes += 1
     BULLETS_BUFF = ItemTemplate("bullets_buff")
@@ -146,14 +140,17 @@ class ITEM:
     LIST = [SIZE_PLUS, SIZE_MINUS, SCORE_BUFF, BULLETS_BUFF, HP_PLUS, INVERT_CONTROLS,
         LIFE_PLUS, LIFE_MINUS, MAGNET, MISSILE, SHIELD, SHIP_BUFF, SPEED_BUFF, SPEED_NERF]
 
-# Fonts and menu formatting
+# Fonts settings
 class FONT:
+    # Fonts
     STATS = "fonts/ARCADE_I.ttf"
     MENU = "fonts/ARCADE_N.ttf"
     TEXT = "fonts/ARCADE_R.ttf"
+    # Font sizes
     MENU_SIZE = 30
     TEXT_SIZE = 30
 
+# Menu settings
 class MENU:
     BOUNDARY_SIZE = 20
     TITLE_DISTANCE = 30

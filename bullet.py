@@ -1,14 +1,14 @@
 from __future__ import annotations
-import pygame, settings, sound
-from display import Display
-from sprite import Sprite
-from image import Image, GraphicData
-from math import ceil
+import pygame, sound
 from settings import BulletTemplate, BULLET, ALIEN
+from display import Display
+from image import Image, GraphicData
+from sprite import Sprite
+from math import ceil
 from physics import Vector
 
 class Bullet(Sprite):
-    """Manage creation and properties of the player's and enemies' bullets"""
+    """Manage creation and properties of the player's and enemies' bullets."""
 
     def __init__(self, template: BulletTemplate,
                 speed: float | None = None,
@@ -21,8 +21,8 @@ class Bullet(Sprite):
                 size: int | None = None,
                 constraints: pygame.Rect | None = None,
                 boundary_behaviour: str | None = "vanish"):
-        # speed, owner, damage allow overwriting their standard settings for given template
-        # size is only used for blubber to the size of its image
+        """speed, owner, damage: allow for overwriting their default settings for given template.
+        size: only used for blubber to determine the size of its sprite."""
         self.template = template
         self.owner = owner or template.owner
         self.damage = damage or template.damage
@@ -45,6 +45,7 @@ class Bullet(Sprite):
 
     @classmethod
     def from_size(cls, size: int, **kwargs) -> Bullet:
+        """Creates a ship bullet of a given size 1, 2 or 3"""
         mapping = {1: BULLET.BULLET1, 2: BULLET.BULLET2, 3: BULLET.BULLET3}
         return cls(mapping[size], **kwargs)
 
@@ -60,6 +61,7 @@ class Bullet(Sprite):
                 sound.explosion.play()
 
     def reflect(self):
+        """Reflecting bullets with shield sound effects."""
         sound.shield.stop()
         sound.shield_reflect.play()
         super().reflect(flip_x=True, flip_y=True)

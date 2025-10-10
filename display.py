@@ -1,36 +1,20 @@
 import pygame
 
 class Display:
-    """
-    Manage fullscreen rendering and grid layout for the game.
+    """Manage fullscreen rendering and grid layout for the game.
 
     This class handles adapting the game surface to the player's screen resolution,
     keeping the desired aspect ratio, centering the screen, and computing a
     grid for consistent positioning of sprites.
 
-    Attributes
-    ----------
-    display : pygame.Surface | None
+    display: pygame.Surface | None
         The actual fullscreen display surface.
-    screen : pygame.Surface | None
-        The internal game surface, possibly smaller than `display` to preserve aspect ratio.
-    screen_rect : pygame.Rect | None
-        Rectangle describing position and size of `screen` within `display`.
-    screen_width : int
-        Width of the internal game surface.
-    screen_height : int
-        Height of the internal game surface.
-    screen_size : tuple[int, int]
-        Width and height of the internal game surface.
-    grid : tuple[int, int]
-        Number of grid cells horizontally and vertically.
-    grid_width : int
-        Pixel width of one grid cell.
-    padding_w : int
-        Horizontal padding to center the game surface.
-    padding_h : int
-        Vertical padding to center the game surface.
-    """
+    screen: pygame.Surface | None
+        The internal game surface (possibly smaller than `display` to preserve aspect ratio)
+        with automatically set parameters screen_rect, screen_width, screen_height, screen_size.
+        Gets subdivided into a rectangle of square grid cells with parameters
+        grid: tuple[int, int] and grid_width.
+        Gets padded for rendering on the screen with int parameters padding_w, padding_h"""
     display: pygame.Surface | None = None
     screen: pygame.Surface | None = None
     screen_rect: pygame.Rect | None = None
@@ -42,17 +26,8 @@ class Display:
     padding_w: int = 0
     padding_h: int = 0
 
-    def __init__(self, screen_size, screen_grid):
-        """
-        Initialize the internal game surface centered on the fullscreen display.
-
-        Parameters
-        ----------
-        screen_size : tuple[int, int]
-            Desired width and height ratio of the game surface.
-        screen_grid : tuple[int, int]
-            Number of grid cells horizontally and vertically for positioning.
-        """
+    def __init__(self, screen_size: tuple[int, int], screen_grid: tuple[int, int]):
+        """Initialize the internal game surface 'screen' with given aspect ratio and grid layout"""
         pygame.display.init()
         info = pygame.display.Info()
         max_width, max_height = info.current_w, info.current_h
@@ -83,13 +58,13 @@ class Display:
         Display.grid_width = Display.screen_width // screen_grid[0]
 
     @classmethod
-    def init(cls, screen_size, screen_grid):
-        """Convenience method to initialize the display and return the game surface."""
+    def init(cls, screen_size: tuple[int, int], screen_grid: tuple[int, int]) -> pygame.Surface:
+        """Convenience method to initialize the display and ontain the internal game surface."""
         cls(screen_size, screen_grid)
         return cls.screen
 
     @classmethod
-    def update(cls, padding_color):
+    def update(cls, padding_color: tuple):
         """Blit internal game surface centered on the fullscreen display"""
         cls.display.fill(padding_color)
         cls.display.blit(cls.screen, cls.screen_rect)
@@ -98,7 +73,7 @@ class Display:
     @classmethod
     def grid_rect(cls, x_min: int = 0, y_min: int = 0,
                 width: int = grid[0], height: int = grid[1]) -> pygame.Rect:
-        """Return a rectangle aligned to the display grid."""
+        """Return a rectangle aligned to the initialized display grid."""
         return pygame.Rect([x_min * cls.grid_width, y_min * cls.grid_width,
                             width * cls.grid_width, height * cls.grid_width])
         

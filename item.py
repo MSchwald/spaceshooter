@@ -1,13 +1,13 @@
 from __future__ import annotations
 import pygame, sound
-from image import Image, GraphicData
-from sprite import Sprite
 from display import Display
 from settings import ItemTemplate, ITEM
+from image import Image, GraphicData
+from sprite import Sprite
 from physics import Vector, norm
 
 class Item(Sprite):
-    """A class to manage the items"""
+    """Manage sprites, spawning and properties of items."""
 
     def __init__(self, template: ItemTemplate,
                 level: Level,
@@ -45,6 +45,9 @@ class Item(Sprite):
                 sound.bad_item.play()
 
     def update(self, dt: int):
+        """Calculate the state of the item after dt passed ms.
+        If the magnet effect is active, item's get horizontally
+        accelerated towards the ship."""
         if self.level.ship.magnet:
             dpos = self.level.ship.center-self.center
             dist = norm(dpos)

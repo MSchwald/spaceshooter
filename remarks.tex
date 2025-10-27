@@ -8,17 +8,17 @@
 
 
 \section{main}%Modules for higher level coordination of the game
-This is the game's main module. Its only purpose is to create an instance of the game and run it. It can be convenient to have such a module, as it could also be easily modified for tasks like for example running the game multiple times or analyzing and possibly saving data produced while playing the game without having tp mess with the game's actual code.
+This is the game's main module. Its only purpose is to create an instance of the game and run it. It can be convenient to have such a module, as it could also be easily modified for tasks like for example running the game multiple times or analyzing and possibly saving data produced while playing the game without having to mess with the game's actual code.
 
 \section{game}
 The game module starts a rendering loop of three phases, as it is classical for video games:
 \begin{enumerate}
-    \item Handle user input (i.e. check for keyboard and mouse events and react on them)
-    \item Calculate game logic (Calculate spawning / movement / animation of sprites, collision detection, handle damage / status effects / opening or closing of menus etc.)
-    \item Render game's current state (Render the background, graphical user interface and all sprites on the screen in the right order)
+    \item Handle user input (i.e. check for keyboard and mouse events and delegate the input to the corresponding modules to react on them)
+    \item Calculate game logic (Calculate spawning / movement / animation / collision / killing of sprites, handle damage / status effects, update graphical user interface (statusbar and menu))
+    \item Render the game's current state (Render the background, graphical user interface and all sprites on the screen in the right order)
 \end{enumerate}
 
-It is crucial to strictly leave these three phases separated, as otherwise the game's code will quickly get complicated to understand and developed further. Pygame gives the required methods to measure the time $dt$ passed (in milliseconds) between the rendering of two subsequent frames on the screen. This time gets passed to all game objects to make sure that the game runs with the same speed on every computer.
+It is crucial to leave these three phases strictly separated, as otherwise the game's code will quickly get complicated to understand and developed further. Pygame offers the required methods to measure the time $dt$ passed (in milliseconds) between the rendering of two subsequent frames on the screen. This time gets passed to all game objects to make sure that the game runs with the same speed on every computer.
 
 \section{level}
 

@@ -4,8 +4,6 @@ import sys
 project_root = Path(__file__).parent.parent.resolve()
 sys.path.insert(0, str(project_root))
 
-print(str(project_root))
-
 
 # Configuration file for the Sphinx documentation builder.
 #
@@ -24,7 +22,7 @@ release = '11.10.2025'
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 autoapi_ignore = [str(p) + '/**' for p in project_root.iterdir() if p.is_dir() and p.name != 'docs'] + ['documentation.py','event.py','conf.py']
-print(autoapi_ignore)
+
 extensions = [
     'autoapi.extension',
     'sphinx.ext.autodoc',

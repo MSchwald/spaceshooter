@@ -59,7 +59,7 @@ class Documentation:
     def create_rst_files(self):
         """Create modules.rst to control the order of the modules in the documentation"""
 
-        print("Updating modules.rst...")
+        print("Creating modules.rst...")
         index_file = self.source_dir / "modules.rst"
 
         title = "Space Invaders Documentation"
@@ -93,7 +93,7 @@ class Documentation:
         if not tex_files:
             raise FileNotFoundError("No .tex file found after Sphinx build.")
         self.tex_file = tex_files[0]
-        print(f"Found LaTeX file: {self.tex_file.name}")
+        print(f"Created LaTeX file: {self.tex_file.name}")
 
     def insert_preambles_into_tex(self):
         """Inserts preambles for all modules into the tex file from sphinx apidox"""
@@ -111,11 +111,9 @@ class Documentation:
             tex_content, n = pattern.subn(replacement, tex_content, count=1)
             if n:
                 print(f"Inserted preamble for section: {section_name}")
-            else:
-                print(f"Warning: section not found in tex: {section_name}")
 
         self.tex_file.write_text(tex_content, encoding="utf-8")
-        print("Preambles successfully inserted into LaTeX file.")
+        print("Preambles successfully inserted into the LaTeX file.")
 
     def compile_tex_to_pdf(self, pdf_output: Path | None = None):
         """Compiles the documentation to a pdf and copies it to the output path"""
@@ -127,7 +125,7 @@ class Documentation:
             sys.exit(1)
 
         for number in ["First","Second"]:
-            print(f"{number} compiling PDF from {self.tex_file.name}...")
+            print(f"{number} compiling of {self.tex_file} to PDF...")
             try:
                 subprocess.run([
                     "pdflatex",
@@ -141,7 +139,7 @@ class Documentation:
 
         generated_pdf = self.build_dir / self.tex_file.with_suffix(".pdf").name
         shutil.copy(generated_pdf, pdf_output)
-        print(f"Documentation PDF created at {pdf_output}")
+        print(f"Documentation PDF output at {pdf_output}")
 
     @classmethod
     def make_documentation(cls):
@@ -150,3 +148,7 @@ class Documentation:
         doc.create_tex_from_docstrings()
         doc.insert_preambles_into_tex()
         doc.compile_tex_to_pdf()
+
+if __name__ == '__main__':
+    Documentation.make_documentation()
+    sys.exit()

@@ -115,31 +115,27 @@ class Documentation:
         self.tex_file.write_text(tex_content, encoding="utf-8")
         print("Preambles successfully inserted into the LaTeX file.")
 
-    def compile_tex_to_pdf(self, pdf_output: Path | None = None):
-        """Compiles the documentation to a pdf and copies it to the output path"""
-        if pdf_output is None:
-            pdf_output = (Path(__file__).parent / "documentation.pdf").resolve()
-
-        if not self.tex_file:
-            print("No .tex file found in build directory")
-            sys.exit(1)
-
+    @classmethod
+    def compile_tex_to_pdf(cls, tex_file: Path,
+                           compile_twice: bool = True, # compiling twice is necessary when the table of content gets changed
+                           delete_auxiliary_files: bool = False):
+        """Compiles a .tex file to a .pdf file via pdflatex."""
         for number in ["First","Second"]:
-            print(f"{number} compiling of {self.tex_file} to PDF...")
+            print(f"{number} compiling of {tex_file} to .pdf...")
             try:
                 subprocess.run([
                     "pdflatex",
                     "-interaction=nonstopmode",
-                    "-output-directory", str(self.build_dir),
-                    str(self.tex_file)
-                ], check=True)
+                    str(tex_file)
+                ], check=True, cwd = tex_file.parent)
+                if not compile_twice:
+                    break
             except subprocess.CalledProcessError:
-                print("Error compiling PDF")
-                sys.exit(1)
-
-        generated_pdf = self.build_dir / self.tex_file.with_suffix(".pdf").name
-        shutil.copy(generated_pdf, pdf_output)
-        print(f"Documentation PDF output at {pdf_output}")
+                print(f"Error compiling {tex_file.name}")
+        if delete_auxiliary_files:
+            for suffix in [".synctex.gz", ".aux", ".log", ".out", ".idx", ".toc"]:
+                tex_file.with_suffix(suffix).unlink(missing_ok = True)
+        print(f"{tex_file.name} compiled to .pdf")
 
     @classmethod
     def make_documentation(cls):
@@ -147,8 +143,17 @@ class Documentation:
         doc.create_rst_files()
         doc.create_tex_from_docstrings()
         doc.insert_preambles_into_tex()
-        doc.compile_tex_to_pdf()
+        cls.compile_tex_to_pdf(tex_file = doc.tex_file)
+        pdf_file = doc.tex_file.with_suffix(".pdf")
+        shutil.move(pdf_file, doc.project_root / "Documentation.pdf")
+        answer = input(f"Delete auxiliary directory '{doc.project_root / "docs"}' [y/N]:").strip().lower()
+        if answer == "y":
+            shutil.rmtree(doc.project_root / "docs")
+            print(f"{doc.project_root / "docs"} wurde gelöscht.")
+        else:
+            print("Aborted.")
 
 if __name__ == '__main__':
     Documentation.make_documentation()
+    
     sys.exit()

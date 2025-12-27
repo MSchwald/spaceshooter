@@ -1,13 +1,10 @@
 # obsolete py modules
-test.py
-event.py
-
 Dockerfile
 
 # Temporary ingame data
-highscores.json
-preprocessed_images/
+data/
 
+removed/
 
 # Sphinx
 sphinx-apidoc

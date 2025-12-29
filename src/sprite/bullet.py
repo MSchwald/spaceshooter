@@ -1,19 +1,21 @@
 from __future__ import annotations
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from src.templates import BulletTemplate
+
 import pygame
-from sound import Sound
-from settings import BulletTemplate, BULLET, ALIEN
-from display import Display
-from image import Image, GraphicData
-from sprite import Sprite, BOUNDARY
+from .sprite import Sprite, BOUNDARY
+from src.settings import PATH
+from src.templates import BULLET, ALIEN
+from src.utils import Display, Sound, GraphicData, Vector
 from math import ceil
-from physics import Vector
+
 
 class Bullet(Sprite):
     """Manage creation and properties of the player's and enemies' bullets."""
 
     def __init__(self, template: BulletTemplate,
                 speed: float | None = None,
-                direction: Vector | None = None,
                 pos: Vector | None = None,
                 vel: Vector | None = None,
                 acc: Vector = Vector(0, 0),
@@ -31,7 +33,7 @@ class Bullet(Sprite):
         if vel is None:
             vel = Vector(0, -speed) if self.owner == "player" else Vector(0, speed)
         constraints = constraints or Display.screen_rect
-        graphic = GraphicData(path = f'images/bullet/{template.name}', scaling_width = template.width,
+        graphic = GraphicData(path = PATH.BULLET / f"{template.name}", scaling_width = template.width,
                         animation_type = template.animation_type, animation_time = template.animation_time)
         super().__init__(graphic = graphic, pos = pos, vel = vel, acc = acc,
             constraints = constraints, boundary_behaviour = boundary_behaviour)

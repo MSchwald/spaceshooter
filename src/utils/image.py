@@ -1,17 +1,15 @@
 from __future__ import annotations
 import pygame
-from settings import COLOR, SCREEN, ANIMATION_TYPE
+from .display import Display
+from src.settings import COLOR, SCREEN, PATH, ANIMATION_TYPE
 from pathlib import Path
-from display import Display
 from dataclasses import dataclass
 
 class Image:
     '''Manage lazy loading and transforming images and masks to be used for sprites.'''
-
     def __init__(self, surface: pygame.Surface,
                     mask: pygame.Mask,
                     colorkey: tuple = None,
-                    reflected: bool = False,
                     path: str | None = None):
         self.surface = surface
         self.mask = mask
@@ -57,7 +55,7 @@ class Image:
 
     cache = {}
     @classmethod
-    def load(cls, path, colorkey=COLOR.BLACK, scaling_width=None, scaling_height=None, scaling_factor=None) -> Image:
+    def load(cls, path: str, colorkey=COLOR.BLACK, scaling_width=None, scaling_height=None, scaling_factor=None) -> Image:
         '''Load image with given path lazily and preprocess the image upon first loading.
             Background of color 'colorkey' gets cropped and transparent.
             Then rescale either to desired width, height (wrt default screen resolution)
@@ -68,8 +66,8 @@ class Image:
         path_obj = Path(path)
         if not path_obj.suffix:
             path_obj = path_obj.with_suffix(".png")
-        relpath = Path(path_obj).relative_to("images")
-        newpath = Path(f"preprocessed_images/grid_width={Display.grid_width}" / relpath)
+        relpath = Path(path_obj).relative_to(PATH.IMAGES)
+        newpath = PATH.PREPROCESSED / f"grid_width={Display.grid_width}" / relpath
 
         if newpath.exists():
             # If the image has been preprocessed before, load it into the game's cache.

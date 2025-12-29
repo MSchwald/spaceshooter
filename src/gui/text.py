@@ -12,7 +12,7 @@ class Layout:
         vertical_padding, horizontal_padding : bool - indicate if padding is desired from all sides"""
         w, h = surface.get_size()
         x = int(padding_size * horizontal_padding)
-        y = int(padding_size * horizontal_padding) 
+        y = int(padding_size * vertical_padding) 
         padded_surface = pygame.Surface((w + 2*x, h + 2*y))
         if padding_color is not None:
             padded_surface.fill(padding_color)
@@ -75,27 +75,19 @@ class Layout:
         return cls.pad_surface(result, padding_size, padding_color)
 
     @classmethod
-    def render_line(cls, line: list, font: pygame.Font,
+    def render_line(cls, line: str | list, font: pygame.Font,
                     text_color: tuple, bg_color: tuple | None = None) -> pygame.Surface:
         """Render a single string of text or a list of strings and surfaces as a pygame.Surface."""
         if isinstance(line, str):
             return font.render(line, False, text_color, bg_color)
-        else:
-            h = font.get_height()
-            rendered_line_parts = []
-            for part in line:
-                if isinstance(part, str):
-                    rendered_line_parts.append(font.render(part, False, text_color, bg_color))
-                else:
-                    rendered_line_parts.append(pygame.transform.scale_by(part,h / part.get_height()))
-            return Layout.align_surfaces(rendered_line_parts, "horizontal", padding_color = bg_color)
-        if rescale_to_size is not None:
-            if orientation == "horizontal":
-                h = rescale_to_size
-                surfaces = [pygame.transform.scale_by(surface,h / surface.get_height()) for surface in surfaces]
-            elif orientation == "vertical":
-                w = rescale_to_size
-                surfaces = [pygame.transform.scale_by(surface,w / surface.get_width()) for surface in surfaces]
+        h = font.get_height()
+        rendered_line_parts = []
+        for part in line:
+            if isinstance(part, str):
+                rendered_line_parts.append(font.render(part, False, text_color, bg_color))
+            else:
+                rendered_line_parts.append(pygame.transform.scale_by(part,h / part.get_height()))
+        return Layout.align_surfaces(rendered_line_parts, "horizontal", padding_color = bg_color)
 
 class Text:
     """Can render a list of strings as a text with specified alignment and color of text and background"""

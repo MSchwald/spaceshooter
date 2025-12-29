@@ -1,13 +1,14 @@
 from __future__ import annotations
-import pygame
-from sound import Sound
-from settings import KEY, BULLET, SHIP, SHIP_STATUS
-from display import Display
-from image import Image, GraphicData
-from sprite import Sprite, BOUNDARY
-from bullet import Bullet
-from timer import ActionTimer
-from physics import Vector, normalize
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from src.core import Level
+    from .item import Item
+
+from .sprite import Sprite, BOUNDARY
+from .bullet import Bullet
+from src.utils import Display, Sound, GraphicData, ActionTimer, Vector
+from src.settings import KEY, SHIP, SHIP_STATUS, PATH
+from src.templates import BULLET
 
 class Ship(Sprite):
     """Manage the ship's position, status properties and item effects."""
@@ -23,7 +24,7 @@ class Ship(Sprite):
         self.rank = rank
         self.score = SHIP.SCORE
         self.energy = self.max_energy
-        graphic = GraphicData(path = f"images/ship/a-{rank}.png", scaling_width = SHIP.WIDTH[rank])
+        graphic = GraphicData(path = PATH.SHIP / f"a-{rank}.png", scaling_width = SHIP.WIDTH[rank])
         super().__init__(graphic = graphic,
             constraints = Display.grid_rect(0, 5, 16, 4), boundary_behaviour = BOUNDARY.CLAMP)
         self.reset_pos()
@@ -156,14 +157,14 @@ class Ship(Sprite):
             if self.status == SHIP_STATUS.SHIELD:
                 self.deactivate_shield()
             direction = Vector(keys[KEY.RIGHT]-keys[KEY.LEFT], keys[KEY.DOWN]-keys[KEY.UP])
-            self.vel = self.speed_factor * SHIP.SPEED[self.rank] * normalize(direction)
+            self.vel = self.speed_factor * SHIP.SPEED[self.rank] * direction.normalize
             if self.status == SHIP_STATUS.INVERSE_CONTROLS:
                 self.vel *= -1
 
     def update_graphic(self):
         """Upon changes of status or size, the ship's graphic must be updated."""
         letter = {"normal":"a", "inverse_controls":"g", "shield":"h", "magnetic":"e"}[self.status]
-        self.graphic = GraphicData(path = f"images/ship/{letter}-{self.rank}.png", scaling_width = SHIP.WIDTH[self.rank])
+        self.graphic = GraphicData(path = PATH.SHIP / f"{letter}-{self.rank}.png", scaling_width = SHIP.WIDTH[self.rank])
         self.change_image(self.graphic.image.scale_by(self.size_factor))
 
     def collect_item(self, item: Item):

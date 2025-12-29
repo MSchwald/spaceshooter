@@ -1,16 +1,14 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from src.templates import AlienTemplate
+
 import pygame
-from sound import Sound
-from settings import AlienTemplate, ALIEN, SHIP, BULLET, LEVEL_STATUS, SHIP_STATUS
-from display import Display
-from image import Image, GraphicData
-from sprite import Sprite, BOUNDARY
-from ship import Ship
-from alien import Alien
-from timer import ActionTimer
-from random import random, randint
-from math import hypot
-from physics import Vector, normalize
-from dataclasses import dataclass    
+from src.settings import SHIP, LEVEL_STATUS, SHIP_STATUS, PATH
+from src.templates import ALIEN, BULLET
+from src.utils import Display, Sound, GraphicData, ActionTimer, Vector
+from src.sprite import Alien, Ship, Sprite, BOUNDARY
+from random import random
 
 class Level:
     """Manage game levels, loading enemies, timed events, collisions, and player progress.
@@ -31,7 +29,7 @@ class Level:
 
         # Level sprites and sprite groups
         self.ship = Ship(self)
-        self.crosshairs = Sprite(GraphicData(path = 'images/bullet/aim.png', scaling_width = BULLET.MISSILE.width))
+        self.crosshairs = Sprite(GraphicData(path = PATH.BULLET / "aim.png", scaling_width = BULLET.MISSILE.width))
         self.ship_bullets = pygame.sprite.Group()
         self.bullets = pygame.sprite.Group()
         self.items = pygame.sprite.Group()
@@ -107,7 +105,7 @@ class Level:
                 constraints.x + random() * (constraints.w - alien.w),
                 constraints.bottom
             )
-            alien.vel = alien.speed * normalize(target_pos - spawning_pos)
+            alien.vel = alien.speed * (target_pos - spawning_pos).normalize
             self.alien_spawn(alien, pos = spawning_pos)   
 
     def encounter(self, template: AlienTemplate,

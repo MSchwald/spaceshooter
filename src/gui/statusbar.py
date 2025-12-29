@@ -1,9 +1,12 @@
 from __future__ import annotations
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from src.core import Level
+    
 import pygame
-from settings import COLOR, SHIP, FONT
-from display import Display
-from image import Image
-from text import Layout
+from .text import Layout
+from src.utils import Display
+from src.settings import COLOR, SHIP, FONT, PATH
 
 class Statusbar:
     """Format and render a two lined status bar with the relevant game stats."""
@@ -15,20 +18,20 @@ class Statusbar:
         if cls.initialized:
             return
 
-        cls.empty_bar = pygame.image.load("images/statusbar/empty_bar.png").convert_alpha()
+        cls.empty_bar = pygame.image.load(PATH.STATUSBAR / "empty_bar.png").convert_alpha()
             
         cls.h = cls.empty_bar.get_height()
-        cls.health = pygame.image.load("images/statusbar/health_bar.png").convert_alpha()
-        cls.shield_timer = pygame.image.load("images/statusbar/shield_bar.png").convert_alpha()
+        cls.health = pygame.image.load(PATH.STATUSBAR / "health_bar.png").convert_alpha()
+        cls.shield_timer = pygame.image.load(PATH.STATUSBAR / "shield_bar.png").convert_alpha()
 
         cls.font_size = cls.h*7//8
         cls.font = pygame.font.Font(FONT.STATS, cls.font_size)
         cls.stats_padding = (cls.h-cls.font_size)//2
             
-        cls.lives_icon = pygame.image.load("images/statusbar/lives_icon.png").convert_alpha()
-        cls.energy_icon = pygame.image.load("images/statusbar/energy_icon.png").convert_alpha()
-        cls.shield_icon = pygame.image.load("images/statusbar/shield_icon.png").convert_alpha()     
-        cls.missiles_icon = pygame.image.load("images/statusbar/missiles_icon.png").convert_alpha()
+        cls.lives_icon = pygame.image.load(PATH.STATUSBAR / "lives_icon.png").convert_alpha()
+        cls.energy_icon = pygame.image.load(PATH.STATUSBAR / "energy_icon.png").convert_alpha()
+        cls.shield_icon = pygame.image.load(PATH.STATUSBAR / "shield_icon.png").convert_alpha()     
+        cls.missiles_icon = pygame.image.load(PATH.STATUSBAR / "missiles_icon.png").convert_alpha()
 
         cls.score_font_size = cls.font_size//2
         cls.score_font = pygame.font.Font(FONT.STATS, cls.score_font_size)

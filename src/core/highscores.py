@@ -1,7 +1,6 @@
-import pygame, json
-from settings import DEFAULT_HIGHSCORES, MAX_NUMBER_OF_HIGHSCORES
+import json
+from src.settings import HIGHSCORES, PATH
 from string import ascii_letters, digits
-from pathlib import Path
 
 class Highscores:
     """Load, render, update and save highscores"""
@@ -10,7 +9,7 @@ class Highscores:
         """load saved high scores or the default ones from the settings"""
         self.allowed_chars = ascii_letters + digits # characters allowed in the players' names
         try:
-            with open("highscores.json", "r", encoding="utf-8") as f:
+            with open(PATH.DATA / "highscores.json", "r", encoding="utf-8") as f:
                 self.score_list = json.load(f)
         except FileNotFoundError:
             self.load_default_highscores()
@@ -25,22 +24,22 @@ class Highscores:
         return [str(x[1]) for x in self.score_list]
 
     def load_default_highscores(self):
-        self.score_list = sorted(DEFAULT_HIGHSCORES, key=lambda x: x[1], reverse=True)[:MAX_NUMBER_OF_HIGHSCORES]
+        self.score_list = sorted(HIGHSCORES.DEFAULT, key=lambda x: x[1], reverse=True)[:HIGHSCORES.MAX_NUMBER]
         self.fill_list_with_zeros()
         self.save()
 
     def fill_list_with_zeros(self):
         """When the default high score list in the settings is to short, fill the table with zeros."""
-        while len(self.score_list) < MAX_NUMBER_OF_HIGHSCORES:
+        while len(self.score_list) < HIGHSCORES.MAX_NUMBER:
             self.score_list.append(("",0))
  
     def save(self):
-        with open("highscores.json", "w", encoding="utf-8") as f:
+        with open(PATH.DATA / "highscores.json", "w", encoding="utf-8") as f:
             json.dump(self.score_list, f)
 
     def highscore_rank(self, score: int) -> int | None:
         """For a given score, return its rank in the high score table. Return None if the score is too low."""
-        beaten_scores = [i for i in range(MAX_NUMBER_OF_HIGHSCORES) if score > self.score_list[i][1]]
+        beaten_scores = [i for i in range(HIGHSCORES.MAX_NUMBER) if score > self.score_list[i][1]]
         if beaten_scores:
             return beaten_scores[0]
         return None

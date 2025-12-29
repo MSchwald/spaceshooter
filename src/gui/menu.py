@@ -1,11 +1,13 @@
 from __future__ import annotations
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from src.core import Game, Level, Highscores
+
 import pygame
-from sound import Sound
-from settings import COLOR, KEY, SCREEN, FONT, MENU, ITEM, MAX_NAME_LENGTH, LEVEL_STATUS, GAME_MODE
-from text import Layout, Text
-from image import Image
-from level import Level
-from display import Display
+from .text import Layout, Text
+from src.utils import Display, Sound
+from src.settings import COLOR, KEY, SCREEN, FONT, MENU, LEVEL_STATUS, GAME_MODE, HIGHSCORES, PATH
+from src.templates import ITEM
 
 class Menu():
     """Manage creation and navigation of menus consisting of a header surface
@@ -131,7 +133,7 @@ class Menu():
     def handle_input(self, game: Game, event):
         """Handles entering the name into the high score list upon user's input"""
         if event.type == pygame.KEYDOWN:
-            if event.unicode in game.highscores.allowed_chars and len(game.player_name) < MAX_NAME_LENGTH:
+            if event.unicode in game.highscores.allowed_chars and len(game.player_name) < HIGHSCORES.MAX_NAME_LENGTH:
                 game.player_name += event.unicode
             elif event.key == KEY.BACK:
                 game.player_name = game.player_name[:-1]
@@ -152,20 +154,20 @@ class Menu():
                                 "RETURN: pause the game","Escape: end the game"],
                                 options = ["Item list", "Go back"])
         cls.ITEM_LIST1 = Menu.create(["Item list",
-                                [pygame.image.load("images/item/bullets_buff.png"), " upgrades your bullets"],
-                                [pygame.image.load("images/item/ship_buff.png"), " upgrades your ship"],
-                                [pygame.image.load("images/item/hp_plus.png"), f" gives back {ITEM.HP_PLUS.effect} energy"],
-                                [pygame.image.load("images/item/invert_controls.png"), f" inverts controls for {ITEM.INVERT_CONTROLS.duration}s"],
-                                [pygame.image.load("images/item/magnet.png"), " attracts items to you"],
-                                [pygame.image.load("images/item/score_buff.png"), f" score multiplier {ITEM.SCORE_BUFF.effect} for {ITEM.SCORE_BUFF.duration}s"]],
+                                [pygame.image.load(PATH.ITEM / "bullets_buff.png"), " upgrades your bullets"],
+                                [pygame.image.load(PATH.ITEM / "ship_buff.png"), " upgrades your ship"],
+                                [pygame.image.load(PATH.ITEM / "hp_plus.png"), f" gives back {ITEM.HP_PLUS.effect} energy"],
+                                [pygame.image.load(PATH.ITEM / "invert_controls.png"), f" inverts controls for {ITEM.INVERT_CONTROLS.duration}s"],
+                                [pygame.image.load(PATH.ITEM / "magnet.png"), " attracts items to you"],
+                                [pygame.image.load(PATH.ITEM / "score_buff.png"), f" score multiplier {ITEM.SCORE_BUFF.effect} for {ITEM.SCORE_BUFF.duration}s"]],
                                 options = ["More items", "Back to controls", "Back to menu"])
         cls.ITEM_LIST2 = Menu.create(["Item list",
-                                [pygame.image.load(f"images/item/life_plus.png"), " ", pygame.image.load(f"images/item/life_minus.png"), " gives or takes a life"],
-                                [pygame.image.load(f"images/item/size_plus.png"), " ", pygame.image.load(f"images/item/size_minus.png"), f" increases or decreases ship size for {ITEM.SIZE_PLUS.duration}s"],
-                                [pygame.image.load(f"images/item/speed_buff.png"), " ", pygame.image.load(f"images/item/speed_nerf.png"), f" increases or decreases ship speed {ITEM.SPEED_BUFF.duration}s"],
-                                [pygame.image.load(f"images/item/shield.png"), f" increases shield timer by {ITEM.SHIELD.effect}s,"],
+                                [pygame.image.load(PATH.ITEM / "life_plus.png"), " ", pygame.image.load(PATH.ITEM / "life_minus.png"), " gives or takes a life"],
+                                [pygame.image.load(PATH.ITEM / "size_plus.png"), " ", pygame.image.load(PATH.ITEM / "size_minus.png"), f" increases or decreases ship size for {ITEM.SIZE_PLUS.duration}s"],
+                                [pygame.image.load(PATH.ITEM / "speed_buff.png"), " ", pygame.image.load(PATH.ITEM / "speed_nerf.png"), f" increases or decreases ship speed {ITEM.SPEED_BUFF.duration}s"],
+                                [pygame.image.load(PATH.ITEM / "shield.png"), f" increases shield timer by {ITEM.SHIELD.effect}s,"],
                                 "use it to reflect enemies and bullets.",
-                                [pygame.image.load(f"images/item/missile.png"), " gives an extra missile."],
+                                [pygame.image.load(PATH.ITEM / "missile.png"), " gives an extra missile."],
                                 "They are strong, use them wisely!"],
                                 options =["Previous items", "Back to controls", "Back to menu"])
         cls.PREMIUM = Menu.create(["Haha",

@@ -30,15 +30,16 @@ This is a small space shooter game with five levels developed with **pygame**, a
   #### Windows
   Double-click `run_windows.bat`.
   #### macOS / Linux
-  Open your terminal in the project folder.
-  Grant execution permissions to the script (only required once):
-  ```bash
-  chmod +x run_unix.sh
-  ```
-  Then launch the game via
+  Open your terminal in the project folder and run
   ```bash
   ./run_unix.sh
   ```
+
+### Alternative: Manual installation
+If the automated scripts don't work for you, follow these steps:
+* If you are using Linux / macOS, use your package manager to install **zlib**.
+* Ensure you have **Python 3.11** or newer and the package **pygame 2.5.2** installed.
+* Run `python main.py`.
 
 ## Documentation for developers
 The documentation `Documentation.pdf` contains technical explanations of the relevant components of the game. It was compiled using **sphinx-autoapi**, **LaTeX** and the script in `documentation/documentation.py`.

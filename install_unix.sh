@@ -9,9 +9,9 @@ if command -v apt-get &> /dev/null; then
     sudo apt-get install -y zlib1g-dev build-essential pkg-config libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev
 elif command -v dnf &> /dev/null; then
     sudo dnf groupinstall -y "Development Tools"
-    sudo dnf install -y zlib-devel SDL2-devel SDL2_image-devel SDL2_mixer-devel SDL2_ttf-devel
+    sudo dnf install -y zlib-devel zlib-ng-compat-devel sdl2-devel sdl2-compat-devel SDL2_image-devel SDL2_mixer-devel SDL2_ttf-devel
 elif command -v pacman &> /dev/null; then
-    sudo pacman -S --needed --noconfirm base-devel zlib sdl2 sdl2_image sdl2_mixer sdl2_ttf
+    sudo pacman -S --needed --noconfirm base-devel zlib sdl2-compat sdl2 sdl2_image sdl2_mixer sdl2_ttf
 elif command -v brew &> /dev/null; then
     brew install zlib sdl2 sdl2_image sdl2_mixer sdl2_ttf
 fi

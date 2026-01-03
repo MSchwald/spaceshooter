@@ -44,8 +44,11 @@ This is a small space shooter game with five levels developed with **pygame**, a
 If the automated scripts do not work for you or graphics / sounds are missing, follow these steps:
 * If you are using **Linux / macOS**, install the following system libraries with your package manager:
   * **Debian/Ubuntu**: zlib1g-dev build-essential pkg-config libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev
-  * **Fedora**: zlib-devel SDL2-devel SDL2_image-devel SDL2_mixer-devel SDL2_ttf-devel
-  * **Arch**: zlib sdl2 sdl2_image sdl2_mixer sdl2_ttf
+  * **Fedora (<v39)**: zlib-devel sdl2-devel sdl2_image-devel sdl2_mixer-devel sdl2_ttf-devel
+  * **Fedora (v40-v41)**: zlib-ng-compat-devel sdl2-devel sdl2_image-devel sdl2_mixer-devel sdl2_ttf-devel
+  * **Fedora (v42+)**: zlib-ng-compat-devel zlib-ng-compat-devel sdl2_image-devel sdl2_mixer-devel sdl2_ttf-devel
+  * **Arch**: zlib sdl2-compat sdl2_image sdl2_mixer sdl2_ttf
+  * **macOS (Homebrew)**: zlib sdl2 sdl2_image sdl2_mixer sdl2_ttf
 * Ensure you have **Python 3.11** or newer and install the package **pygame 2.5.2**.
 * Run `python main.py`.
 

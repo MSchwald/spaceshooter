@@ -1,62 +1,44 @@
 # Space Invaders
-# For Setup and run:
+![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
+![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)
+![Pygame](https://img.shields.io/badge/Pygame-2.5.2-green.svg)
 
-## 1. Install Python
-Python 3.12 or newer is required. Install it for example via:
-  ### Linux Debian/Ubuntu
+## Description
+This is a small space shooter game with five levels developed with **pygame**, a light-weight python framework.
+
+## Setup and run the game
+
+### 1. Install Python
+**Python 3.11** or newer is required. Install it for example via:
+  #### Linux Debian/Ubuntu
   ```
-  sudo apt install python3
+  sudo apt update
+  sudo apt install python3 python3-venv
   ```
-  ### macOS using Homebrew
+  #### macOS using Homebrew
   ```
   brew install python
   ```
-  ### Windows
-  Download and install Python from the official website
-  https://www.python.org/downloads/windows/
+  #### Windows
+  Download and install **Python 3.11** or newer from the official website
+  https://www.python.org/downloads/windows
+  (`Windows installer 64-bit` for most systems)
   
-  Make sure to select „Add Python to PATH“ during installation.
-## 2. Start virtual environment (optional)
-  Using a virtual environment helps to isolate project dependencies from your system Python.
-  ### Linux/macOS
-  ```
-  python3 -m venv spaceinvaders
-  source spaceinvaders/bin/activate
-  ```
-  ### Windows (cmd)
-  ```
-  python -m venv spaceinvaders
-  .\spaceinvaders\Scripts\activate
-  ```
-  You can later leave the virtual environment via `deactivate`.
-## 3. Install dependencies (pygame)
-  ```
-  pip install -r requirements.txt
-  ```
-## 4. Run the game
-  ```
-  python main.py
-  ```
-## 5. Documentation
-* To generate the documentation, install LaTeX
-  ### Linux (Debian/Ubuntu)
-  ```
-  sudo apt install texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended
-  ```
-  ### macOS using Homebrew
-  ```
-  brew install --cask basictex
-  sudo tlmgr update --self
-  sudo tlmgr install latex-recommended latex-extra collection-fontsrecommended
-  ```
-  ### Windows
-  Download and install MiKTeX from https://miktex.org/download
+  Make sure to select „**Add Python to PATH**“ during installation.
 
-* Install Sphinx
+### 2. Run the game
+  #### Windows
+  Double-click `run_windows.bat`.
+  #### macOS / Linux
+  Open your terminal in the project folder.
+  Grant execution permissions to the script (only required once):
+  ```bash
+  chmod +x run_unix.sh
   ```
-  pip install sphinx sphinx-autoapi
+  Then launch the game via
+  ```bash
+  ./run_unix.sh
   ```
-  and compile the documentation via
-  `python documentation.py` or `python3 documentation.py`.
 
-  You can then open `documentation.pdf` in the same directory.
+## Documentation for developers
+The documentation `Documentation.pdf` contains technical explanations of the relevant components of the game. It was compiled using **sphinx-autoapi**, **LaTeX** and the script in `documentation/documentation.py`.

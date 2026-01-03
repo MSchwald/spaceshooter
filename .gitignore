@@ -1,10 +1,13 @@
-# obsolete py modules
+# obsolete files
 Dockerfile
+removed/
 
 # Temporary ingame data
 data/
 
-removed/
+# Game launcher (created by installation scripts)
+start.bat
+start.sh
 
 # Sphinx
 sphinx-apidoc

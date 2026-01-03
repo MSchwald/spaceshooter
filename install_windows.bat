@@ -2,7 +2,10 @@
 setlocal enabledelayedexpansion
 cd /d "%~dp0"
 
-if exist venv goto :start_game
+if exist venv (
+    echo Removing old virtual environment...
+    rmdir /s /q venv
+)
 
 python -c "import sys; exit(0 if sys.version_info[:2] >= (3,11) else 1)" >nul 2>nul
 if errorlevel 1 (
@@ -24,14 +27,22 @@ if errorlevel 1 (
 )
 
 call venv\Scripts\activate
-
 echo Installing requirements...
-python -m pip install --upgrade pip >nul
+python -m pip install --upgrade pip --timeout 15 --quiet >nul 2>&1
 python -m pip install -r requirements.txt
 
-:start_game
-call venv\Scripts\activate
-python main.py
+echo @echo off > start.bat
+echo cd /d "%%~dp0" >> start.bat
+echo call venv\Scripts\activate >> start.bat
+echo python main.py >> start.bat
+echo if %%errorlevel%% neq 0 pause >> start.bat
+
+
+echo.
+echo Installation complete. Open 'start.bat' to play!
+echo Have fun and good luck beating the high scores!
+echo.
+pause
 exit /b
 
 :python_error

@@ -71,7 +71,7 @@ class Documentation:
         index_file.write_text(index_content, encoding="utf-8")
 
     def create_tex_from_docstrings(self):
-        """Use sphinx-apidoc to build a tex-file (containing all doc strings) from the rst files"""
+        """Use sphinx to build a tex-file (containing all doc strings) from the rst files"""
         if not self.conf_file.exists():
             raise RuntimeError("No sphinx config file found in root directory.")
         shutil.copy(self.conf_file, self.docs_dir)
@@ -92,7 +92,7 @@ class Documentation:
         print(f"Created LaTeX file: {self.tex_file.name}")
 
     def insert_preambles_into_tex(self):
-        """Inserts preambles for all modules into the tex file from sphinx apidox"""
+        """Inserts preambles for all modules into the tex file from sphinx"""
         if not self.tex_file:
             raise RuntimeError("No .tex file found to insert preambles into.")
 
@@ -100,7 +100,7 @@ class Documentation:
         tex_content = re.sub(r"\\section\{Module Contents\}", "", tex_content)
         tex_content = re.sub(r"\\sphinxcode\{\\sphinxupquote\{[a-z0-9_.]+\.\}\}", "", tex_content)
         
-        # Insert preambles into tex file from sphinx apidoc
+        # Insert preambles into tex file from sphinx
         print("Inserting remarks into LaTeX file...")
         for section_name, preamble in self.preamble_dict.items():
             pattern = re.compile(rf"(\\chapter\{{\s*{re.escape(section_name)}\s*\}})", re.DOTALL)

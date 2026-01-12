@@ -3,6 +3,8 @@
 ![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)
 ![Pygame](https://img.shields.io/badge/Pygame-2.5.2-green.svg)
 
+<img width="1920" height="1080" alt="spaceshooter" src="https://github.com/user-attachments/assets/aa9a1988-26a7-455c-ac1e-1357fc920418" />
+
 ## Description
 This is a small space shooter game with five levels developed with **pygame**, a light-weight python framework.
 
